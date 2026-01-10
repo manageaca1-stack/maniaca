@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Maniaca 1.9.1 - Academy ERP</title>
+    <title>Maniaca Final Integrated - Academy ERP</title>
     
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* [1. 디자인 시스템] */
+        /* [1. 디자인 시스템 정의] */
         :root { 
-            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-bg: rgba(255, 255, 255, 0.98);
             --glass-border: rgba(255, 255, 255, 0.5);
             --sidebar-width: 260px;
             --primary: #4f46e5;
@@ -25,14 +25,24 @@
             --warning: #f59e0b;
         }
 
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg-gradient); background-size: cover; background-attachment: fixed; color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
+        body { 
+            font-family: 'Pretendard', sans-serif; margin: 0; 
+            background: var(--bg-gradient); background-size: cover; background-attachment: fixed;
+            color: var(--text-main); height: 100vh; overflow: hidden; display: flex;
+        }
 
-        /* [2. 레이아웃] */
+        /* [2. 레이아웃 & 반응형] */
         #mobile-menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 100; background: white; border: none; padding: 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); cursor: pointer; }
         #app-container { display: flex; width: 100%; height: 100%; display: none; }
         #app-container.active { display: flex; animation: fadeIn 0.5s; }
 
-        aside { width: var(--sidebar-width); background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; padding: 25px 20px; box-sizing: border-box; z-index: 50; transition: transform 0.3s; }
+        aside {
+            width: var(--sidebar-width); background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px); border-right: 1px solid var(--glass-border);
+            display: flex; flex-direction: column; padding: 25px 20px;
+            box-sizing: border-box; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
         main { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
 
         @media (max-width: 768px) {
@@ -46,12 +56,20 @@
             .input-group button, .input-group select, .input-group input { width: 100%; }
         }
 
-        /* [3. UI 컴포넌트] */
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        /* [3. UI 컴포넌트 스타일] */
+        .glass-card {
+            background: var(--glass-bg); backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
+
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .stat-num { font-size: 2.8rem; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
+
+        .stat-card { text-align: center; }
+        .stat-num { font-size: 2.8rem; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        .stat-label { font-size: 0.95rem; font-weight: 600; color: var(--text-sub); }
+
         table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
         th { text-align: left; padding: 12px 15px; color: var(--text-sub); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
         td { background: rgba(255,255,255,0.6); padding: 15px; font-size: 0.95rem; border-top: 1px solid rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.5); vertical-align: middle; }
@@ -62,7 +80,7 @@
 
         .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 12px; outline: none; font-size: 0.95rem; background: rgba(255,255,255,0.8); box-sizing: border-box; transition: 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); background: white; }
 
         .btn { padding: 12px 20px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; justify-content: center; align-items: center; gap: 6px; white-space: nowrap; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
@@ -71,10 +89,10 @@
         .btn-danger:hover { background: var(--danger); color: white; }
         .btn-success { background: #d1fae5; color: #059669; }
         .btn-sm { padding: 8px 12px; font-size: 0.85rem; border-radius: 8px; }
-        .btn-icon { background: transparent; padding: 6px; color: var(--text-sub); font-size: 1.2rem; cursor: pointer; border-radius: 8px; transition: 0.2s; }
-        .btn-icon:hover { background: white; color: var(--primary); }
+        .btn-icon { background: transparent; padding: 6px; color: var(--text-sub); font-size: 1.2rem; cursor: pointer; border-radius: 8px; transition: 0.2s; border: 1px solid transparent; }
+        .btn-icon:hover { background: white; color: var(--primary); border-color: #e2e8f0; }
 
-        /* [차시 리스트 스타일] */
+        /* [차시(Session) 리스트 스타일] */
         .session-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
         .session-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
         .session-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: var(--primary); }
@@ -85,7 +103,7 @@
         /* [출석/과제 버튼] */
         .att-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
         .att-btn { padding: 6px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid #e2e8f0; background: white; color: var(--text-sub); transition: 0.1s; }
-        .att-btn.selected { color: white; border-color: transparent; }
+        .att-btn.selected { color: white; border-color: transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .att-present.selected { background: #10b981; } .att-late.selected { background: #f59e0b; }
         .att-leave.selected { background: #6366f1; } .att-absent.selected { background: #ef4444; } .att-makeup.selected { background: #8b5cf6; }
         
@@ -98,6 +116,7 @@
         .grade-high { background: #e0e7ff; color: #4338ca; } .grade-good { background: #d1fae5; color: #065f46; }
         .grade-mid { background: #fef3c7; color: #92400e; } .grade-low { background: #fee2e2; color: #991b1b; }
 
+        /* [로그인 및 공통] */
         #login-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-gradient); z-index: 1000; display: flex; justify-content: center; align-items: center; }
         .login-card { background: rgba(255,255,255,0.9); backdrop-filter: blur(30px); padding: 50px; border-radius: 40px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
         .page { display: none; animation: slideUp 0.3s ease-out; } .page.active { display: block; }
@@ -111,13 +130,84 @@
 
     <button id="mobile-menu-btn" onclick="toggleSidebar()"><i class="ph-bold ph-list" style="font-size:1.5rem;"></i></button>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+        // 원장님의 파이어베이스 키 (싱가포르 서버)
+        const firebaseConfig = {
+            apiKey: "AIzaSyATEDztq6rh6W4GKXj9uzilfFK8XiUIEO8",
+            authDomain: "maniaca-db.firebaseapp.com",
+            databaseURL: "https://maniaca-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "maniaca-db",
+            storageBucket: "maniaca-db.firebasestorage.app",
+            messagingSenderId: "706749861772",
+            appId: "1:706749861772:web:b3953509595644851a50a9",
+            measurementId: "G-HS42S3XM4Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // 초기 데이터 구조 정의
+        window.DB = {
+            users: [{ id: 'admin', pw: 'admin1234', name: '관리자', role: 'admin', school: 'System' }],
+            students: [], classes: [], counseling: [], scores: []
+        };
+
+        // 데이터 저장 (Firebase -> Cloud)
+        window.saveDB = function() {
+            set(ref(db, 'maniaca_data'), window.DB)
+                .then(() => { console.log("☁️ 데이터 저장 완료"); })
+                .catch((error) => { console.error("저장 실패:", error); });
+        };
+
+        // 데이터 수신 (Cloud -> 내 화면, 실시간)
+        const dbRef = ref(db, 'maniaca_data');
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                window.DB = data;
+                
+                // 데이터 무결성 체크 (배열이 없으면 빈 배열로 초기화)
+                if(!window.DB.students) window.DB.students = [];
+                if(!window.DB.classes) window.DB.classes = [];
+                if(!window.DB.counseling) window.DB.counseling = [];
+                if(!window.DB.scores) window.DB.scores = [];
+                
+                console.log("🔄 데이터 동기화됨");
+
+                // 현재 보고 있는 화면이 있다면 갱신 (실시간성 확보)
+                if(window.CURRENT_USER) {
+                    if(isActivePage('page-students')) window.renderStudents();
+                    if(isActivePage('page-classes')) {
+                        // 목록뷰인지 상세뷰인지 체크하여 갱신
+                        if(document.getElementById('view-class-list').style.display !== 'none') window.renderClasses();
+                        else if(document.getElementById('view-session-detail').style.display !== 'none') window.renderSessionTable();
+                    }
+                    if(isActivePage('page-dashboard')) window.renderDirectorDash();
+                    if(isActivePage('page-admin-dash')) window.renderAdminDash();
+                }
+            } else {
+                console.log("데이터 없음. 초기화 진행.");
+                window.saveDB();
+            }
+        });
+
+        // 헬퍼 함수
+        function isActivePage(id) {
+            const el = document.getElementById(id);
+            return el && el.classList.contains('active');
+        }
+    </script>
+
     <div id="login-screen">
         <div class="login-card">
-            <h1 style="font-size:2.8rem; margin:0; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom:10px;">Maniaca 1.9.1</h1>
+            <h1 style="font-size:2.8rem; margin:0; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom:10px;">Maniaca Final</h1>
             <p style="color:#64748b; margin-bottom:40px;">Academy Management System</p>
             <input type="text" id="login-id" placeholder="아이디" style="margin-bottom: 12px;">
             <input type="password" id="login-pw" placeholder="비밀번호" style="margin-bottom: 25px;">
-            <button class="btn btn-primary" onclick="attemptLogin()" style="width:100%; padding: 16px;">로그인</button>
+            <button class="btn btn-primary" onclick="attemptLogin()" style="width:100%; padding: 16px; font-size:1.1rem;">로그인</button>
         </div>
     </div>
 
@@ -143,7 +233,7 @@
                 <div class="grid-3">
                     <div class="glass-card stat-card"><div class="stat-num" id="sys-academy-count">0</div><div class="stat-label">전체 학원</div></div>
                     <div class="glass-card stat-card"><div class="stat-num" id="sys-revenue">0</div><div class="stat-label">예상 매출</div></div>
-                    <div class="glass-card stat-card"><div class="stat-num" style="color:var(--success);">Good</div><div class="stat-label">상태</div></div>
+                    <div class="glass-card stat-card"><div class="stat-num" style="color:var(--success);">Good</div><div class="stat-label">서버 상태</div></div>
                 </div>
                 <div id="admin-academy-list-view">
                     <div class="glass-card">
@@ -214,7 +304,6 @@
                 
                 <div id="view-student-detail" style="display:none;">
                     <button class="btn btn-sm" onclick="toggleStudentView()" style="margin-bottom:15px; background:white;">&larr; 목록으로 돌아가기</button>
-                    
                     <div class="grid-2">
                         <div class="glass-card">
                             <h2 id="detail-name" style="color:var(--primary)">이름</h2>
@@ -249,7 +338,6 @@
                             <div><h2 id="detail-class-name" style="color:var(--primary); margin:0;">강좌명</h2><span id="detail-class-info" style="color:#666;">시간 | 강의실</span></div>
                         </div>
                         <hr style="opacity:0.2; margin:20px 0;">
-                        
                         <h4>👥 수강생 관리</h4>
                         <div class="input-group" style="background:white; padding:15px; border-radius:15px;">
                             <select id="class-add-std-select" style="flex:1;"><option>추가할 학생 선택</option></select>
@@ -258,13 +346,11 @@
                         <div class="table-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 30px;">
                             <table><thead><tr><th>이름</th><th>연락처</th><th>관리</th></tr></thead><tbody id="class-student-list-body"></tbody></table>
                         </div>
-
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <h4>📅 수업 차시 (출석/과제)</h4>
                             <button class="btn btn-primary btn-sm" onclick="addSession()">+ 차시 추가</button>
                         </div>
-                        <div id="session-list-area" class="session-list">
-                            </div>
+                        <div id="session-list-area" class="session-list"></div>
                     </div>
                 </div>
 
@@ -275,12 +361,10 @@
                             <h2 id="detail-session-name" style="color:var(--primary); margin:0;">N차시</h2>
                             <div id="detail-session-date" style="font-weight:bold; color:#666;"></div>
                         </div>
-                        
                         <div style="margin-bottom:20px;">
                             <label style="font-size:0.9rem; color:var(--text-sub); font-weight:bold;">📝 수업 코멘트 (진도/알림)</label>
                             <textarea id="session-memo" rows="2" style="width:100%; margin-top:5px;" onchange="saveSessionMemo()" placeholder="오늘 수업 내용이나 특이사항을 적어두세요."></textarea>
                         </div>
-
                         <div class="table-container">
                             <table>
                                 <thead><tr><th>이름</th><th>출결</th><th>과제 (O/△/X)</th><th>개별 소견</th></tr></thead>
@@ -302,397 +386,257 @@
             <div id="page-payment" class="page"><div class="glass-card"><h3>💳 수납 관리</h3><div class="table-container"><table><thead><tr><th>원생</th><th>청구액 (수정)</th><th>상태</th><th>기능</th></tr></thead><tbody id="payment-list-body"></tbody></table></div></div></div>
             <div id="page-sms" class="page"><div class="glass-card"><h3>📨 문자 발송</h3><div style="background:white; padding:20px; border-radius:20px;"><input type="text" id="sms-receiver" placeholder="수신번호" style="width:100%; margin-bottom:10px;"><textarea id="sms-content" rows="8" placeholder="내용" style="width:100%; margin-bottom:15px;"></textarea><button class="btn btn-primary" onclick="sendSMS()" style="width:100%; height:50px;">전송하기</button></div></div></div>
             <div id="page-staff" class="page"><div class="glass-card"><h3>🧑‍🏫 직원 관리</h3><div class="input-group"><input type="text" id="stf-name" placeholder="이름"><select id="stf-role"><option value="강사">강사</option><option value="데스크">데스크</option></select><input type="text" id="stf-id" placeholder="ID"><input type="password" id="stf-pw" placeholder="PW"><button class="btn btn-primary" onclick="addStaff()">등록</button></div><div class="table-container"><table><thead><tr><th>이름</th><th>직책</th><th>ID</th><th>관리</th></tr></thead><tbody id="staff-list-body"></tbody></table></div></div></div>
-            <div id="page-settings" class="page"><div class="glass-card"><h3>💾 데이터 백업</h3><div style="display:flex; gap:10px;"><button class="btn btn-primary" onclick="backupData()">백업 다운로드</button><button class="btn btn-success" onclick="document.getElementById('restore-file').click()">복구 파일 열기</button><input type="file" id="restore-file" style="display:none" onchange="restoreData(this)" accept=".json"></div></div></div>
-
+            <div id="page-settings" class="page"><div class="glass-card"><h3>💾 데이터 관리</h3><div style="display:flex; gap:10px;"><button class="btn btn-primary" onclick="backupData()">백업 다운로드</button><button class="btn btn-success" onclick="document.getElementById('restore-file').click()">복구 파일 열기</button><input type="file" id="restore-file" style="display:none" onchange="restoreData(this)" accept=".json"></div></div></div>
         </main>
     </div>
     <div class="toast" id="toast">알림</div>
 
     <script>
-        <script type="module">
-    // 1. 필요한 Firebase 기능 가져오기 (버전 12.7.0)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
-    // 2. 원장님의 전용 열쇠 (방금 주신 것 그대로 넣었습니다)
-    const firebaseConfig = {
-        apiKey: "AIzaSyATEDztq6rh6W4GKXj9uzilfFK8XiUIEO8",
-        authDomain: "maniaca-db.firebaseapp.com",
-        // 싱가포르(asia-southeast1) 서버 확인됨! 아주 좋습니다.
-        databaseURL: "https://maniaca-db-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "maniaca-db",
-        storageBucket: "maniaca-db.firebasestorage.app",
-        messagingSenderId: "706749861772",
-        appId: "1:706749861772:web:b3953509595644851a50a9",
-        measurementId: "G-HS42S3XM4Z"
-    };
-
-    // 3. Firebase 시작 및 데이터베이스 연결
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // 4. 데이터 저장소(DB) 변수 초기화 (전역 변수 window.DB 사용)
-    // 초기 로딩 시 빈 껍데기를 만들고, 아래 onValue에서 진짜 데이터를 채워 넣습니다.
-    window.DB = {
-        users: [{ id: 'admin', pw: 'admin1234', name: '관리자', role: 'admin', school: 'System' }],
-        students: [], classes: [], counseling: [], scores: []
-    };
-
-    // 5. [저장 기능] 내 컴퓨터의 데이터를 클라우드로 쏘는 함수
-    window.saveDB = function() {
-        set(ref(db, 'maniaca_data'), window.DB)
-            .then(() => { console.log("☁️ 클라우드 저장 성공!"); })
-            .catch((error) => { 
-                console.error("저장 실패:", error); 
-                alert("데이터 저장 중 오류가 발생했습니다: " + error.message);
-            });
-    };
-
-    // 6. [동기화 기능] 클라우드 데이터가 바뀌면 내 화면도 바꾸는 함수 (0.1초 반응)
-    const dbRef = ref(db, 'maniaca_data');
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            // 가져온 데이터로 내 DB 덮어쓰기
-            window.DB = data;
-            
-            // 데이터가 비어있는 배열들을 안전하게 초기화 (오류 방지)
-            if(!window.DB.students) window.DB.students = [];
-            if(!window.DB.classes) window.DB.classes = [];
-            if(!window.DB.counseling) window.DB.counseling = [];
-            if(!window.DB.scores) window.DB.scores = [];
-
-            console.log("🔄 데이터 동기화 완료!");
-            
-            // 현재 보고 있는 화면이 있다면 즉시 새로고침 (실시간 반영)
-            if(window.CURRENT_USER) {
-                // 현재 활성화된 탭을 찾아서 다시 렌더링
-                if(document.getElementById('page-students') && document.getElementById('page-students').classList.contains('active')) window.renderStudents();
-                if(document.getElementById('page-classes') && document.getElementById('page-classes').classList.contains('active')) {
-                    if(typeof window.renderClasses === 'function') window.renderClasses();
-                    // 만약 상세화면 보고 있었다면 상세화면 갱신 (선택사항)
-                }
-                if(document.getElementById('page-dashboard') && document.getElementById('page-dashboard').classList.contains('active')) window.renderDirectorDash();
-            }
-        } else {
-            // 처음이라 데이터가 하나도 없으면 초기값 저장
-            console.log("데이터 없음. 초기화 진행.");
-            window.saveDB();
-        }
-    });
-</script>
-
-<script>
-    // --- 기존 스크립트 시작 ---
-    // [중요] 아래에 있던 let DB = ... 부분은 꼭 지우셔야 합니다! (위에서 window.DB로 만들었으니까요)
-    
-    // ... 나머지 로그인(attemptLogin), 각종 기능 함수들은 그대로 두세요 ...
-        // --- 1. DATA ---
-        let DB = {
-            users: JSON.parse(localStorage.getItem('mp_users')) || [{ id: 'admin', pw: 'admin1234', name: '최고관리자', role: 'admin', school: 'System' }, { id: 'director', pw: '1234', name: '김원장', role: 'director', school: '매니아카 본원', isFeePaid: false }],
-            students: JSON.parse(localStorage.getItem('maniaca_students')) || [],
-            classes: JSON.parse(localStorage.getItem('mp_classes')) || [], 
-            counseling: JSON.parse(localStorage.getItem('mp_counseling')) || [],
-            scores: JSON.parse(localStorage.getItem('mp_scores')) || []
-        };
+        // 전역 변수
         let CURRENT_USER = null, CURRENT_ADMIN_SCHOOL = null, selectedStudentIdx = -1, selectedClassIdx = -1, selectedSessionId = -1;
 
-        function saveDB() {
-            localStorage.setItem('mp_users', JSON.stringify(DB.users));
-            localStorage.setItem('maniaca_students', JSON.stringify(DB.students));
-            localStorage.setItem('mp_classes', JSON.stringify(DB.classes));
-            localStorage.setItem('mp_counseling', JSON.stringify(DB.counseling));
-            localStorage.setItem('mp_scores', JSON.stringify(DB.scores));
-        }
-
-        // --- 2. Auth & Core ---
+        // 1. Auth & Initial Load (자동로그인 포함)
         window.onload = function() {
             const savedUserId = localStorage.getItem('mp_current_user_id');
-            if (savedUserId) {
-                const user = DB.users.find(u => u.id === savedUserId);
-                if (user) { CURRENT_USER = user; document.getElementById('login-screen').style.display='none'; document.getElementById('app-container').classList.add('active'); initUI(); }
-            }
+            // Firebase 로딩 지연 고려하여 재시도
+            const checkDB = setInterval(() => {
+                if (window.DB && window.DB.users) {
+                    clearInterval(checkDB);
+                    if (savedUserId) {
+                        const user = window.DB.users.find(u => u.id === savedUserId);
+                        if (user) { 
+                            CURRENT_USER = user; 
+                            document.getElementById('login-screen').style.display='none'; 
+                            document.getElementById('app-container').classList.add('active'); 
+                            initUI(); 
+                        }
+                    }
+                }
+            }, 500); // 0.5초마다 체크
         };
+
         function attemptLogin() {
-            const id = document.getElementById('login-id').value, pw = document.getElementById('login-pw').value, user = DB.users.find(u => u.id === id && u.pw === pw);
-            if (user) { CURRENT_USER = user; localStorage.setItem('mp_current_user_id', user.id); document.getElementById('login-screen').style.display='none'; document.getElementById('app-container').classList.add('active'); initUI(); } 
-            else { alert('정보 확인'); }
+            const id = document.getElementById('login-id').value, pw = document.getElementById('login-pw').value;
+            if(!window.DB || !window.DB.users) { alert('데이터 서버 연결중...'); return; }
+            const user = window.DB.users.find(u => u.id === id && u.pw === pw);
+            if (user) { 
+                CURRENT_USER = user; 
+                localStorage.setItem('mp_current_user_id', user.id); 
+                document.getElementById('login-screen').style.display='none'; 
+                document.getElementById('app-container').classList.add('active'); 
+                initUI(); 
+            } else { alert('아이디 또는 비밀번호를 확인하세요.'); }
         }
         function logout() { localStorage.removeItem('mp_current_user_id'); location.reload(); }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         function closeSidebarMobile() { document.getElementById('sidebar').classList.remove('open'); }
 
+        // UI Initialize
         function initUI() {
             document.getElementById('profile-name').innerText = CURRENT_USER.name;
             document.getElementById('profile-role').innerText = CURRENT_USER.role==='admin'?'본사':(CURRENT_USER.role==='director'?'원장':CURRENT_USER.role);
             document.getElementById('avatar-initial').innerText = CURRENT_USER.name[0];
             const nav = document.getElementById('sidebar-nav'); nav.innerHTML = '';
+            
             if (CURRENT_USER.role === 'admin') {
-                nav.innerHTML += `<li class="nav-item"><button class="nav-btn active" onclick="nav('page-admin-dash')"><i class="ph ph-chart-pie-slice"></i> 시스템</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-settings')"><i class="ph ph-gear"></i> 데이터</button></li>`;
-                renderAdminDash();
+                nav.innerHTML += `<li class="nav-item"><button class="nav-btn active" onclick="nav('page-admin-dash')"><i class="ph ph-chart-pie-slice"></i> 시스템 관리</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-settings')"><i class="ph ph-gear"></i> 데이터 백업</button></li>`;
+                window.renderAdminDash();
             } else {
                 document.getElementById('dash-school-name').innerText = CURRENT_USER.school;
-                nav.innerHTML += `<li class="nav-item"><button class="nav-btn active" onclick="nav('page-dashboard')"><i class="ph ph-house"></i> 대시보드</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-students')"><i class="ph ph-student"></i> 원생/상담</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-classes')"><i class="ph ph-chalkboard-teacher"></i> 강좌/출석</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-scores')"><i class="ph ph-exam"></i> 성적</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-payment')"><i class="ph ph-credit-card"></i> 수납</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-sms')"><i class="ph ph-envelope"></i> 문자</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-staff')"><i class="ph ph-users"></i> 직원</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-settings')"><i class="ph ph-gear"></i> 데이터</button></li>`;
-                renderDirectorDash();
+                nav.innerHTML += `<li class="nav-item"><button class="nav-btn active" onclick="nav('page-dashboard')"><i class="ph ph-house"></i> 대시보드</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-students')"><i class="ph ph-student"></i> 원생/상담</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-classes')"><i class="ph ph-chalkboard-teacher"></i> 강좌/출석</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-scores')"><i class="ph ph-exam"></i> 성적 관리</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-payment')"><i class="ph ph-credit-card"></i> 수납 관리</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-sms')"><i class="ph ph-envelope"></i> 문자 센터</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-staff')"><i class="ph ph-users"></i> 직원 관리</button></li><li class="nav-item"><button class="nav-btn" onclick="nav('page-settings')"><i class="ph ph-gear"></i> 데이터 관리</button></li>`;
+                window.renderDirectorDash();
             }
         }
+
         function nav(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active');
             closeSidebarMobile();
             
-            // 탭 전환시 상세뷰가 켜져있으면 목록으로 강제 복귀
-            if(pageId==='page-students') {
+            if(pageId==='page-students') { 
                 document.getElementById('view-student-list').style.display='block'; 
-                document.getElementById('view-student-detail').style.display='none';
-                renderStudents();
+                document.getElementById('view-student-detail').style.display='none'; 
+                window.renderStudents(); 
             }
-            if(pageId==='page-classes'){toggleClassView('list');renderClasses();} 
-            if(pageId==='page-payment')renderPayments(); 
-            if(pageId==='page-staff')renderStaff(); 
-            if(pageId==='page-scores')renderScores();
+            if(pageId==='page-classes'){ toggleClassView('list'); window.renderClasses(); } 
+            if(pageId==='page-payment') window.renderPayments(); 
+            if(pageId==='page-staff') window.renderStaff(); 
+            if(pageId==='page-scores') window.renderScores();
         }
 
-        // --- 3. 핵심 기능 (관리자 등) ---
-        function renderAdminDash(){ const l=document.getElementById('admin-academy-table-body');l.innerHTML='';DB.users.filter(u=>u.role==='director').forEach(ac=>{l.innerHTML+=`<tr><td><a href="#" style="color:var(--primary);font-weight:bold;" onclick="openAcademyDetail('${ac.school}')">${ac.school}</a></td><td>${ac.name}</td><td>${ac.isFeePaid?'완납':'미납'}</td><td>-</td></tr>`}); }
-        function addAcademy(){ const n=document.getElementById('new-ac-name').value,d=document.getElementById('new-ac-dir').value,i=document.getElementById('new-ac-id').value,p=document.getElementById('new-ac-pw').value; if(!i)return; DB.users.push({id:i,pw:p,name:d,role:'director',school:n,isFeePaid:false}); saveDB(); renderAdminDash(); showToast('완료'); }
-        function openAcademyDetail(n){ CURRENT_ADMIN_SCHOOL=n; document.getElementById('admin-academy-list-view').style.display='none'; document.getElementById('admin-academy-detail-view').style.display='block'; document.getElementById('detail-school-name').innerText=n; const b=document.getElementById('admin-academy-users-body');b.innerHTML='';DB.users.filter(u=>u.school===n).forEach(u=>{b.innerHTML+=`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.id}</td><td>${u.pw}</td><td>-</td></tr>`}); }
-        function closeAcademyDetail(){ document.getElementById('admin-academy-list-view').style.display='block'; document.getElementById('admin-academy-detail-view').style.display='none'; }
-        function toggleAdminAddUserForm(){ const f=document.getElementById('admin-user-add-form'); f.style.display=f.style.display==='none'?'block':'none'; }
-        function submitAdminAddUser(){ const n=document.getElementById('admin-new-user-name').value,r=document.getElementById('admin-new-user-role').value,i=document.getElementById('admin-new-user-id').value,p=document.getElementById('admin-new-user-pw').value; if(!n)return; DB.users.push({name:n,role:r,id:i,pw:p,school:CURRENT_ADMIN_SCHOOL}); saveDB(); toggleAdminAddUserForm(); openAcademyDetail(CURRENT_ADMIN_SCHOOL); }
+        // --- Admin Logic ---
+        window.renderAdminDash = function() { 
+            const l=document.getElementById('admin-academy-table-body');l.innerHTML='';
+            window.DB.users.filter(u=>u.role==='director').forEach(ac=>{
+                l.innerHTML+=`<tr><td><a href="#" style="color:var(--primary);font-weight:bold;" onclick="openAcademyDetail('${ac.school}')">${ac.school}</a></td><td>${ac.name}</td><td>${ac.isFeePaid?'완납':'미납'}</td><td><button class="btn btn-sm btn-danger" onclick="deleteAcademy('${ac.id}')">삭제</button></td></tr>`;
+            }); 
+        }
+        // [학원 삭제 기능]
+        window.deleteAcademy = function(id) {
+            if(!confirm("정말 삭제하시겠습니까? (이 학원의 모든 데이터가 사라집니다)")) return;
+            const target = window.DB.users.find(u => u.id === id);
+            if(target) {
+                const schoolName = target.school;
+                window.DB.users = window.DB.users.filter(u => u.school !== schoolName);
+                // 연관 데이터 모두 삭제
+                if(window.DB.students) window.DB.students = window.DB.students.filter(s => s.school !== schoolName);
+                if(window.DB.classes) window.DB.classes = window.DB.classes.filter(c => c.school !== schoolName);
+                if(window.DB.counseling) window.DB.counseling = window.DB.counseling.filter(c => c.school !== schoolName);
+                if(window.DB.scores) window.DB.scores = window.DB.scores.filter(s => s.school !== schoolName);
+                window.saveDB(); window.renderAdminDash(); alert("삭제되었습니다.");
+            }
+        }
+        window.addAcademy = function(){ const n=document.getElementById('new-ac-name').value,d=document.getElementById('new-ac-dir').value,i=document.getElementById('new-ac-id').value,p=document.getElementById('new-ac-pw').value; if(!i)return; window.DB.users.push({id:i,pw:p,name:d,role:'director',school:n,isFeePaid:false}); window.saveDB(); window.renderAdminDash(); showToast('완료'); }
+        window.openAcademyDetail = function(n){ CURRENT_ADMIN_SCHOOL=n; document.getElementById('admin-academy-list-view').style.display='none'; document.getElementById('admin-academy-detail-view').style.display='block'; document.getElementById('detail-school-name').innerText=n; const b=document.getElementById('admin-academy-users-body');b.innerHTML='';window.DB.users.filter(u=>u.school===n).forEach(u=>{b.innerHTML+=`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.id}</td><td>${u.pw}</td><td>-</td></tr>`}); }
+        window.closeAcademyDetail = function(){ document.getElementById('admin-academy-list-view').style.display='block'; document.getElementById('admin-academy-detail-view').style.display='none'; }
+        window.toggleAdminAddUserForm = function(){ const f=document.getElementById('admin-user-add-form'); f.style.display=f.style.display==='none'?'block':'none'; }
+        window.submitAdminAddUser = function(){ const n=document.getElementById('admin-new-user-name').value,r=document.getElementById('admin-new-user-role').value,i=document.getElementById('admin-new-user-id').value,p=document.getElementById('admin-new-user-pw').value; if(!n)return; window.DB.users.push({name:n,role:r,id:i,pw:p,school:CURRENT_ADMIN_SCHOOL}); window.saveDB(); window.toggleAdminAddUserForm(); window.openAcademyDetail(CURRENT_ADMIN_SCHOOL); }
 
-        // --- DIRECTOR & CLASS & SESSION (Major Updates) ---
-        function renderDirectorDash() {
-            const myStudents = DB.students.filter(s => s.school === CURRENT_USER.school);
+        // --- Director Logic ---
+        window.renderDirectorDash = function() {
+            const myStudents = window.DB.students.filter(s => s.school === CURRENT_USER.school);
             document.getElementById('stat-students').innerText = myStudents.length;
-            document.getElementById('stat-classes').innerText = DB.classes.filter(c => c.school === CURRENT_USER.school).length;
+            document.getElementById('stat-classes').innerText = window.DB.classes.filter(c => c.school === CURRENT_USER.school).length;
             const today = new Date().toLocaleDateString();
-            let attCount = 0;
-            myStudents.forEach(s => { if(s.attendanceLog && s.attendanceLog.some(l => l.date === today)) attCount++; });
+            let attCount = 0; 
+            myStudents.forEach(s => { 
+                // 키오스크 or 강좌출석 체크 확인
+                let checked = false;
+                if(s.attendanceLog && s.attendanceLog.some(l => l.date === today)) checked = true;
+                // 강좌별 출석 체크 확인 (세션)
+                window.DB.classes.forEach(c => {
+                    if(c.school === CURRENT_USER.school && c.sessions) {
+                        c.sessions.forEach(sess => {
+                            if(sess.date === today && sess.attendance && sess.attendance[s.id]) checked = true;
+                        });
+                    }
+                });
+                if(checked) attCount++;
+            });
             document.getElementById('stat-attendance').innerText = attCount;
             const tb = document.getElementById('today-schedule-table').querySelector('tbody'); tb.innerHTML='';
-            DB.classes.filter(c => c.school === CURRENT_USER.school).forEach(c=>{tb.innerHTML+=`<tr><td>${c.time}</td><td>${c.name}</td><td>${CURRENT_USER.name}</td><td>${c.room}</td></tr>`});
+            window.DB.classes.filter(c => c.school === CURRENT_USER.school).forEach(c=>{tb.innerHTML+=`<tr><td>${c.time}</td><td>${c.name}</td><td>${CURRENT_USER.name}</td><td>${c.room}</td></tr>`});
         }
 
-        // [Class List]
-        function renderClasses(){ const b=document.getElementById('class-list-body');b.innerHTML='';DB.classes.filter(c=>c.school===CURRENT_USER.school).forEach(c=>{const idx=DB.classes.indexOf(c);b.innerHTML+=`<tr><td><span style="font-weight:bold;cursor:pointer;color:var(--primary);" onclick="openClassDetail(${idx})">${c.name}</span></td><td>${c.time}</td><td>${c.students?c.students.length:0}명</td><td>${CURRENT_USER.name}</td><td><button class="btn btn-sm btn-danger" onclick="delClass(${idx})">폐강</button></td></tr>`}); }
-        function addClass(){ const n=document.getElementById('cls-name').value,t=document.getElementById('cls-time').value,r=document.getElementById('cls-room').value;if(!n)return;DB.classes.push({school:CURRENT_USER.school,name:n,time:t,room:r,students:[],sessions:[]});saveDB();renderClasses();showToast('완료'); }
-        function delClass(i){ if(confirm('폐강?')){DB.classes.splice(i,1);saveDB();renderClasses();} }
-
-        // [Class Detail]
-        function openClassDetail(i) {
-            selectedClassIdx = i; const cls = DB.classes[i];
+        // --- Class & Session Logic ---
+        window.renderClasses = function(){ const b=document.getElementById('class-list-body');b.innerHTML='';window.DB.classes.filter(c=>c.school===CURRENT_USER.school).forEach(c=>{const idx=window.DB.classes.indexOf(c);b.innerHTML+=`<tr><td><span style="font-weight:bold;cursor:pointer;color:var(--primary);" onclick="openClassDetail(${idx})">${c.name}</span></td><td>${c.time}</td><td>${c.students?c.students.length:0}명</td><td>${CURRENT_USER.name}</td><td><button class="btn btn-sm btn-danger" onclick="delClass(${idx})">폐강</button></td></tr>`}); }
+        window.addClass = function(){ const n=document.getElementById('cls-name').value,t=document.getElementById('cls-time').value,r=document.getElementById('cls-room').value;if(!n)return;window.DB.classes.push({school:CURRENT_USER.school,name:n,time:t,room:r,students:[],sessions:[]});window.saveDB();window.renderClasses();showToast('완료'); }
+        window.delClass = function(i){ if(confirm('폐강?')){window.DB.classes.splice(i,1);window.saveDB();window.renderClasses();} }
+        
+        window.openClassDetail = function(i) {
+            selectedClassIdx = i; const cls = window.DB.classes[i];
             document.getElementById('view-class-list').style.display='none'; document.getElementById('view-class-detail').style.display='block'; document.getElementById('view-session-detail').style.display='none';
             document.getElementById('detail-class-name').innerText=cls.name; document.getElementById('detail-class-info').innerText=`${cls.time} | ${cls.room}`;
-            
             const stdBody = document.getElementById('class-student-list-body'); stdBody.innerHTML='';
-            if(cls.students) cls.students.forEach(sid => { const s=DB.students.find(x=>x.id===sid); if(s) stdBody.innerHTML+=`<tr><td>${s.name}</td><td>${s.phone}</td><td><button class="btn btn-sm btn-danger" onclick="removeStdFromClass('${s.id}')">제외</button></td></tr>`; });
-
-            renderSessionList();
-
+            if(cls.students) cls.students.forEach(sid => { const s=window.DB.students.find(x=>x.id===sid); if(s) stdBody.innerHTML+=`<tr><td>${s.name}</td><td>${s.phone}</td><td><button class="btn btn-sm btn-danger" onclick="removeStdFromClass('${s.id}')">제외</button></td></tr>`; });
+            window.renderSessionList();
             const sel=document.getElementById('class-add-std-select'); sel.innerHTML='<option>학생 선택</option>';
-            DB.students.filter(s=>s.school===CURRENT_USER.school).forEach(s=>{ if(!cls.students||!cls.students.includes(s.id)) { const o=document.createElement('option');o.value=s.id;o.innerText=s.name;sel.appendChild(o); } });
+            window.DB.students.filter(s=>s.school===CURRENT_USER.school).forEach(s=>{ if(!cls.students||!cls.students.includes(s.id)) { const o=document.createElement('option');o.value=s.id;o.innerText=s.name;sel.appendChild(o); } });
         }
-        function toggleClassView(mode) {
+        window.toggleClassView = function(mode) {
             if(mode==='list') { document.getElementById('view-class-list').style.display='block'; document.getElementById('view-class-detail').style.display='none'; document.getElementById('view-session-detail').style.display='none'; }
-            else if(mode==='detail') { document.getElementById('view-class-list').style.display='none'; document.getElementById('view-class-detail').style.display='block'; document.getElementById('view-session-detail').style.display='none'; renderSessionList(); }
+            else if(mode==='detail') { document.getElementById('view-class-list').style.display='none'; document.getElementById('view-class-detail').style.display='block'; document.getElementById('view-session-detail').style.display='none'; window.renderSessionList(); }
         }
-        function addStudentToClass(){ const id=document.getElementById('class-add-std-select').value; if(id==='학생 선택')return; const c=DB.classes[selectedClassIdx]; if(!c.students)c.students=[]; c.students.push(id); const s=DB.students.find(st=>st.id===id); if(!s.classes)s.classes=[]; s.classes.push(c.name); saveDB(); openClassDetail(selectedClassIdx); showToast('추가됨'); }
-        function removeStdFromClass(id){ if(confirm('제외?')){const c=DB.classes[selectedClassIdx]; c.students=c.students.filter(x=>x!==id); const s=DB.students.find(x=>x.id===id); if(s.classes)s.classes=s.classes.filter(n=>n!==c.name); saveDB(); openClassDetail(selectedClassIdx);} }
+        window.addStudentToClass = function(){ const id=document.getElementById('class-add-std-select').value; if(id==='학생 선택')return; const c=window.DB.classes[selectedClassIdx]; if(!c.students)c.students=[]; c.students.push(id); const s=window.DB.students.find(st=>st.id===id); if(!s.classes)s.classes=[]; s.classes.push(c.name); window.saveDB(); window.openClassDetail(selectedClassIdx); showToast('추가됨'); }
+        window.removeStdFromClass = function(id){ if(confirm('제외?')){const c=window.DB.classes[selectedClassIdx]; c.students=c.students.filter(x=>x!==id); const s=window.DB.students.find(x=>x.id===id); if(s.classes)s.classes=s.classes.filter(n=>n!==c.name); window.saveDB(); window.openClassDetail(selectedClassIdx);} }
 
-        // [Session List]
-        function renderSessionList() {
-            const cls = DB.classes[selectedClassIdx]; const area = document.getElementById('session-list-area'); area.innerHTML='';
+        // [Session Logic]
+        window.renderSessionList = function() {
+            const cls = window.DB.classes[selectedClassIdx]; const area = document.getElementById('session-list-area'); area.innerHTML='';
             if(!cls.sessions) cls.sessions = [];
             cls.sessions.forEach((sess, idx) => {
                 let attendCount = 0; if(sess.attendance) attendCount = Object.keys(sess.attendance).length;
-                area.innerHTML += `
-                <div class="session-card" onclick="openSessionDetail(${idx})">
-                    <div><h4>${sess.name}</h4><span>${sess.date}</span></div>
-                    <div class="status">출석 체크: ${attendCount}명 완료</div>
-                </div>`;
+                area.innerHTML += `<div class="session-card" onclick="openSessionDetail(${idx})"><div><h4>${sess.name}</h4><span>${sess.date}</span></div><div style="font-size:0.8rem;color:var(--primary);margin-top:10px;">체크: ${attendCount}명</div></div>`;
             });
         }
-        function addSession() {
-            const cls = DB.classes[selectedClassIdx];
-            const count = cls.sessions ? cls.sessions.length + 1 : 1;
-            const today = new Date().toLocaleDateString();
-            const name = prompt('차시 이름 입력:', `${count}차시`);
-            if(name) {
-                if(!cls.sessions) cls.sessions = [];
-                cls.sessions.push({ id: Date.now(), name: name, date: today, memo: '', attendance: {}, homework: {}, hwMemo: {} });
-                saveDB(); renderSessionList();
-            }
+        window.addSession = function() {
+            const cls = window.DB.classes[selectedClassIdx]; const count = cls.sessions ? cls.sessions.length + 1 : 1; const today = new Date().toLocaleDateString();
+            const name = prompt('차시 이름:', `${count}차시`);
+            if(name) { if(!cls.sessions) cls.sessions = []; cls.sessions.push({ id: Date.now(), name: name, date: today, memo: '', attendance: {}, homework: {}, hwMemo: {} }); window.saveDB(); window.renderSessionList(); }
         }
-
-        // [Session Detail]
-        function openSessionDetail(sIdx) {
-            selectedSessionId = sIdx; 
-            const cls = DB.classes[selectedClassIdx];
-            const sess = cls.sessions[sIdx];
-            document.getElementById('view-class-detail').style.display='none';
-            document.getElementById('view-session-detail').style.display='block';
-            document.getElementById('detail-session-name').innerText = sess.name;
-            document.getElementById('detail-session-date').innerText = sess.date;
+        window.openSessionDetail = function(sIdx) {
+            selectedSessionId = sIdx; const cls = window.DB.classes[selectedClassIdx]; const sess = cls.sessions[sIdx];
+            document.getElementById('view-class-detail').style.display='none'; document.getElementById('view-session-detail').style.display='block';
+            document.getElementById('detail-session-name').innerText = sess.name; document.getElementById('detail-session-date').innerText = sess.date;
             document.getElementById('session-memo').value = sess.memo || '';
-            renderSessionTable();
+            window.renderSessionTable();
         }
-        function saveSessionMemo() {
-            const cls = DB.classes[selectedClassIdx];
-            cls.sessions[selectedSessionId].memo = document.getElementById('session-memo').value;
-            saveDB();
-        }
-        function renderSessionTable() {
-            const cls = DB.classes[selectedClassIdx];
-            const sess = cls.sessions[selectedSessionId];
-            const tbody = document.getElementById('session-check-body'); tbody.innerHTML='';
+        window.saveSessionMemo = function() { const cls = window.DB.classes[selectedClassIdx]; cls.sessions[selectedSessionId].memo = document.getElementById('session-memo').value; window.saveDB(); }
+        window.renderSessionTable = function() {
+            const cls = window.DB.classes[selectedClassIdx]; const sess = cls.sessions[selectedSessionId]; const tbody = document.getElementById('session-check-body'); tbody.innerHTML='';
             if(!cls.students || cls.students.length===0) { tbody.innerHTML='<tr><td colspan="4">수강생 없음</td></tr>'; return; }
             cls.students.forEach(stdId => {
-                const s = DB.students.find(st => st.id === stdId);
-                if(!s) return;
+                const s = window.DB.students.find(st => st.id === stdId); if(!s) return;
                 const attStat = sess.attendance && sess.attendance[stdId] ? sess.attendance[stdId] : '';
                 const hwStat = sess.homework && sess.homework[stdId] ? sess.homework[stdId] : '';
                 const hwNote = sess.hwMemo && sess.hwMemo[stdId] ? sess.hwMemo[stdId] : '';
                 const p=attStat==='출석'?'selected':'', l=attStat==='지각'?'selected':'', e=attStat==='조퇴'?'selected':'', a=attStat==='결석'?'selected':'', m=attStat==='보강'?'selected':'';
                 const hO=hwStat==='O'?'O':'', hT=hwStat==='Tri'?'Tri':'', hX=hwStat==='X'?'X':'';
-                tbody.innerHTML += `<tr>
-                    <td><span style="font-weight:bold;">${s.name}</span></td>
-                    <td>
-                        <div class="att-btn-group">
-                            <div class="att-btn att-present ${p}" onclick="setSessionAtt('${stdId}', '출석')">출</div>
-                            <div class="att-btn att-late ${l}" onclick="setSessionAtt('${stdId}', '지각')">지</div>
-                            <div class="att-btn att-leave ${e}" onclick="setSessionAtt('${stdId}', '조퇴')">조</div>
-                            <div class="att-btn att-absent ${a}" onclick="setSessionAtt('${stdId}', '결석')">결</div>
-                            <div class="att-btn att-makeup ${m}" onclick="setSessionAtt('${stdId}', '보강')">보</div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="att-btn-group">
-                            <div class="hw-btn ${hO}" onclick="setSessionHw('${stdId}', 'O')">O</div>
-                            <div class="hw-btn ${hT}" onclick="setSessionHw('${stdId}', 'Tri')">△</div>
-                            <div class="hw-btn ${hX}" onclick="setSessionHw('${stdId}', 'X')">X</div>
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <span style="font-size:0.8rem; color:#666;">${hwNote}</span>
-                            <button class="btn-icon" onclick="setSessionHwMemo('${stdId}')"><i class="ph-bold ph-pencil-simple"></i></button>
-                        </div>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td><span style="font-weight:bold;">${s.name}</span></td><td><div class="att-btn-group"><div class="att-btn att-present ${p}" onclick="setSessionAtt('${stdId}', '출석')">출</div><div class="att-btn att-late ${l}" onclick="setSessionAtt('${stdId}', '지각')">지</div><div class="att-btn att-leave ${e}" onclick="setSessionAtt('${stdId}', '조퇴')">조</div><div class="att-btn att-absent ${a}" onclick="setSessionAtt('${stdId}', '결석')">결</div><div class="att-btn att-makeup ${m}" onclick="setSessionAtt('${stdId}', '보강')">보</div></div></td><td><div class="att-btn-group"><div class="hw-btn ${hO}" onclick="setSessionHw('${stdId}', 'O')">O</div><div class="hw-btn ${hT}" onclick="setSessionHw('${stdId}', 'Tri')">△</div><div class="hw-btn ${hX}" onclick="setSessionHw('${stdId}', 'X')">X</div></div></td><td><div style="display:flex;align-items:center;gap:5px;"><span style="font-size:0.8rem;">${hwNote}</span><button class="btn-icon" onclick="setSessionHwMemo('${stdId}')"><i class="ph-bold ph-pencil-simple"></i></button></div></td></tr>`;
             });
         }
-        function setSessionAtt(sid, status) {
-            const sess = DB.classes[selectedClassIdx].sessions[selectedSessionId];
-            if(!sess.attendance) sess.attendance = {};
-            sess.attendance[sid] = status;
-            saveDB(); renderSessionTable();
-        }
-        function setSessionHw(sid, status) {
-            const sess = DB.classes[selectedClassIdx].sessions[selectedSessionId];
-            if(!sess.homework) sess.homework = {};
-            if(sess.homework[sid] === status) delete sess.homework[sid]; else sess.homework[sid] = status;
-            saveDB(); renderSessionTable();
-        }
-        function setSessionHwMemo(sid) {
-            const sess = DB.classes[selectedClassIdx].sessions[selectedSessionId];
-            if(!sess.hwMemo) sess.hwMemo = {};
-            const old = sess.hwMemo[sid] || '';
-            const n = prompt('개별 소견:', old);
-            if(n!==null) { sess.hwMemo[sid] = n; saveDB(); renderSessionTable(); }
-        }
+        window.setSessionAtt = function(sid, status) { const sess = window.DB.classes[selectedClassIdx].sessions[selectedSessionId]; if(!sess.attendance) sess.attendance = {}; sess.attendance[sid] = status; window.saveDB(); window.renderSessionTable(); }
+        window.setSessionHw = function(sid, status) { const sess = window.DB.classes[selectedClassIdx].sessions[selectedSessionId]; if(!sess.homework) sess.homework = {}; if(sess.homework[sid] === status) delete sess.homework[sid]; else sess.homework[sid] = status; window.saveDB(); window.renderSessionTable(); }
+        window.setSessionHwMemo = function(sid) { const sess = window.DB.classes[selectedClassIdx].sessions[selectedSessionId]; if(!sess.hwMemo) sess.hwMemo = {}; const old = sess.hwMemo[sid] || ''; const n = prompt('개별 소견:', old); if(n!==null) { sess.hwMemo[sid] = n; window.saveDB(); window.renderSessionTable(); } }
 
-        // [Student Detail - Integration Logic]
-        function getAllStudentLogs(stdId) {
+        // --- Student Detail ---
+        window.getAllStudentLogs = function(stdId) {
             let attLogs = []; let hwLogs = [];
-            const s = DB.students.find(st => st.id === stdId);
+            const s = window.DB.students.find(st => st.id === stdId);
+            // 1. 키오스크/기본 로그
             if(s.attendanceLog) attLogs = [...s.attendanceLog]; 
-            DB.classes.forEach(cls => {
+            // 2. 강좌별 차시 로그
+            window.DB.classes.forEach(cls => {
                 if(cls.sessions) {
                     cls.sessions.forEach(sess => {
-                        if(sess.attendance && sess.attendance[stdId]) {
-                            attLogs.push({ date: sess.date, className: `${cls.name} (${sess.name})`, status: sess.attendance[stdId] });
-                        }
-                        if(sess.homework && sess.homework[stdId]) {
-                            hwLogs.push({ date: sess.date, className: `${cls.name} (${sess.name})`, status: sess.homework[stdId], note: sess.hwMemo?.[stdId]||'' });
-                        }
+                        if(sess.attendance && sess.attendance[stdId]) attLogs.push({ date: sess.date, className: `${cls.name} (${sess.name})`, status: sess.attendance[stdId] });
+                        if(sess.homework && sess.homework[stdId]) hwLogs.push({ date: sess.date, className: `${cls.name} (${sess.name})`, status: sess.homework[stdId], note: sess.hwMemo?.[stdId]||'' });
                     });
                 }
             });
-            attLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
-            hwLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
+            // 날짜순 정렬
+            attLogs.sort((a,b) => new Date(b.date) - new Date(a.date)); hwLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
             return { attLogs, hwLogs };
         }
-
-        function renderStudents(){const b=document.getElementById('student-list-body');b.innerHTML='';const q=document.getElementById('search-student').value.toLowerCase();DB.students.filter(s=>s.school===CURRENT_USER.school&&(s.name.includes(q)||s.id.includes(q))).forEach(s=>{const c=s.classes?s.classes.join(', '):'-',u=!s.paid?'<span style="color:var(--danger)">미납</span>':'완납';b.innerHTML+=`<tr><td onclick="openStudentDetail('${s.id}')" style="cursor:pointer;font-weight:bold;color:var(--primary);">${s.name}</td><td>${c}</td><td>${s.phone}</td><td>${u}</td><td><button class="btn-icon" onclick="prepareSMS('${s.phone}')"><i class="ph-bold ph-envelope-simple"></i></button></td><td><button class="btn btn-sm btn-danger" onclick="delStudent('${s.id}')">삭제</button></td></tr>`;});}
-        function addStudent(){const n=document.getElementById('std-name').value,p=document.getElementById('std-phone').value,i=document.getElementById('std-id').value;if(!n)return;DB.students.push({id:i,name:n,phone:p,school:CURRENT_USER.school,paid:false,fee:250000,attendanceLog:[],homeworkLog:[],classes:[]});saveDB();renderStudents();showToast('완료');}
+        window.renderStudents = function(){const b=document.getElementById('student-list-body');b.innerHTML='';const q=document.getElementById('search-student').value.toLowerCase();window.DB.students.filter(s=>s.school===CURRENT_USER.school&&(s.name.includes(q)||s.id.includes(q))).forEach(s=>{const c=s.classes?s.classes.join(', '):'-',u=!s.paid?'<span style="color:var(--danger)">미납</span>':'완납';b.innerHTML+=`<tr><td onclick="openStudentDetail('${s.id}')" style="cursor:pointer;font-weight:bold;color:var(--primary);">${s.name}</td><td>${c}</td><td>${s.phone}</td><td>${u}</td><td><button class="btn-icon" onclick="prepareSMS('${s.phone}')"><i class="ph-bold ph-envelope-simple"></i></button></td><td><button class="btn btn-sm btn-danger" onclick="delStudent('${s.id}')">삭제</button></td></tr>`;});}
+        window.addStudent = function(){const n=document.getElementById('std-name').value,p=document.getElementById('std-phone').value,i=document.getElementById('std-id').value;if(!n)return;window.DB.students.push({id:i,name:n,phone:p,school:CURRENT_USER.school,paid:false,fee:250000,attendanceLog:[],homeworkLog:[],classes:[]});window.saveDB();window.renderStudents();showToast('완료');}
         
-        function openStudentDetail(stdId){
+        window.openStudentDetail = function(stdId){
             document.getElementById('view-student-list').style.display='none';document.getElementById('view-student-detail').style.display='block';
-            const s=DB.students.find(x=>x.id===stdId); selectedStudentIdx=stdId;
+            const s=window.DB.students.find(x=>x.id===stdId); selectedStudentIdx=stdId;
             document.getElementById('detail-name').innerText=s.name; document.getElementById('detail-info').innerText=`${s.phone} | No.${s.id}`;
             document.getElementById('counsel-date').value=new Date().toISOString().substring(0,10);
-            renderCounselingLog(s.id); renderScoreAnalysis(s.id);
-            const logs = getAllStudentLogs(stdId);
-            renderIntegratedAttLog(logs.attLogs);
-            renderIntegratedHwLog(logs.hwLogs);
+            window.renderCounselingLog(s.id); window.renderScoreAnalysis(s.id);
+            const logs = window.getAllStudentLogs(stdId); window.renderIntegratedAttLog(logs.attLogs); window.renderIntegratedHwLog(logs.hwLogs);
         }
+        window.toggleStudentView = function() { document.getElementById('view-student-list').style.display='block'; document.getElementById('view-student-detail').style.display='none'; selectedStudentIdx=-1; }
         
-        // [FIXED] 목록으로 돌아가기 기능
-        function toggleStudentView() { 
-            document.getElementById('view-student-list').style.display='block'; 
-            document.getElementById('view-student-detail').style.display='none'; 
-            selectedStudentIdx = -1; // 선택 해제
-        }
+        window.renderIntegratedAttLog = function(logs) { const b=document.getElementById('detail-attendance-log'); b.innerHTML=''; if(logs.length===0) { b.innerHTML='<tr><td colspan="3" style="text-align:center">기록 없음</td></tr>'; return; } logs.forEach(l => { let color = l.status==='결석'?'red':(l.status==='지각'?'orange':'green'); b.innerHTML+=`<tr><td>${l.date}</td><td>${l.className||'등원'}</td><td style="color:${color};font-weight:bold;">${l.status||'출석'}</td></tr>`; }); }
+        window.renderIntegratedHwLog = function(logs) { const area = document.getElementById('homework-analysis-area'); if(logs.length===0) { area.innerHTML='<div style="color:#aaa;text-align:center;">기록 없음</div>'; return; } let score=0; logs.forEach(l=>{if(l.status==='O')score+=100;else if(l.status==='Tri')score+=50;}); const avg = (score/logs.length).toFixed(0); let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div><span style="font-size:0.8rem;">과제 수행도</span> <span style="font-size:1.5rem;font-weight:800;color:var(--primary);">${avg}점</span></div></div><div style="max-height:150px;overflow-y:auto;"><table style="font-size:0.9rem;"><thead><tr><th>날짜</th><th>강좌</th><th>상태</th><th>소견</th></tr></thead><tbody>`; logs.forEach(l=>{ let b=l.status==='O'?'<span style="color:#059669">⭕</span>':(l.status==='Tri'?'<span style="color:#d97706">🔺</span>':'<span style="color:#dc2626">❌</span>'); html+=`<tr><td>${l.date}</td><td>${l.className}</td><td>${b}</td><td>${l.note}</td></tr>`; }); html+='</tbody></table></div>'; area.innerHTML=html; }
 
-        function renderIntegratedAttLog(logs) {
-            const b=document.getElementById('detail-attendance-log'); b.innerHTML='';
-            if(logs.length===0) { b.innerHTML='<tr><td colspan="3" style="text-align:center">기록 없음</td></tr>'; return; }
-            logs.forEach(l => {
-                let color = l.status==='결석'?'red':(l.status==='지각'?'orange':'green');
-                b.innerHTML+=`<tr><td>${l.date}</td><td>${l.className||'등원'}</td><td style="color:${color};font-weight:bold;">${l.status||'출석'}</td></tr>`;
-            });
-        }
-        function renderIntegratedHwLog(logs) {
-            const area = document.getElementById('homework-analysis-area');
-            if(logs.length===0) { area.innerHTML='<div style="color:#aaa;text-align:center;">기록 없음</div>'; return; }
-            
-            let score=0; logs.forEach(l=>{if(l.status==='O')score+=100;else if(l.status==='Tri')score+=50;});
-            const avg = (score/logs.length).toFixed(0);
-            
-            let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div><span style="font-size:0.8rem;">수행도</span> <span style="font-size:1.5rem;font-weight:800;color:var(--primary);">${avg}점</span></div></div><div style="max-height:150px;overflow-y:auto;"><table style="font-size:0.9rem;"><thead><tr><th>날짜</th><th>강좌</th><th>상태</th><th>소견</th></tr></thead><tbody>`;
-            logs.forEach(l=>{
-                let b=l.status==='O'?'<span style="color:#059669">⭕</span>':(l.status==='Tri'?'<span style="color:#d97706">🔺</span>':'<span style="color:#dc2626">❌</span>');
-                html+=`<tr><td>${l.date}</td><td>${l.className}</td><td>${b}</td><td>${l.note}</td></tr>`;
-            });
-            html+='</tbody></table></div>';
-            area.innerHTML=html;
-        }
-
-        // --- ETC ---
-        function addCounseling(){const c=document.getElementById('counsel-note').value,d=document.getElementById('counsel-date').value;if(!c)return;const s=DB.students.find(x=>x.id===selectedStudentIdx);DB.counseling.push({school:CURRENT_USER.school,stdId:s.id,stdName:s.name,date:d,content:c,writer:CURRENT_USER.name});saveDB();document.getElementById('counsel-note').value='';renderCounselingLog(s.id);showToast('저장됨');}
-        function renderCounselingLog(id){const c=document.getElementById('counseling-history');c.innerHTML='';DB.counseling.filter(x=>x.stdId===id).reverse().forEach((x,i)=>{c.innerHTML+=`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;padding:10px;"><div style="font-weight:bold;color:var(--primary);">📅 ${x.date} <small style="color:#888;">(${x.writer})</small></div><div style="margin-top:5px;">${x.content}</div></div>`});}
-        function renderScoreAnalysis(id){const a=document.getElementById('score-analysis-area');const sc=DB.scores.filter(s=>s.stdId===id);if(sc.length===0){a.innerHTML='기록 없음';return;}let sum=0;sc.forEach(s=>sum+=parseInt(s.score));const avg=(sum/sc.length).toFixed(0);a.innerHTML=`<div style="font-size:1.5rem;font-weight:bold;color:var(--primary);">평균 ${avg}점</div>`;}
-        function renderScores(){const b=document.getElementById('score-list-body');b.innerHTML='';const sel=document.getElementById('score-std-select');if(sel.options.length===1)DB.students.filter(s=>s.school===CURRENT_USER.school).forEach(s=>{const o=document.createElement('option');o.value=s.id;o.innerText=s.name;sel.appendChild(o);});DB.scores.filter(s=>s.school===CURRENT_USER.school).forEach((s,i)=>{b.innerHTML+=`<tr><td>${s.date}</td><td>${s.stdName}</td><td>${s.subject}</td><td>${s.score} <button class="btn-icon" onclick="editScore(${i})">✏️</button></td><td><button class="btn btn-sm btn-danger" onclick="delScore(${i})">삭제</button></td></tr>`});}
-        function addScore(){const id=document.getElementById('score-std-select').value,sc=document.getElementById('score-val').value,sb=document.getElementById('score-subject').value,dt=document.getElementById('score-date').value;if(id==='학생 선택'||!sc)return;const sn=DB.students.find(s=>s.id===id).name;DB.scores.push({school:CURRENT_USER.school,stdId:id,stdName:sn,date:dt,subject:sb,score:sc});saveDB();renderScores();showToast('완료');}
-        function editScore(i){const n=prompt('점수:',DB.scores[i].score);if(n){DB.scores[i].score=n;saveDB();renderScores();}}
-        function delScore(i){if(confirm('삭제?')){DB.scores.splice(i,1);saveDB();renderScores();}}
-        function renderPayments(){const b=document.getElementById('payment-list-body');b.innerHTML='';DB.students.filter(s=>s.school===CURRENT_USER.school).forEach(s=>{b.innerHTML+=`<tr><td>${s.name}</td><td>${s.fee} <button class="btn-icon" onclick="editFee('${s.id}')">✏️</button></td><td>${s.paid?'완납':'미납'}</td><td>${s.paid?'-':`<button class="btn btn-sm btn-primary" onclick="payStudent('${s.id}')">결제</button>`}</td></tr>`});}
-        function payStudent(id){DB.students.find(s=>s.id===id).paid=true;saveDB();renderPayments();}
-        function editFee(id){const s=DB.students.find(s=>s.id===id),n=prompt('금액:',s.fee);if(n){s.fee=parseInt(n);saveDB();renderPayments();}}
-        function renderStaff(){const b=document.getElementById('staff-list-body');b.innerHTML='';DB.users.filter(u=>u.school===CURRENT_USER.school&&u.role!=='director').forEach(u=>{b.innerHTML+=`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.id}</td><td><button class="btn btn-sm btn-danger" onclick="delStaff('${u.id}')">삭제</button></td></tr>`});}
-        function addStaff(){const n=document.getElementById('stf-name').value,r=document.getElementById('stf-role').value,i=document.getElementById('stf-id').value,p=document.getElementById('stf-pw').value;if(!n||!i)return;DB.users.push({name:n,role:r,id:i,pw:p,school:CURRENT_USER.school});saveDB();renderStaff();showToast('완료');}
-        function delStaff(id){if(confirm('삭제?')){DB.users.splice(DB.users.findIndex(u=>u.id===id),1);saveDB();renderStaff();}}
-        function filterUnpaid(){document.getElementById('search-student').value='';const b=document.getElementById('student-list-body');b.innerHTML='';DB.students.filter(s=>s.school===CURRENT_USER.school&&!s.paid).forEach(s=>{b.innerHTML+=`<tr><td>${s.name}</td><td>-</td><td>${s.phone}</td><td style="color:red">미납</td><td>-</td><td>-</td></tr>`});}
-        function backupData(){const a=document.createElement('a');a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(DB));a.download="backup.json";a.click();}
-        function restoreData(i){const r=new FileReader();r.onload=e=>{DB=JSON.parse(e.target.result);saveDB();location.reload();};r.readAsText(i.files[0]);}
-        function downloadExcel(){const d=DB.students.filter(s=>s.school===CURRENT_USER.school).map(s=>({이름:s.name,번호:s.id}));const w=XLSX.utils.json_to_sheet(d),b=XLSX.utils.book_new();XLSX.utils.book_append_sheet(b,w,"Students");XLSX.writeFile(b,"list.xlsx");}
-        function uploadExcel(i){const f=i.files[0],r=new FileReader();r.onload=e=>{const d=new Uint8Array(e.target.result),w=XLSX.read(d,{type:'array'}),s=XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);s.forEach(r=>{DB.students.push({id:String(r['번호']||Math.floor(Math.random()*9000)+1000),name:r['이름'],phone:r['연락처']||'',school:CURRENT_USER.school,paid:false,fee:250000,attendanceLog:[],homeworkLog:[],classes:[]})});saveDB();renderStudents();showToast('완료');};r.readAsArrayBuffer(f);}
-        function delStudent(id){if(confirm('삭제?')){DB.students.splice(DB.students.findIndex(s=>s.id===id),1);saveDB();renderStudents();}}
-        function showToast(m){const t=document.getElementById('toast');t.innerText=m;t.style.opacity=1;t.style.bottom="50px";setTimeout(()=>{t.style.opacity=0;t.style.bottom="30px"},3000);}
-        function prepareSMS(p){nav('page-sms');document.getElementById('sms-receiver').value=p;}
-        function sendSMS(){showToast('전송됨');document.getElementById('sms-content').value='';}
-        window.addEventListener('storage',e=>{if(e.key==='maniaca_students'){DB.students=JSON.parse(e.newValue);if(CURRENT_USER&&document.getElementById('page-dashboard').classList.contains('active'))renderDirectorDash();}});
+        // --- Common ---
+        window.addCounseling = function(){const c=document.getElementById('counsel-note').value,d=document.getElementById('counsel-date').value;if(!c)return;const s=window.DB.students.find(x=>x.id===selectedStudentIdx);window.DB.counseling.push({school:CURRENT_USER.school,stdId:s.id,stdName:s.name,date:d,content:c,writer:CURRENT_USER.name});window.saveDB();document.getElementById('counsel-note').value='';window.renderCounselingLog(s.id);showToast('저장됨');}
+        window.renderCounselingLog = function(id){const c=document.getElementById('counseling-history');c.innerHTML='';window.DB.counseling.filter(x=>x.stdId===id).reverse().forEach((x,i)=>{c.innerHTML+=`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;padding:10px;"><div style="font-weight:bold;color:var(--primary);">📅 ${x.date} <small style="color:#888;">(${x.writer})</small></div><div style="margin-top:5px;">${x.content}</div></div>`});}
+        window.renderScoreAnalysis = function(id){const a=document.getElementById('score-analysis-area');const sc=window.DB.scores.filter(s=>s.stdId===id);if(sc.length===0){a.innerHTML='기록 없음';return;}let sum=0;sc.forEach(s=>sum+=parseInt(s.score));const avg=(sum/sc.length).toFixed(0);a.innerHTML=`<div style="font-size:1.5rem;font-weight:800;color:var(--primary);">평균 ${avg}점</div>`;}
+        window.renderScores = function(){const b=document.getElementById('score-list-body');b.innerHTML='';const sel=document.getElementById('score-std-select');if(sel.options.length===1)window.DB.students.filter(s=>s.school===CURRENT_USER.school).forEach(s=>{const o=document.createElement('option');o.value=s.id;o.innerText=s.name;sel.appendChild(o);});window.DB.scores.filter(s=>s.school===CURRENT_USER.school).forEach((s,i)=>{b.innerHTML+=`<tr><td>${s.date}</td><td>${s.stdName}</td><td>${s.subject}</td><td>${s.score} <button class="btn-icon" onclick="editScore(${i})">✏️</button></td><td><button class="btn btn-sm btn-danger" onclick="delScore(${i})">삭제</button></td></tr>`});}
+        window.addScore = function(){const id=document.getElementById('score-std-select').value,sc=document.getElementById('score-val').value,sb=document.getElementById('score-subject').value,dt=document.getElementById('score-date').value;if(id==='학생 선택'||!sc)return;const sn=window.DB.students.find(s=>s.id===id).name;window.DB.scores.push({school:CURRENT_USER.school,stdId:id,stdName:sn,date:dt,subject:sb,score:sc});window.saveDB();window.renderScores();showToast('완료');}
+        window.editScore = function(i){const n=prompt('점수:',window.DB.scores[i].score);if(n){window.DB.scores[i].score=n;window.saveDB();window.renderScores();}}
+        window.delScore = function(i){if(confirm('삭제?')){window.DB.scores.splice(i,1);window.saveDB();window.renderScores();}}
+        window.renderPayments = function(){const b=document.getElementById('payment-list-body');b.innerHTML='';window.DB.students.filter(s=>s.school===CURRENT_USER.school).forEach(s=>{b.innerHTML+=`<tr><td>${s.name}</td><td>${s.fee} <button class="btn-icon" onclick="editFee('${s.id}')">✏️</button></td><td>${s.paid?'완납':'미납'}</td><td>${s.paid?'-':`<button class="btn btn-sm btn-primary" onclick="payStudent('${s.id}')">결제</button>`}</td></tr>`});}
+        window.payStudent = function(id){window.DB.students.find(s=>s.id===id).paid=true;window.saveDB();window.renderPayments();}
+        window.editFee = function(id){const s=window.DB.students.find(s=>s.id===id),n=prompt('금액:',s.fee);if(n){s.fee=parseInt(n);window.saveDB();window.renderPayments();}}
+        window.renderStaff = function(){const b=document.getElementById('staff-list-body');b.innerHTML='';window.DB.users.filter(u=>u.school===CURRENT_USER.school&&u.role!=='director').forEach(u=>{b.innerHTML+=`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.id}</td><td><button class="btn btn-sm btn-danger" onclick="delStaff('${u.id}')">삭제</button></td></tr>`});}
+        window.addStaff = function(){const n=document.getElementById('stf-name').value,r=document.getElementById('stf-role').value,i=document.getElementById('stf-id').value,p=document.getElementById('stf-pw').value;if(!n||!i)return;window.DB.users.push({name:n,role:r,id:i,pw:p,school:CURRENT_USER.school});window.saveDB();window.renderStaff();showToast('완료');}
+        window.delStaff = function(id){if(confirm('삭제?')){window.DB.users.splice(window.DB.users.findIndex(u=>u.id===id),1);window.saveDB();window.renderStaff();}}
+        window.filterUnpaid = function(){document.getElementById('search-student').value='';const b=document.getElementById('student-list-body');b.innerHTML='';window.DB.students.filter(s=>s.school===CURRENT_USER.school&&!s.paid).forEach(s=>{b.innerHTML+=`<tr><td>${s.name}</td><td>-</td><td>${s.phone}</td><td style="color:red">미납</td><td>-</td><td>-</td></tr>`});}
+        window.backupData = function(){const a=document.createElement('a');a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(window.DB));a.download="backup.json";a.click();}
+        window.restoreData = function(i){const r=new FileReader();r.onload=e=>{window.DB=JSON.parse(e.target.result);window.saveDB();location.reload();};r.readAsText(i.files[0]);}
+        window.downloadExcel = function(){const d=window.DB.students.filter(s=>s.school===CURRENT_USER.school).map(s=>({이름:s.name,번호:s.id}));const w=XLSX.utils.json_to_sheet(d),b=XLSX.utils.book_new();XLSX.utils.book_append_sheet(b,w,"Students");XLSX.writeFile(b,"list.xlsx");}
+        window.uploadExcel = function(i){const f=i.files[0],r=new FileReader();r.onload=e=>{const d=new Uint8Array(e.target.result),w=XLSX.read(d,{type:'array'}),s=XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]]);s.forEach(r=>{window.DB.students.push({id:String(r['번호']||Math.floor(Math.random()*9000)+1000),name:r['이름'],phone:r['연락처']||'',school:CURRENT_USER.school,paid:false,fee:250000,attendanceLog:[],homeworkLog:[],classes:[]})});window.saveDB();window.renderStudents();showToast('완료');};r.readAsArrayBuffer(f);}
+        window.delStudent = function(id){if(confirm('삭제?')){window.DB.students.splice(window.DB.students.findIndex(s=>s.id===id),1);window.saveDB();window.renderStudents();}}
+        window.showToast = function(m){const t=document.getElementById('toast');t.innerText=m;t.style.opacity=1;t.style.bottom="50px";setTimeout(()=>{t.style.opacity=0;t.style.bottom="30px"},3000);}
+        window.prepareSMS = function(p){window.nav('page-sms');document.getElementById('sms-receiver').value=p;}
+        window.sendSMS = function(){window.showToast('전송됨');document.getElementById('sms-content').value='';}
     </script>
 </body>
 </html>
