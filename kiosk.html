@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Maniaca Kiosk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Glassmorphism System (관리자 페이지와 통일) */
+        :root {
+            --primary: #6366f1;
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --white-alpha: rgba(255, 255, 255, 0.9);
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            font-family: 'Pretendard', sans-serif;
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            background-size: 400% 400%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .kiosk-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 40px;
+            padding: 50px;
+            width: 600px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        #clock {
+            font-size: 2.5rem;
+            font-weight: 200;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 등하원 모드 스위치 */
+        .mode-switch {
+            display: flex;
+            background: rgba(0,0,0,0.15);
+            border-radius: 20px;
+            padding: 5px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .mode-btn.active {
+            background: var(--white-alpha);
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 입력 화면 */
+        .input-area {
+            background: var(--white-alpha);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 10px 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #status-msg { color: #555; font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; }
+        #input-display {
+            color: #333;
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            height: 60px;
+            line-height: 60px;
+        }
+
+        /* 키패드 */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .key {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            padding: 30px 0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .key:active { background: rgba(255,255,255,0.5); transform: scale(0.95); }
+        .key-clear { background: rgba(239, 68, 68, 0.6); }
+        .key-enter { background: rgba(16, 185, 129, 0.8); }
+
+        /* 알림 */
+        .toast {
+            position: fixed; top: 15%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(255,255,255,0.95); color: #1e293b; padding: 25px 50px;
+            border-radius: 50px; font-size: 1.8rem; font-weight: 800;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .logo { position: absolute; bottom: 30px; font-size: 1rem; opacity: 0.6; font-weight: 300; }
+    </style>
+</head>
+<body>
+
+    <div class="kiosk-container">
+        <div id="clock">00:00</div>
+        
+        <div class="mode-switch">
+            <button class="mode-btn active" id="btn-in" onclick="setMode('등원')">☀️ 등원 (입실)</button>
+            <button class="mode-btn" id="btn-out" onclick="setMode('하원')">🌙 하원 (퇴실)</button>
+        </div>
+
+        <div class="input-area">
+            <div id="status-msg">고유번호를 입력해주세요</div>
+            <div id="input-display"></div>
+        </div>
+
+        <div class="keypad">
+            <button class="key" onclick="press('1')">1</button>
+            <button class="key" onclick="press('2')">2</button>
+            <button class="key" onclick="press('3')">3</button>
+            <button class="key" onclick="press('4')">4</button>
+            <button class="key" onclick="press('5')">5</button>
+            <button class="key" onclick="press('6')">6</button>
+            <button class="key" onclick="press('7')">7</button>
+            <button class="key" onclick="press('8')">8</button>
+            <button class="key" onclick="press('9')">9</button>
+            <button class="key key-clear" onclick="clearInput()">C</button>
+            <button class="key" onclick="press('0')">0</button>
+            <button class="key key-enter" onclick="submit()">확인</button>
+        </div>
+    </div>
+
+    <div class="logo">Maniaca Smart Kiosk</div>
+    <div id="toast" class="toast">✅ 인증 성공</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // ★★★ 선생님의 Firebase Config (그대로 유지) ★★★
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
+            authDomain: "maniaca-965fa.firebaseapp.com",
+            databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "maniaca-965fa",
+            storageBucket: "maniaca-965fa.firebasestorage.app",
+            messagingSenderId: "24110097950",
+            appId: "1:24110097950:web:c90fe8736b29a8b787300f",
+            measurementId: "G-CDGPKJLT8B"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- 전역 변수 ---
+        let currentInput = "";
+        let currentMode = "등원";
+        let studentsList = []; 
+
+        // 1. 초기화 및 DB 동기화
+        window.onload = function() {
+            startClock();
+            // 학생 목록 실시간 로드
+            onValue(ref(db, 'students'), (snapshot) => {
+                const data = snapshot.val();
+                studentsList = [];
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        let s = data[key];
+                        s.key = key; 
+                        studentsList.push(s);
+                    });
+                }
+                console.log("학생 데이터 동기화 완료:", studentsList.length + "명");
+            });
+        };
+
+        // 2. 시계
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }, 1000);
+        }
+
+        // 3. UI 조작 함수들
+        window.setMode = (mode) => {
+            currentMode = mode;
+            document.getElementById('btn-in').className = mode === '등원' ? 'mode-btn active' : 'mode-btn';
+            document.getElementById('btn-out').className = mode === '하원' ? 'mode-btn active' : 'mode-btn';
+            // 안내 문구 수정: "고유번호" 강조
+            document.getElementById('status-msg').innerText = mode === '등원' ? "반가워요! 고유번호를 입력하세요." : "고생했어요! 고유번호를 입력하세요.";
+            clearInput();
+        };
+
+        window.press = (num) => {
+            if (currentInput.length < 10) { // 고유번호 길이에 따라 조절 가능
+                currentInput += num;
+                updateDisplay();
+            }
+        };
+
+        window.clearInput = () => {
+            currentInput = "";
+            updateDisplay();
+        };
+
+        function updateDisplay() {
+            document.getElementById('input-display').innerText = currentInput;
+        }
+
+        window.submit = () => {
+            if (currentInput.length < 1) {
+                showToast("❌ 번호를 입력해주세요");
+                return;
+            }
+
+            // ★★★ 핵심 수정: 오직 ID(고유번호)가 일치하는 학생만 찾음 ★★★
+            // 기존의 phone.endsWith 로직 제거됨
+            const student = studentsList.find(s => s.id === currentInput);
+
+            if (student) {
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toLocaleTimeString();
+
+                // Firebase 전송
+                push(ref(db, `students/${student.key}/history`), {
+                    date: dateStr,
+                    att: currentMode,
+                    hw: "-",
+                    note: `키오스크 (${timeStr})`
+                }).then(() => {
+                    const msg = currentMode === '등원' ? `${student.name} 안녕!` : `${student.name} 잘가!`;
+                    showToast(`✅ ${msg}`);
+                    clearInput();
+                }).catch((err) => {
+                    showToast("⚠️ 통신 오류 발생");
+                    console.error(err);
+                });
+
+            } else {
+                showToast("❌ 등록되지 않은 고유번호입니다");
+                clearInput();
+            }
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>
