@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maniaca Kiosk : 등원 체크</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --slate-900: #0f172a;
+            --slate-100: #f1f5f9;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0; padding: 0;
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .kiosk-container {
+            width: 95%; max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 40px; border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .header h1 { color: white; font-weight: 900; font-size: 2.5rem; margin: 0; }
+        .header p { color: rgba(255, 255, 255, 0.6); margin-top: 5px; font-size: 1.1rem; }
+
+        /* 입력창 스타일 */
+        .display-area {
+            background: white; margin: 30px 0; padding: 20px;
+            border-radius: 20px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #kiosk-input {
+            width: 100%; border: none; background: transparent;
+            font-size: 3.5rem; font-weight: 800; text-align: center;
+            letter-spacing: 15px; color: var(--slate-900);
+        }
+
+        /* 숫자 패드 */
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+
+        .key-btn {
+            aspect-ratio: 1 / 1; background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px; color: white; font-size: 1.8rem; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .key-btn:active { transform: scale(0.9); background: var(--primary); }
+
+        .key-btn.clear { color: #fda4af; }
+        .key-btn.enter { 
+            grid-column: span 3; aspect-ratio: auto; height: 80px;
+            background: var(--primary); color: white; font-size: 1.5rem;
+            margin-top: 10px;
+        }
+
+        /* 결과 화면 팝업 */
+        .result-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary); z-index: 1000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            color: white; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .result-overlay i { font-size: 8rem; margin-bottom: 20px; }
+        .result-overlay h2 { font-size: 3.5rem; font-weight: 900; margin: 0; }
+        .result-overlay p { font-size: 1.5rem; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div class="kiosk-container">
+        <div class="header">
+            <h1>WELCOME</h1>
+            <p>번호 4자리를 입력해주세요</p>
+        </div>
+
+        <div class="display-area">
+            <input type="text" id="kiosk-input" readonly placeholder="----">
+        </div>
+
+        <div class="keypad">
+            <button class="key-btn" onclick="press('1')">1</button>
+            <button class="key-btn" onclick="press('2')">2</button>
+            <button class="key-btn" onclick="press('3')">3</button>
+            <button class="key-btn" onclick="press('4')">4</button>
+            <button class="key-btn" onclick="press('5')">5</button>
+            <button class="key-btn" onclick="press('6')">6</button>
+            <button class="key-btn" onclick="press('7')">7</button>
+            <button class="key-btn" onclick="press('8')">8</button>
+            <button class="key-btn" onclick="press('9')">9</button>
+            <button class="key-btn clear" onclick="press('C')">C</button>
+            <button class="key-btn" onclick="press('0')">0</button>
+            <button class="key-btn clear" onclick="press('B')"><i class="ph-bold ph-backspace"></i></button>
+            <button class="key-btn enter" onclick="submitCheck()">등원 체크하기</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="result-overlay">
+        <i class="ph-fill ph-check-circle" id="res-icon"></i>
+        <h2 id="res-name">홍길동 학생</h2>
+        <p id="res-msg">등원 확인되었습니다!</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+        // --- 🔗 파이어베이스 설정 (관리자용 코드와 똑같아야 연동됩니다!) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyATEDztq6rh6W4GKXj9uzilfFK8XiUIEO8",
+            authDomain: "maniaca-db.firebaseapp.com",
+            databaseURL: "https://maniaca-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "maniaca-db",
+            storageBucket: "maniaca-db.firebasestorage.app",
+            messagingSenderId: "706749861772",
+            appId: "1:706749861772:web:b3953509595644851a50a9",
+            measurementId: "G-HS42S3XM4Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // 로컬 데이터 저장소
+        window.DB = { students: [], classes: [] };
+
+        // 1. 실시간 데이터 동기화 (원장님이 관리자에서 학생 추가하면 즉시 반영됨)
+        onValue(ref(db, 'maniaca_data'), (snap) => {
+            const val = snap.val();
+            if(val) {
+                window.DB = val;
+                // 데이터 보정 (ID를 문자열로 통일)
+                if(window.DB.students) {
+                    window.DB.students.forEach(s => s.id = String(s.id).trim());
+                }
+            }
+        });
+
+        // 2. 숫자패드 버튼 처리
+        const inputEl = document.getElementById('kiosk-input');
+        window.press = (key) => {
+            if(key === 'C') inputEl.value = '';
+            else if(key === 'B') inputEl.value = inputEl.value.slice(0, -1);
+            else if(inputEl.value.length < 4) inputEl.value += key;
+        };
+
+        // 3. 출석 체크 로직 (관리자 DB와 대조)
+        window.submitCheck = () => {
+            const inputVal = inputEl.value.trim();
+            if(inputVal.length < 1) return;
+
+            // 학생 찾기 (ID 매칭)
+            const student = window.DB.students.find(s => String(s.id) === inputVal);
+
+            if(!student) {
+                alert("등록되지 않은 번호입니다. 번호를 다시 확인해주세요!");
+                inputEl.value = '';
+                return;
+            }
+
+            // 오늘 날짜 구하기 (관리자 페이지 차시 날짜와 동일한 형식)
+            const today = new Date().toLocaleDateString();
+            let isFoundTodayClass = false;
+
+            // 해당 학생이 듣는 수업 중 '오늘' 수업이 있는지 확인
+            if(window.DB.classes) {
+                window.DB.classes.forEach(cls => {
+                    // 강좌의 수강생 목록에 학생이 포함되어 있고
+                    if(cls.students && cls.students.includes(student.id)) {
+                        // 강좌에 차시 정보가 있다면
+                        if(cls.sessions) {
+                            cls.sessions.forEach(sess => {
+                                // 오늘 날짜 수업을 찾아서 '출석'으로 변경
+                                if(sess.date === today) {
+                                    if(!sess.attendance) sess.attendance = {};
+                                    sess.attendance[student.id] = '출석';
+                                    isFoundTodayClass = true;
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            // DB 업데이트 및 화면 안내
+            set(ref(db, 'maniaca_data'), window.DB);
+            
+            const msg = isFoundTodayClass ? "반가워요! 등원 확인되었습니다." : "오늘 수업은 없지만 등원 기록을 남겼어요!";
+            showResult(student.name, msg);
+            speak(student.name + " 학생, " + msg);
+            
+            inputEl.value = '';
+        };
+
+        // 팝업 안내 함수
+        function showResult(name, msg) {
+            const screen = document.getElementById('result-screen');
+            document.getElementById('res-name').innerText = name + " 학생";
+            document.getElementById('res-msg').innerText = msg;
+            screen.style.display = 'flex';
+            setTimeout(() => { screen.style.display = 'none'; }, 3000);
+        }
+
+        // 음성 안내 기능 (TTS)
+        function speak(text) {
+            if (window.speechSynthesis) {
+                const utterance = new SynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+    </script>
+
+    <script>
+        // 비모듈 환경용 press 함수 노출
+        const inputEl = document.getElementById('kiosk-input');
+    </script>
+</body>
+</html>
