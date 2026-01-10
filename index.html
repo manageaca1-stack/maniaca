@@ -309,6 +309,84 @@
     <div class="toast" id="toast">알림</div>
 
     <script>
+        <script type="module">
+    // 1. 필요한 Firebase 기능 가져오기 (버전 12.7.0)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+    // 2. 원장님의 전용 열쇠 (방금 주신 것 그대로 넣었습니다)
+    const firebaseConfig = {
+        apiKey: "AIzaSyATEDztq6rh6W4GKXj9uzilfFK8XiUIEO8",
+        authDomain: "maniaca-db.firebaseapp.com",
+        // 싱가포르(asia-southeast1) 서버 확인됨! 아주 좋습니다.
+        databaseURL: "https://maniaca-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "maniaca-db",
+        storageBucket: "maniaca-db.firebasestorage.app",
+        messagingSenderId: "706749861772",
+        appId: "1:706749861772:web:b3953509595644851a50a9",
+        measurementId: "G-HS42S3XM4Z"
+    };
+
+    // 3. Firebase 시작 및 데이터베이스 연결
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 4. 데이터 저장소(DB) 변수 초기화 (전역 변수 window.DB 사용)
+    // 초기 로딩 시 빈 껍데기를 만들고, 아래 onValue에서 진짜 데이터를 채워 넣습니다.
+    window.DB = {
+        users: [{ id: 'admin', pw: 'admin1234', name: '관리자', role: 'admin', school: 'System' }],
+        students: [], classes: [], counseling: [], scores: []
+    };
+
+    // 5. [저장 기능] 내 컴퓨터의 데이터를 클라우드로 쏘는 함수
+    window.saveDB = function() {
+        set(ref(db, 'maniaca_data'), window.DB)
+            .then(() => { console.log("☁️ 클라우드 저장 성공!"); })
+            .catch((error) => { 
+                console.error("저장 실패:", error); 
+                alert("데이터 저장 중 오류가 발생했습니다: " + error.message);
+            });
+    };
+
+    // 6. [동기화 기능] 클라우드 데이터가 바뀌면 내 화면도 바꾸는 함수 (0.1초 반응)
+    const dbRef = ref(db, 'maniaca_data');
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            // 가져온 데이터로 내 DB 덮어쓰기
+            window.DB = data;
+            
+            // 데이터가 비어있는 배열들을 안전하게 초기화 (오류 방지)
+            if(!window.DB.students) window.DB.students = [];
+            if(!window.DB.classes) window.DB.classes = [];
+            if(!window.DB.counseling) window.DB.counseling = [];
+            if(!window.DB.scores) window.DB.scores = [];
+
+            console.log("🔄 데이터 동기화 완료!");
+            
+            // 현재 보고 있는 화면이 있다면 즉시 새로고침 (실시간 반영)
+            if(window.CURRENT_USER) {
+                // 현재 활성화된 탭을 찾아서 다시 렌더링
+                if(document.getElementById('page-students') && document.getElementById('page-students').classList.contains('active')) window.renderStudents();
+                if(document.getElementById('page-classes') && document.getElementById('page-classes').classList.contains('active')) {
+                    if(typeof window.renderClasses === 'function') window.renderClasses();
+                    // 만약 상세화면 보고 있었다면 상세화면 갱신 (선택사항)
+                }
+                if(document.getElementById('page-dashboard') && document.getElementById('page-dashboard').classList.contains('active')) window.renderDirectorDash();
+            }
+        } else {
+            // 처음이라 데이터가 하나도 없으면 초기값 저장
+            console.log("데이터 없음. 초기화 진행.");
+            window.saveDB();
+        }
+    });
+</script>
+
+<script>
+    // --- 기존 스크립트 시작 ---
+    // [중요] 아래에 있던 let DB = ... 부분은 꼭 지우셔야 합니다! (위에서 window.DB로 만들었으니까요)
+    
+    // ... 나머지 로그인(attemptLogin), 각종 기능 함수들은 그대로 두세요 ...
         // --- 1. DATA ---
         let DB = {
             users: JSON.parse(localStorage.getItem('mp_users')) || [{ id: 'admin', pw: 'admin1234', name: '최고관리자', role: 'admin', school: 'System' }, { id: 'director', pw: '1234', name: '김원장', role: 'director', school: '매니아카 본원', isFeePaid: false }],
