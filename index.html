@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maniaca 9.2 Date Fixed</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Design System (v8.5+ 유지) */
+        :root {
+            --primary-50: #eef2ff; --primary-100: #e0e7ff;
+            --primary-500: #6366f1; --primary-600: #4f46e5; --primary-700: #4338ca;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+            --slate-800: #1e293b; --slate-900: #0f172a;
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #3b82f6;
+            --sidebar-width: 300px; --header-height: 80px; --radius-md: 14px; --radius-lg: 24px;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 18px; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--slate-50); color: var(--slate-800); margin: 0; height: 100vh; overflow: hidden; display: flex; line-height: 1.6; }
+
+        /* Layout */
+        #app-root { display: flex; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease; }
+        #app-root.loaded { opacity: 1; }
+        aside { width: var(--sidebar-width); background-color: var(--slate-900); color: white; display: flex; flex-direction: column; border-right: 1px solid var(--slate-800); z-index: 100; transition: transform 0.3s; }
+        .brand-area { height: var(--header-height); display: flex; align-items: center; padding: 0 30px; font-size: 1.5rem; font-weight: 800; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-scroller { flex: 1; overflow-y: auto; padding: 24px 16px; }
+        .nav-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; margin-bottom: 8px; color: var(--slate-400); font-weight: 600; font-size: 1.05rem; border-radius: var(--radius-md); cursor: pointer; transition: 0.2s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
+        .nav-item:hover { background-color: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background-color: var(--primary-600); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .nav-item i { font-size: 1.4rem; }
+        .user-footer { padding: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 14px; background: rgba(0,0,0,0.2); }
+        .user-avatar { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary-500), var(--primary-700)); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; color: white; }
+        .user-info { flex: 1; overflow: hidden; }
+        .user-name { font-size: 1rem; font-weight: 700; color: white; }
+        .logout-btn { background: none; border: none; color: var(--slate-400); cursor: pointer; font-size: 1.2rem; }
+        
+        main { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-body); position: relative; overflow: hidden; }
+        header { height: var(--header-height); background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--slate-200); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 40; }
+        .page-title { font-size: 1.4rem; font-weight: 800; color: var(--slate-800); display: flex; align-items: center; gap: 12px; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 40px; }
+
+        /* Components */
+        .card { background: white; border-radius: var(--radius-lg); padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid var(--slate-200); margin-bottom: 30px; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .card-title { font-size: 1.3rem; font-weight: 800; color: var(--slate-800); margin: 0; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .stat-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px; }
+        .stat-value { font-size: 3rem; font-weight: 900; color: var(--slate-900); margin-bottom: 8px; letter-spacing: -1px; }
+        .stat-label { font-size: 1.1rem; font-weight: 600; color: var(--slate-500); text-transform: uppercase; }
+        
+        .table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--slate-200); }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { text-align: left; padding: 20px; background: var(--slate-50); color: var(--slate-600); font-size: 0.95rem; font-weight: 700; border-bottom: 1px solid var(--slate-200); }
+        td { padding: 20px; font-size: 1.05rem; color: var(--slate-800); border-bottom: 1px solid var(--slate-100); vertical-align: middle; }
+        tr:hover td { background-color: var(--slate-50); }
+        
+        .input-group { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        input, select, textarea { width: 100%; padding: 16px 20px; border: 1px solid var(--slate-300); border-radius: var(--radius-md); font-size: 1.05rem; color: var(--slate-900); background: white; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-600); box-shadow: 0 0 0 4px var(--primary-100); }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 28px; font-size: 1.05rem; font-weight: 700; border-radius: var(--radius-md); border: none; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary-600); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-secondary { background-color: var(--slate-100); color: var(--slate-900); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-sm { padding: 10px 18px; font-size: 0.95rem; border-radius: 10px; }
+        .btn-icon { background: transparent; padding: 10px; border-radius: 50%; color: var(--slate-400); transition: 0.2s; font-size: 1.4rem; }
+        .btn-icon:hover { background-color: var(--slate-100); color: var(--primary-600); }
+
+        /* [TAB MENU] */
+        .tab-menu-container { display: flex; gap: 15px; margin-bottom: 30px; }
+        .tab-menu-btn { flex: 1; padding: 20px; border: 2px solid var(--slate-200); border-radius: var(--radius-lg); background: white; color: var(--slate-500); font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .tab-menu-btn:hover { border-color: var(--primary-100); background: var(--primary-50); color: var(--primary-600); }
+        .tab-menu-btn.active { border-color: var(--primary-600); background: var(--primary-50); color: var(--primary-600); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+
+        /* [BUTTONS - HW] */
+        .hw-btn { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--slate-200); background: white; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1.1rem; cursor: pointer; color: var(--slate-300); transition: 0.15s; margin: 0 4px; flex-shrink: 0; }
+        .hw-btn:hover { transform: scale(1.1); }
+        .hw-btn.O.selected { background: #dcfce7; border-color: var(--success); color: var(--success); }
+        .hw-btn.Tri.selected { background: #fef3c7; border-color: var(--warning); color: #b45309; }
+        .hw-btn.X.selected { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
+
+        /* [BUTTONS - ATT] */
+        .att-btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .att-btn { padding: 10px 16px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; border: 1px solid var(--slate-300); background: white; cursor: pointer; color: var(--slate-500); }
+        .att-btn.selected { color: white; border-color: transparent; transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .att-present.selected { background: var(--success); }
+        .att-late.selected { background: var(--warning); }
+        .att-leave.selected { background: var(--info); }
+        .att-absent.selected { background: var(--danger); }
+        .att-makeup.selected { background: #8b5cf6; }
+
+        /* Modals & Utils */
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal-backdrop.show { display: flex; }
+        .modal { background: white; width: 95%; max-width: 550px; border-radius: var(--radius-lg); padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .modal-title { margin: 0 0 30px 0; font-size: 1.8rem; font-weight: 800; color: var(--slate-900); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 40px; }
+        .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--slate-900); color: white; padding: 16px 32px; border-radius: 50px; font-weight: 700; z-index: 6000; opacity: 0; transition: 0.3s; pointer-events: none; font-size: 1.1rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .toast.show { opacity: 1; bottom: 50px; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: inline-block; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-yellow { background: #fef3c7; color: #92400e; }
+        .reason-text { color: var(--danger); font-size: 0.95rem; font-weight: 700; display: block; margin-top: 6px; }
+
+        /* Login */
+        #login-wrap { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #1e1b4b, #4338ca); z-index: 5000; display: flex; justify-content: center; align-items: center; }
+        .login-box { width: 90%; max-width: 480px; padding: 60px; background: white; border-radius: 30px; box-shadow: 0 30px 60px -12px rgba(0,0,0,0.3); text-align: center; }
+
+        /* Mobile */
+        #mobile-menu-btn { display: none; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--slate-600); }
+        @media (max-width: 1024px) {
+            aside { position: fixed; left: -100%; height: 100%; box-shadow: 10px 0 20px rgba(0,0,0,0.2); }
+            aside.open { left: 0; }
+            #mobile-menu-btn { display: block; margin-right: 15px; }
+            header { padding: 0 20px; }
+            .content-scroll { padding: 20px; }
+            .grid-3, .grid-2 { grid-template-columns: 1fr !important; }
+            .tab-menu-container { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-wrap">
+        <div class="login-box">
+            <div style="font-size:4rem; margin-bottom:10px;">🦄</div>
+            <h1 style="margin:0 0 10px 0; color:var(--slate-900); font-weight:900; font-size:2.5rem;">MANIACA 9.2</h1>
+            <p style="color:var(--slate-500); margin-bottom:40px; font-size:1.2rem;">Date Field Expanded</p>
+            <div class="form-group" style="margin-bottom:20px;"><input type="text" id="login-id" placeholder="아이디" style="background:var(--slate-50); height:60px; font-size:1.2rem;" onkeyup="if(event.key==='Enter') document.getElementById('login-pw').focus()"></div>
+            <div class="form-group" style="margin-bottom:30px;"><input type="password" id="login-pw" placeholder="비밀번호" style="background:var(--slate-50); height:60px; font-size:1.2rem;" onkeyup="if(event.key==='Enter') app.login()"></div>
+            <button class="btn btn-primary" style="width:100%; height:60px; font-size:1.3rem;" onclick="app.login()">로그인</button>
+        </div>
+    </div>
+
+    <div id="app-root" style="display:none; opacity:0;">
+        <aside id="sidebar">
+            <div class="brand-area"><i class="ph-fill ph-student"></i> MANIACA</div>
+            <nav class="nav-scroller" id="nav-list"></nav>
+            <div class="user-footer"><div class="user-avatar" id="current-user-initial">U</div><div class="user-info"><div class="user-name" id="current-user-name">User</div><div class="user-role" id="current-user-role">Role</div></div><button class="logout-btn" onclick="app.logout()"><i class="ph-bold ph-sign-out"></i></button></div>
+        </aside>
+        <main>
+            <header><div class="page-title"><button id="mobile-menu-btn" onclick="app.toggleSidebar()"><i class="ph-bold ph-list"></i></button><span id="header-title">Dashboard</span></div></header>
+            <div class="content-scroll" id="content-area"></div>
+        </main>
+    </div>
+
+    <div id="modal-container"></div>
+    <div class="toast" id="toast">Message</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyATEDztq6rh6W4GKXj9uzilfFK8XiUIEO8", authDomain: "maniaca-db.firebaseapp.com", databaseURL: "https://maniaca-db-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "maniaca-db", storageBucket: "maniaca-db.firebasestorage.app", messagingSenderId: "706749861772", appId: "1:706749861772:web:b3953509595644851a50a9", measurementId: "G-HS42S3XM4Z" };
+        const appInstance = initializeApp(firebaseConfig);
+        const db = getDatabase(appInstance);
+
+        window.DB = { users: [], students: [], classes: [], counseling: [], scores: [], makeup: [], systemLogs: [] };
+        window.CURRENT_USER = null;
+        window.STATE = { stdId: null, viewingClass: null, sessIdx: null };
+
+        window.app = {
+            init: () => {
+                onValue(ref(db, 'maniaca_data'), (snap) => {
+                    const val = snap.val();
+                    if (val) {
+                        window.DB = val;
+                        ['students','classes','counseling','scores','makeup'].forEach(k=>{ if(!window.DB[k]) window.DB[k]=[]; });
+                        window.DB.students.forEach(s => s.id = String(s.id));
+                        window.DB.classes.forEach(c => { if(c.students) c.students = c.students.map(id => String(id)); });
+                        if (window.CURRENT_USER) app.renderCurrentView();
+                    } else { window.DB.users = [{id:'admin',pw:'admin1234',name:'Admin',role:'admin',school:'HQ'}]; app.saveDB(); }
+                });
+                const savedId = localStorage.getItem('mp_uid');
+                if (savedId) {
+                    const check = setInterval(() => { if (window.DB.users.length > 0) { clearInterval(check); const u = window.DB.users.find(x => x.id === savedId); if(u) app.loginSuccess(u); } }, 500);
+                }
+            },
+            login: () => {
+                const id = document.getElementById('login-id').value, pw = document.getElementById('login-pw').value;
+                if(!window.DB.users.length) return alert('Loading...');
+                const user = window.DB.users.find(u => u.id === id && u.pw === pw);
+                if(user) app.loginSuccess(user); else alert('아이디/비번 확인');
+            },
+            loginSuccess: (user) => {
+                window.CURRENT_USER = user; localStorage.setItem('mp_uid', user.id);
+                document.getElementById('login-wrap').style.display = 'none';
+                const root = document.getElementById('app-root'); root.style.display = 'flex'; setTimeout(()=>root.style.opacity=1,100);
+                document.getElementById('current-user-name').innerText = user.name;
+                document.getElementById('current-user-role').innerText = user.role;
+                document.getElementById('current-user-initial').innerText = user.name[0];
+                app.renderNav();
+                app.router(user.role === 'admin' ? 'admin-dash' : 'dashboard');
+            },
+            logout: () => { localStorage.removeItem('mp_uid'); location.reload(); },
+            saveDB: () => { set(ref(db, 'maniaca_data'), window.DB).catch(e => alert(e)); },
+            toast: (msg) => { const el = document.getElementById('toast'); el.innerText = msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000); },
+            toggleSidebar: () => { document.querySelector('aside').classList.toggle('open'); },
+            
+            currentViewId: '',
+            router: (viewId) => {
+                app.currentViewId = viewId;
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                const btn = document.getElementById(`nav-${viewId}`); if(btn) btn.classList.add('active');
+                window.STATE.viewingStudent = null; window.STATE.viewingClass = null; // Reset
+                app.renderCurrentView();
+                document.querySelector('aside').classList.remove('open');
+            },
+            renderNav: () => {
+                const nav = document.getElementById('nav-list'); nav.innerHTML = '';
+                const menu = window.CURRENT_USER.role === 'admin' 
+                    ? [{id:'admin-dash',icon:'ph-shield-check',text:'플랫폼 관리'},{id:'settings',icon:'ph-gear',text:'설정'}]
+                    : [{id:'dashboard',icon:'ph-house',text:'대시보드'},{id:'students',icon:'ph-student',text:'원생 관리'},{id:'classes',icon:'ph-chalkboard-teacher',text:'수업 관리'},{id:'makeup',icon:'ph-clock-counter-clockwise',text:'보강 관리'},{id:'staff',icon:'ph-users',text:'직원 관리'},{id:'settings',icon:'ph-gear',text:'설정'}];
+                menu.forEach(i => {
+                    const btn = document.createElement('button'); btn.className = 'nav-item'; btn.id = `nav-${i.id}`;
+                    btn.innerHTML = `<i class="${i.icon}"></i> ${i.text}`; btn.onclick = () => app.router(i.id);
+                    nav.appendChild(btn);
+                });
+            },
+            renderCurrentView: () => {
+                const con = document.getElementById('content-area');
+                const t = document.getElementById('header-title');
+                const v = app.currentViewId;
+                if(v==='dashboard'){ t.innerText='대시보드'; View.dashboard(con); }
+                else if(v==='students'){ t.innerText='원생 관리'; View.students(con); }
+                else if(v==='classes'){ t.innerText='수업 관리'; View.classes(con); }
+                else if(v==='makeup'){ t.innerText='보강 관리'; View.makeup(con); }
+                else if(v==='staff'){ t.innerText='직원 관리'; View.staff(con); }
+                else if(v==='settings'){ t.innerText='설정'; View.settings(con); }
+                else if(v==='admin-dash'){ t.innerText='관리자 콘솔'; View.admin(con); }
+            }
+        };
+
+        const View = {
+            dashboard: (el) => {
+                const s = window.DB.students.filter(x => x.school === window.CURRENT_USER.school);
+                const today = new Date().toLocaleDateString();
+                let att = 0;
+                window.DB.classes.filter(c=>c.school===window.CURRENT_USER.school).forEach(c => {
+                    c.sessions?.forEach(ss => { if(ss.date === today) Object.values(ss.attendance||{}).forEach(v => { if(v==='출석') att++; }); });
+                });
+                const todos = window.DB.counseling.filter(c => c.school === window.CURRENT_USER.school && c.status === 'upcoming');
+                let h = `<div class="grid-3"><div class="card stat-card"><div class="stat-value">${s.length}</div><div class="stat-label">총 원생</div></div><div class="card stat-card"><div class="stat-value">${att}</div><div class="stat-label">금일 출석</div></div><div class="card stat-card"><div class="stat-value">${todos.length}</div><div class="stat-label">상담 예정</div></div></div>
+                <div class="grid-2"><div class="card"><div class="card-header"><h3 class="card-title">📅 오늘의 수업</h3></div><div class="table-wrap"><table><thead><tr><th>시간</th><th>강좌명</th><th>담당</th></tr></thead><tbody>`;
+                const cls = window.DB.classes.filter(c => c.school === window.CURRENT_USER.school);
+                if(!cls.length) h += `<tr><td colspan="3" style="text-align:center;">수업 없음</td></tr>`;
+                else cls.forEach(c => { h += `<tr><td>${c.time}</td><td><b>${c.name}</b></td><td>${c.teacher}</td></tr>`; });
+                h += `</tbody></table></div></div><div class="card"><div class="card-header"><h3 class="card-title">💬 상담 To-Do</h3></div><ul style="padding-left:20px; color:var(--slate-500);">`;
+                if(!todos.length) h += `<li>예정된 상담 없음</li>`; else todos.forEach(t => { h += `<li style="margin-bottom:8px;"><b>${t.stdName}</b>: ${t.content}</li>`; });
+                h += `</ul></div></div>`; el.innerHTML = h;
+            },
+            students: (el) => {
+                if (!window.STATE.viewingStudent) {
+                    let h = `<div class="card"><div class="card-header"><h3 class="card-title">원생 목록</h3><button class="btn btn-primary btn-sm" onclick="Actions.openModal('addStudent')">+ 등록</button></div>
+                    <div class="input-group"><input type="text" id="search-std" placeholder="검색..." onkeyup="Actions.filterStudent()"></div>
+                    <div class="table-wrap"><table><thead><tr><th>이름</th><th>학교</th><th>연락처</th><th>상태</th><th>관리</th></tr></thead><tbody id="std-list-body">`;
+                    window.DB.students.filter(s => s.school === window.CURRENT_USER.school).forEach(s => {
+                        h += `<tr><td onclick="Actions.viewStudent('${s.id}')" style="cursor:pointer; font-weight:800; color:var(--primary-600);">${s.name}</td><td>${s.schoolName||'-'}</td><td>${s.phone}</td><td>${!s.paid?'<span class="badge badge-red">미납</span>':'<span class="badge badge-green">완납</span>'}</td><td><button class="btn-icon" onclick="Actions.deleteStudent('${s.id}')"><i class="ph-bold ph-trash"></i></button></td></tr>`;
+                    });
+                    h += `</tbody></table></div></div>`; el.innerHTML = h;
+                } else {
+                    const s = window.DB.students.find(x => x.id === window.STATE.viewingStudent);
+                    let h = `<button class="btn btn-secondary btn-sm" style="margin-bottom:20px;" onclick="Actions.closeStudentDetail()">&larr; 목록으로</button>
+                    <div class="card" style="text-align:center; padding:40px;">
+                        <div style="width:100px; height:100px; background:var(--primary-100); color:var(--primary-600); border-radius:50%; display:inline-flex; justify-content:center; align-items:center; font-size:3rem; font-weight:800; margin-bottom:20px;">${s.name[0]}</div>
+                        <h2 style="margin:0; justify-content:center;">${s.name}</h2>
+                        <p style="color:var(--slate-500); font-size:1.1rem;">${s.schoolName} | ${s.phone} | No.${s.id}</p>
+                    </div>
+                    
+                    <div class="tab-menu-container">
+                        <button class="tab-menu-btn active" onclick="Actions.switchTab('score', this)"><i class="ph-bold ph-chart-bar"></i> 성적 리포트</button>
+                        <button class="tab-menu-btn" onclick="Actions.switchTab('att', this)"><i class="ph-bold ph-calendar-check"></i> 월별 출결</button>
+                        <button class="tab-menu-btn" onclick="Actions.switchTab('counsel', this)"><i class="ph-bold ph-chat-circle-text"></i> 상담 일지</button>
+                    </div>
+
+                    <div class="card">
+                        <div id="tab-score" class="tab-content active">
+                            <div class="input-group"><select id="sc-type" style="width:150px;"><option value="academy">학원시험</option><option value="school">학교시험</option></select><input type="text" id="sc-name" placeholder="시험명"><input type="number" id="sc-val" placeholder="점수" style="width:100px;"><input type="date" id="sc-date" style="width:220px;"><button class="btn btn-primary" onclick="Actions.addScore('${s.id}')">추가</button></div>
+                            <div class="table-wrap" style="max-height:300px; margin-bottom:20px;"><table><thead><tr><th>날짜</th><th>구분</th><th>시험</th><th>점수</th></tr></thead><tbody>`;
+                    window.DB.scores.filter(sc=>sc.stdId===s.id).sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(sc=>{ h+=`<tr><td>${sc.date}</td><td>${sc.type}</td><td>${sc.subject}</td><td>${sc.score}</td></tr>`; });
+                    h += `</tbody></table></div><h4>📝 종합 코멘트</h4><textarea id="std-comment" rows="3">${s.reportComment||''}</textarea><button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="Actions.saveComment('${s.id}')">저장</button></div>
+
+                        <div id="tab-att" class="tab-content"><div class="input-group" style="max-width:300px;"><input type="month" id="att-picker" onchange="Actions.renderAtt('${s.id}')"></div><div id="att-list" class="table-wrap"></div></div>
+
+                        <div id="tab-counsel" class="tab-content">
+                            <input type="hidden" id="counsel-edit-id">
+                            <div class="input-group" style="flex-direction:column; align-items:stretch;">
+                                <div style="display:flex; gap:10px;">
+                                    <input type="date" id="counsel-date">
+                                    <select id="counsel-status"><option value="upcoming">예정 (To-Do)</option><option value="done">완료 (Done)</option></select>
+                                </div>
+                                <textarea id="counsel-note" placeholder="상담 내용 기록 (아래 목록에서 보기를 누르면 불러옵니다)" rows="5" style="width:100%; border-radius:12px; border:1px solid #cbd5e1; padding:15px;"></textarea>
+                                <button class="btn btn-primary" id="btn-save-counsel" onclick="Actions.saveCounsel('${s.id}')" style="align-self:flex-end;">저장</button>
+                            </div>
+                            <h4 style="margin-bottom:15px;">📜 상담 목록</h4>
+                            <div id="counsel-history"></div>
+                        </div>
+                    </div>`;
+                    el.innerHTML = h;
+                    setTimeout(() => { Actions.renderAtt(s.id); Actions.renderCounsel(s.id); }, 100);
+                }
+            },
+            classes: (el) => {
+                if (window.STATE.viewingClass === null) {
+                    let h = `<div class="card"><div class="card-header"><h3 class="card-title">강좌 목록</h3><button class="btn btn-primary btn-sm" onclick="Actions.openModal('addClass')">+ 개설</button></div><div class="table-wrap"><table><thead><tr><th>강좌명</th><th>시간</th><th>강사</th><th>인원</th><th>관리</th></tr></thead><tbody>`;
+                    window.DB.classes.filter(c=>c.school===window.CURRENT_USER.school).forEach((c, idx) => {
+                        h += `<tr><td onclick="Actions.viewClass(${idx})" style="cursor:pointer; color:var(--primary-600); font-weight:800;">${c.name}</td><td>${c.time}</td><td>${c.teacher}</td><td>${c.students?c.students.length:0}명</td><td><button class="btn-icon" onclick="Actions.deleteClass(${idx})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button></td></tr>`;
+                    });
+                    h += `</tbody></table></div></div>`; el.innerHTML = h;
+                } else {
+                    const cIdx = window.STATE.viewingClass; const c = window.DB.classes[cIdx];
+                    let h = `<button class="btn btn-secondary btn-sm" style="margin-bottom:20px;" onclick="Actions.closeClassDetail()">&larr; 뒤로</button>
+                    <div class="card"><h2 style="color:var(--primary-600);">${c.name}</h2><div class="input-group" style="background:var(--slate-50); padding:20px; border-radius:12px;"><select id="cls-std-sel" style="flex:1;"><option>학생 추가...</option></select><button class="btn btn-primary" onclick="Actions.addStdToClass(${cIdx})">추가</button></div>
+                    <div class="table-wrap" style="max-height:250px; margin-bottom:30px;"><table><thead><tr><th>이름</th><th>연락처</th><th>삭제</th></tr></thead><tbody>`;
+                    if(c.students) c.students.forEach(sid => { const s = window.DB.students.find(x => x.id === String(sid)); if(s) h += `<tr><td>${s.name}</td><td>${s.phone}</td><td><button class="btn-icon" onclick="Actions.removeStdFromClass(${cIdx}, '${sid}')"><i class="ph-bold ph-x"></i></button></td></tr>`; });
+                    h += `</tbody></table></div><div class="card-header"><h3 class="card-title">📅 수업 차시</h3><button class="btn btn-primary btn-sm" onclick="Actions.openModal('addSession')">+ 차시 추가</button></div><div class="grid-3" id="session-grid">`;
+                    if(c.sessions) c.sessions.forEach((sess, sIdx) => { h += `<div class="card" style="margin:0; cursor:pointer; text-align:center; padding:20px;" onclick="Actions.viewSession(${cIdx}, ${sIdx})"><h4>${sess.name}</h4><span style="color:var(--slate-500);">${sess.date}</span></div>`; });
+                    h += `</div></div>`; el.innerHTML = h;
+                    setTimeout(() => { const sel = document.getElementById('cls-std-sel'); if(sel) window.DB.students.filter(s => s.school === window.CURRENT_USER.school).forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`); }, 100);
+                }
+            },
+            session: (el, cIdx, sIdx) => {
+                const c = window.DB.classes[cIdx]; const s = c.sessions[sIdx];
+                let h = `<button class="btn btn-secondary btn-sm" style="margin-bottom:20px;" onclick="Actions.viewClass(${cIdx})">&larr; 강좌로</button>
+                <div class="card"><h2>${s.name} <small style="font-size:1rem; color:var(--slate-500);">(${s.date})</small></h2><div class="table-wrap"><table><thead><tr><th>이름</th><th>출결</th><th>과제</th></tr></thead><tbody>`;
+                if(!c.students || !c.students.length) h += `<tr><td colspan="3" style="text-align:center;">수강생 없음</td></tr>`;
+                else {
+                    c.students.forEach(sid => {
+                        const std = window.DB.students.find(x => x.id === String(sid)); if(!std) return;
+                        const att = s.attendance?.[sid] || ''; const hw = s.homework?.[sid] || '';
+                        const p=att==='출석'?'selected':'', l=att==='지각'?'selected':'', e=att==='조퇴'?'selected':'', a=att==='결석'?'selected':'', m=att==='보강'?'selected':'';
+                        const hO=hw==='O'?'selected':'', hT=hw==='Tri'?'selected':'', hX=hw==='X'?'selected':'';
+                        h += `<tr><td><b>${std.name}</b></td><td><div class="att-btn-group"><button class="att-btn att-present ${p}" onclick="Actions.setAtt(${cIdx},${sIdx},'${sid}','출석')">출석</button><button class="att-btn att-late ${l}" onclick="Actions.setAtt(${cIdx},${sIdx},'${sid}','지각')">지각</button><button class="att-btn att-leave ${e}" onclick="Actions.setAtt(${cIdx},${sIdx},'${sid}','조퇴')">조퇴</button><button class="att-btn att-absent ${a}" onclick="Actions.setAtt(${cIdx},${sIdx},'${sid}','결석')">결석</button><button class="att-btn att-makeup ${m}" onclick="Actions.setAtt(${cIdx},${sIdx},'${sid}','보강')">보강</button></div></td><td><div class="att-btn-group"><div class="hw-btn O ${hO}" onclick="Actions.setHw(${cIdx},${sIdx},'${sid}','O')">O</div><div class="hw-btn Tri ${hT}" onclick="Actions.setHw(${cIdx},${sIdx},'${sid}','Tri')">△</div><div class="hw-btn X ${hX}" onclick="Actions.setHw(${cIdx},${sIdx},'${sid}','X')">X</div></div></td></tr>`;
+                    });
+                }
+                h += `</tbody></table></div></div>`; el.innerHTML = h;
+            },
+            makeup: (el) => {
+                let h = `<div class="card"><div class="card-header"><h3 class="card-title">보강 관리</h3></div><div class="input-group"><select id="mk-std" style="flex:2;"><option>원생 선택...</option></select><input type="date" id="mk-date" style="flex:1;"><input type="time" id="mk-time" style="flex:1;"><button class="btn btn-primary" onclick="Actions.addMakeup()">잡기</button></div><div class="table-wrap"><table><thead><tr><th>학생</th><th>일시</th><th>상태</th><th>관리</th></tr></thead><tbody>`;
+                const mk = window.DB.makeup.filter(m => { const s = window.DB.students.find(x => x.id === m.stdId); return s && s.school === window.CURRENT_USER.school; });
+                mk.forEach((m, idx) => {
+                    const s = window.DB.students.find(x => x.id === m.stdId);
+                    const reason = m.reason ? `<span class="reason-text">↪ 사유: ${m.reason}</span>` : '';
+                    const checked = m.status === 'done' ? 'checked' : '';
+                    h += `<tr><td><b>${s.name}</b><br>${reason}</td><td>${m.date} ${m.time}</td><td><input type="checkbox" ${checked} onchange="Actions.toggleMakeup(${idx})" style="width:20px; height:20px;"></td><td><button class="btn btn-sm btn-secondary" onclick="Actions.openPostponeModal(${idx})">미루기</button></td></tr>`;
+                });
+                h += `</tbody></table></div></div>`; el.innerHTML = h;
+                setTimeout(() => { const sel = document.getElementById('mk-std'); if(sel) window.DB.students.filter(s => s.school === window.CURRENT_USER.school).forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`); }, 100);
+            },
+            staff: (el) => {
+                let h = `<div class="card"><div class="card-header"><h3 class="card-title">직원 관리</h3></div><div class="input-group"><input type="text" id="stf-name" placeholder="이름"><select id="stf-role"><option value="강사">강사</option><option value="데스크">데스크</option></select><input type="text" id="stf-id" placeholder="ID"><input type="password" id="stf-pw" placeholder="PW"><button class="btn btn-primary" onclick="Actions.addStaff()">등록</button></div><div class="table-wrap"><table><thead><tr><th>이름</th><th>직책</th><th>ID</th><th>삭제</th></tr></thead><tbody>`;
+                window.DB.users.filter(u => u.school === window.CURRENT_USER.school && u.role !== 'director').forEach(u => { h += `<tr><td>${u.name}</td><td>${u.role}</td><td>${u.id}</td><td><button class="btn-icon" onclick="Actions.delStaff('${u.id}')"><i class="ph-bold ph-trash"></i></button></td></tr>`; });
+                h += `</tbody></table></div></div>`; el.innerHTML = h;
+            },
+            admin: (el) => {
+                let h = `<div class="card"><div class="card-header"><h3 class="card-title">가맹점 목록</h3><button class="btn btn-primary btn-sm" onclick="Actions.openModal('addAcademy')">+ 추가</button></div><div class="table-wrap"><table><thead><tr><th>학원명</th><th>원장</th><th>계정수</th><th>관리</th></tr></thead><tbody>`;
+                window.DB.users.filter(u => u.role === 'director').forEach(ac => { const cnt = window.DB.users.filter(u => u.school === ac.school).length; h += `<tr><td><b>${ac.school}</b></td><td>${ac.name}</td><td>${cnt}</td><td><button class="btn-sm btn-danger" onclick="Actions.delAcademy('${ac.id}')">삭제</button></td></tr>`; });
+                h += `</tbody></table></div></div>`; el.innerHTML = h;
+            },
+            settings: (el) => { el.innerHTML = `<div class="card"><h3>백업</h3><p>데이터 안전을 위해 정기적으로 백업하세요.</p><button class="btn btn-primary" onclick="Actions.backup()">JSON 다운로드</button></div>`; }
+        };
+
+        window.Actions = {
+            filterStudent: () => { const q = document.getElementById('search-std').value.toLowerCase(); const rows = document.querySelectorAll('#std-list-body tr'); rows.forEach(r => { r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none'; }); },
+            openModal: (type) => {
+                const c = document.getElementById('modal-container');
+                let h = `<div class="modal-backdrop show"><div class="modal"><h3 class="modal-title">`;
+                if(type === 'addStudent') h += `원생 등록</h3><div class="input-group"><input id="m-name" placeholder="이름"><input id="m-school" placeholder="학교"><input id="m-phone" placeholder="연락처"><input id="m-id" placeholder="번호(4자리)"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="Actions.closeModal()">취소</button><button class="btn btn-primary" onclick="Actions.submitStudent()">등록</button></div>`;
+                else if(type === 'addClass') h += `강좌 개설</h3><div class="input-group"><input id="m-cname" placeholder="강좌명"><input id="m-ctime" placeholder="시간"><input id="m-croom" placeholder="강의실"><input id="m-cteach" placeholder="강사명"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="Actions.closeModal()">취소</button><button class="btn btn-primary" onclick="Actions.submitClass()">개설</button></div>`;
+                else if(type === 'addSession') h += `차시 추가</h3><div class="input-group"><input id="m-sname" placeholder="차시명"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="Actions.closeModal()">취소</button><button class="btn btn-primary" onclick="Actions.submitSession()">추가</button></div>`;
+                else if(type === 'addAcademy') h += `가맹점 추가</h3><div class="input-group"><input id="m-aname" placeholder="학원명"><input id="m-adir" placeholder="원장명"><input id="m-aid" placeholder="ID"><input id="m-apw" placeholder="PW"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="Actions.closeModal()">취소</button><button class="btn btn-primary" onclick="Actions.submitAcademy()">등록</button></div>`;
+                h += `</div></div>`; c.innerHTML = h;
+            },
+            closeModal: () => { document.getElementById('modal-container').innerHTML = ''; },
+            submitStudent: () => { const n = document.getElementById('m-name').value; const i = document.getElementById('m-id').value; if(!n||!i) return alert('필수 입력'); window.DB.students.push({ id:i, name:n, schoolName:document.getElementById('m-school').value, phone:document.getElementById('m-phone').value, school:window.CURRENT_USER.school, paid:false, fee:250000 }); app.saveDB(); Actions.closeModal(); app.renderCurrentView(); },
+            deleteStudent: (id) => { if(confirm('삭제?')) { window.DB.students = window.DB.students.filter(s=>s.id!==id); app.saveDB(); app.renderCurrentView(); } },
+            viewStudent: (id) => { window.STATE.viewingStudent = id; app.renderCurrentView(); },
+            closeStudentDetail: () => { window.STATE.viewingStudent = null; app.renderCurrentView(); },
+            switchTab: (id, btn) => { document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.querySelectorAll('.tab-menu-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); },
+            addScore: (id) => { const sub=document.getElementById('sc-name').value; if(!sub) return; window.DB.scores.push({ school:window.CURRENT_USER.school, stdId:id, type:document.getElementById('sc-type').value, subject:sub, score:document.getElementById('sc-val').value, date:document.getElementById('sc-date').value }); app.saveDB(); app.renderCurrentView(); },
+            saveComment: (id) => { const s=window.DB.students.find(x=>x.id===id); s.reportComment=document.getElementById('std-comment').value; app.saveDB(); app.toast("저장됨"); },
+            renderAtt: (id) => { const m=document.getElementById('att-picker').value; const div=document.getElementById('att-list'); if(!m) return; let h='<table><thead><tr><th>날짜</th><th>내용</th><th>상태</th></tr></thead><tbody>'; let logs=[]; window.DB.classes.forEach(c=>{ if(c.sessions) c.sessions.forEach(s=>{ if(s.attendance && s.attendance[id]) logs.push({d:s.date, t:s.attendance[id], n:c.name}); }); }); logs.filter(l=>l.d.startsWith(m)).forEach(l=>{ h+=`<tr><td>${l.d}</td><td>${l.n}</td><td><b>${l.t}</b></td></tr>`; }); h+='</tbody></table>'; div.innerHTML=h; },
+            saveCounsel: (id) => { 
+                const n=document.getElementById('counsel-note').value; if(!n) return; 
+                const s=window.DB.students.find(x=>x.id===id);
+                const editId = document.getElementById('counsel-edit-id').value;
+                if(editId) {
+                    const target = window.DB.counseling.find(c => c.id == editId);
+                    if(target) { target.content = n; target.date = document.getElementById('counsel-date').value; target.status = document.getElementById('counsel-status').value; }
+                } else {
+                    window.DB.counseling.push({ id:Date.now(), school:window.CURRENT_USER.school, stdId:id, stdName:s.name, date:document.getElementById('counsel-date').value, status:document.getElementById('counsel-status').value, content:n, writer:window.CURRENT_USER.name });
+                }
+                app.saveDB(); Actions.renderCounsel(id); 
+                document.getElementById('counsel-note').value=''; document.getElementById('counsel-edit-id').value=''; document.getElementById('btn-save-counsel').innerText = '저장';
+            },
+            editCounsel: (id) => {
+                const c = window.DB.counseling.find(x => x.id === id);
+                if(!c) return;
+                document.getElementById('counsel-edit-id').value = c.id;
+                document.getElementById('counsel-date').value = c.date;
+                document.getElementById('counsel-status').value = c.status;
+                document.getElementById('counsel-note').value = c.content;
+                document.getElementById('btn-save-counsel').innerText = '수정 저장';
+                document.getElementById('counsel-note').focus();
+            },
+            renderCounsel: (id) => {
+                const div = document.getElementById('counsel-history'); div.innerHTML = '';
+                window.DB.counseling.filter(c => c.stdId === id).reverse().forEach(c => {
+                    const bg = c.status === 'upcoming' ? 'badge-yellow' : 'badge-green';
+                    div.innerHTML += `<div style="background:white; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <i class="ph-bold ph-calendar-blank" style="color:var(--slate-400);"></i>
+                            <span style="font-weight:600; font-size:0.95rem;">${c.date} 상담 일지</span>
+                            <span style="font-size:0.8rem; color:var(--slate-500);">(${c.writer})</span>
+                        </div>
+                        <div>
+                            <span class="badge ${bg}" style="margin-right:8px;">${c.status}</span>
+                            <button class="btn-sm btn-secondary" onclick="Actions.editCounsel(${c.id})">보기</button>
+                            <button class="btn-icon" onclick="Actions.delCounsel(${c.id})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                        </div>
+                    </div>`;
+                });
+            },
+            delCounsel: (id) => { if(confirm('삭제?')) { window.DB.counseling = window.DB.counseling.filter(x=>x.id!==id); app.saveDB(); Actions.renderCounsel(window.STATE.viewingStudent); } },
+
+            submitClass: () => { const n=document.getElementById('m-cname').value; if(!n) return; window.DB.classes.push({ school:window.CURRENT_USER.school, name:n, time:document.getElementById('m-ctime').value, room:document.getElementById('m-croom').value, teacher:document.getElementById('m-cteach').value, students:[], sessions:[] }); app.saveDB(); Actions.closeModal(); app.renderCurrentView(); },
+            viewClass: (idx) => { window.STATE.viewingClass = idx; app.renderCurrentView(); },
+            closeClassDetail: () => { window.STATE.viewingClass = null; app.renderCurrentView(); },
+            deleteClass: (idx) => { if(confirm("폐강하시겠습니까?")) { window.DB.classes.splice(idx, 1); app.saveDB(); app.renderCurrentView(); } },
+            addStdToClass: (cIdx) => { const sid=document.getElementById('cls-std-sel').value; const c=window.DB.classes[cIdx]; if(!c.students) c.students=[]; if(!c.students.includes(sid)) { c.students.push(sid); app.saveDB(); app.renderCurrentView(); } },
+            removeStdFromClass: (cIdx, sid) => { if(!confirm('제외?')) return; const c=window.DB.classes[cIdx]; c.students = c.students.filter(x=>x!==sid); app.saveDB(); app.renderCurrentView(); },
+            submitSession: () => { const n=document.getElementById('m-sname').value; const c=window.DB.classes[window.STATE.viewingClass]; if(!c.sessions) c.sessions=[]; c.sessions.push({ name:n, date:new Date().toLocaleDateString(), memo:'', attendance:{}, homework:{} }); app.saveDB(); Actions.closeModal(); app.renderCurrentView(); },
+            viewSession: (cIdx, sIdx) => { const con=document.getElementById('content-area'); View.session(con, cIdx, sIdx); },
+            setAtt: (cIdx, sIdx, sid, stat) => { const s=window.DB.classes[cIdx].sessions[sIdx]; if(!s.attendance) s.attendance={}; s.attendance[sid]=stat; app.saveDB(); View.session(document.getElementById('content-area'), cIdx, sIdx); },
+            setHw: (cIdx, sIdx, sid, stat) => { const s=window.DB.classes[cIdx].sessions[sIdx]; if(!s.homework) s.homework={}; if(s.homework[sid]===stat) delete s.homework[sid]; else s.homework[sid]=stat; app.saveDB(); View.session(document.getElementById('content-area'), cIdx, sIdx); },
+            addMakeup: () => { const sid=document.getElementById('mk-std').value; if(!sid) return alert('선택'); window.DB.makeup.push({ stdId:sid, date:document.getElementById('mk-date').value, time:document.getElementById('mk-time').value, status:'pending', reason:'' }); app.saveDB(); app.renderCurrentView(); },
+            toggleMakeup: (idx) => { const mk = window.DB.makeup.filter(m => { const s = window.DB.students.find(x => x.id === m.stdId); return s && s.school === window.CURRENT_USER.school; })[idx]; mk.status = mk.status === 'done' ? 'pending' : 'done'; app.saveDB(); app.renderCurrentView(); },
+            openPostponeModal: (idx) => { window.STATE.tempMakeupIdx = idx; document.getElementById('modal-container').innerHTML = `<div class="modal-backdrop show"><div class="modal"><h3 class="modal-title">보강 미루기</h3><div class="input-group"><input id="mp-reason" placeholder="사유"><input type="date" id="mp-date"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="Actions.closeModal()">취소</button><button class="btn btn-primary" onclick="Actions.submitPostpone()">저장</button></div></div></div>`; },
+            submitPostpone: () => { const mkList = window.DB.makeup.filter(m => { const s = window.DB.students.find(x => x.id === m.stdId); return s && s.school === window.CURRENT_USER.school; }); const target = mkList[window.STATE.tempMakeupIdx]; target.reason = document.getElementById('mp-reason').value; target.date = document.getElementById('mp-date').value; app.saveDB(); Actions.closeModal(); app.renderCurrentView(); },
+            addStaff: () => { const n=document.getElementById('stf-name').value; const i=document.getElementById('stf-id').value; if(!i) return; window.DB.users.push({ name:n, role:document.getElementById('stf-role').value, id:i, pw:document.getElementById('stf-pw').value, school:window.CURRENT_USER.school }); app.saveDB(); app.renderCurrentView(); },
+            delStaff: (id) => { if(confirm('삭제?')) { window.DB.users = window.DB.users.filter(u=>u.id!==id); app.saveDB(); app.renderCurrentView(); } },
+            submitAcademy: () => { const i=document.getElementById('m-aid').value; if(!i) return; window.DB.users.push({ id:i, pw:document.getElementById('m-apw').value, name:document.getElementById('m-adir').value, role:'director', school:document.getElementById('m-aname').value }); app.saveDB(); Actions.closeModal(); app.renderCurrentView(); },
+            delAcademy: (id) => { if(confirm('삭제?')) { const t=window.DB.users.find(u=>u.id===id); if(t) { const sc=t.school; window.DB.users=window.DB.users.filter(u=>u.school!==sc); app.saveDB(); app.renderCurrentView(); } } },
+            backup: () => { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(window.DB)); a.download=`Backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>
