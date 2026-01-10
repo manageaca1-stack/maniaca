@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Maniaca - Realtime All-in-One</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           Glassmorphism Design System (변동 없음)
+           ========================================= */
+        :root {
+            --primary: #6366f1; --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.4); --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --text-main: #1e293b; --text-sub: #475569; --radius: 16px;
+        }
+        * { box-sizing: border-box; outline: none; }
+        body { margin: 0; font-family: 'Pretendard', sans-serif; background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%); background-size: 400% 400%; height: 100vh; overflow: hidden; color: var(--text-main); }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        
+        button { padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .btn-blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-green { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #1e293b; }
+        .btn-red { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); color: #7f1d1d; }
+        .btn-gray { background: rgba(255,255,255,0.8); color: var(--text-sub); border: 1px solid var(--glass-border); }
+        .btn-dark { background: #334155; color: white; }
+        
+        input, select, textarea { padding: 12px; margin: 5px 0; border: 1px solid rgba(255,255,255,0.6); border-radius: 10px; width: 100%; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(5px); font-size: 14px; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { background: rgba(255, 255, 255, 0.9); border-color: var(--primary); }
+        
+        .card { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow); padding: 30px; margin-bottom: 25px; }
+        .card h3 { margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #334155; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
+        th { background: rgba(255,255,255,0.4); color: var(--text-sub); padding: 12px; font-weight: 600; text-align: center; border-radius: 8px; }
+        td { padding: 14px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px; }
+        tr:hover td { background: rgba(255,255,255,0.3); border-radius: 8px; }
+        .row { display: flex; gap: 12px; align-items: center; }
+
+        #login-page { display: flex; justify-content: center; align-items: center; height: 100vh; background: radial-gradient(circle at 10% 20%, rgb(216, 241, 230) 0%, rgb(233, 226, 226) 90%); }
+        .login-box { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); border: 1px solid white; padding: 50px; border-radius: 24px; width: 400px; text-align: center; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2); }
+        
+        #dashboard-page { display: none; height: 100vh; display: flex; }
+        .sidebar { width: 260px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(15px); color: #e2e8f0; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header { height: 80px; display: flex; justify-content: center; align-items: center; font-size: 22px; font-weight: 800; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .menu-item { padding: 16px 25px; cursor: pointer; transition: 0.3s; font-size: 15px; margin: 5px 10px; border-radius: 10px; display: none; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); }
+        .menu-item.active { background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; }
+        .admin-menu { color: #fcd34d; font-weight: bold; }
+
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .top-header { height: 80px; background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.5); display: flex; justify-content: space-between; align-items: center; padding: 0 40px; }
+        .content-body { flex-grow: 1; padding: 30px; overflow-y: auto; }
+        .section { display: none; animation: slideUp 0.5s; } .section.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
+        .modal-content { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid white; padding: 40px; border-radius: 24px; width: 500px; max-height: 90vh; overflow-y: auto; animation: modalPop 0.3s; }
+        @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-label { font-weight: 600; font-size: 13px; color: var(--text-sub); display: block; margin-top: 15px; margin-bottom: 5px; }
+
+        /* Messenger & Profile & Etc */
+        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; background: rgba(255,255,255,0.5); padding: 30px; border-radius: var(--radius); border-left: 6px solid var(--primary); }
+        .profile-tabs { display: flex; gap: 15px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; padding: 16px; background: white; border: 1px solid var(--border); border-radius: var(--radius); font-weight: 600; cursor: pointer; color: var(--text-sub); }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+        .graph-container { display: flex; align-items: flex-end; height: 200px; border-bottom: 2px solid rgba(0,0,0,0.1); gap: 30px; justify-content: center; margin-top: 20px; }
+        .graph-bar { width: 100%; border-radius: 6px 6px 0 0; transition: height 1s; min-height: 4px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-yellow { background: #fef3c7; color: #92400e; }
+        .badge-status { cursor: pointer; user-select: none; }
+
+        /* Messenger Layout */
+        .messenger-wrapper { display: flex; height: 650px; background: rgba(255,255,255,0.6); backdrop-filter: blur(15px); border-radius: var(--radius); border: 1px solid var(--glass-border); overflow: hidden; box-shadow: var(--glass-shadow); }
+        .chat-list-area { width: 300px; border-right: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.4); display: flex; flex-direction: column; }
+        .chat-room-area { width: calc(100% - 300px); display: flex; flex-direction: column; background: rgba(255,255,255,0.2); }
+        .chat-list-header { padding: 20px; font-weight: 700; border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); display: flex; justify-content: space-between; align-items: center; }
+        .chat-item { padding: 15px 20px; border-bottom: 1px solid rgba(0,0,0,0.03); cursor: pointer; }
+        .chat-item:hover { background: rgba(255,255,255,0.5); }
+        .chat-item.active { background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); }
+        .msg-body { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { max-width: 70%; padding: 10px 16px; border-radius: 16px; font-size: 14px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .bubble-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .bubble-other { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 2px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-page">
+        <div class="login-box">
+            <h1 style="color:var(--primary); margin-bottom:5px;">MANIACA</h1>
+            <p style="color:#64748b; margin-bottom:30px;">Realtime Cloud System</p>
+            <input type="text" id="userid" placeholder="User ID">
+            <input type="password" id="userpw" placeholder="Password">
+            <button class="btn-blue" onclick="tryLogin()" style="width:100%; margin-top:20px; padding:15px; font-size:16px;">Login</button>
+        </div>
+    </div>
+
+    <div id="dashboard-page"> 
+        <div class="sidebar">
+            <div class="sidebar-header" id="sidebar-logo">Maniaca</div>
+            
+            <div class="menu-item director-menu active" onclick="goMenu('crm')">👥 학생관리</div>
+            <div class="menu-item director-menu" onclick="goMenu('counseling')">🗣️ 상담관리</div>
+            <div class="menu-item director-menu" onclick="goMenu('erp')">💳 수납/회계</div>
+            <div class="menu-item director-menu" onclick="goMenu('lms')">🎓 학사/수업</div>
+            <div class="menu-item director-menu" onclick="goMenu('hr')">👔 강사/인사</div>
+            <div class="menu-item common-menu" onclick="goMenu('sms')">💬 메신저</div>
+            
+            <div class="menu-item admin-menu" onclick="goMenu('academy_mgmt')">🏢 회원/학원 관리</div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-header">
+                <div id="header-title" class="page-title">학생관리</div>
+                <div class="user-info">
+                    <span id="user-display-name" style="margin-right:15px; font-weight:600;">관리자</span>
+                    <button class="btn-red" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <div id="crm" class="section active">
+                    <div class="card">
+                        <h3>🔎 통합 검색 (Firebase)</h3>
+                        <div class="row">
+                            <input type="text" style="width: 300px;" placeholder="이름 검색...">
+                            <button class="btn-blue">검색</button>
+                            <button class="btn-green" style="margin-left: auto;" onclick="openStudentModal()">+ 원생 등록</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>📋 재원생 목록</h3>
+                        <table><thead><tr><th>고유번호</th><th>이름</th><th>학교</th><th>연락처</th><th>상태</th><th>관리</th></tr></thead>
+                            <tbody id="student-list-tbody"><tr><td colspan="6" style="padding:30px;">로딩중...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="counseling" class="section">
+                    <div class="card">
+                        <h3>🗣️ 상담 일지 작성</h3>
+                        <div class="row" style="margin-bottom: 15px;">
+                            <select id="counsel-type" style="width: 180px;" onchange="toggleCounselInput()">
+                                <option value="전화상담">전화상담</option>
+                                <option value="방문상담">방문상담</option>
+                                <option value="신입생상담" style="color:var(--primary); font-weight:bold;">✨ 신입생상담</option>
+                            </select>
+                            <select id="counsel-student-select" onchange="loadStudentCounselingHistory()" style="width: 250px;"><option value="">학생을 선택하세요</option></select>
+                            <input type="text" id="counsel-new-name" placeholder="신입생 이름 입력" style="width: 250px; display: none;">
+                            <input type="date" id="counsel-date" style="width: 200px;">
+                        </div>
+                        <textarea id="counsel-content" placeholder="내용 입력..." style="height: 100px; resize: vertical;"></textarea>
+                        <div style="text-align: right; margin-top: 15px;"><button class="btn-blue" onclick="saveCounseling()">저장</button></div>
+                    </div>
+                    <div class="card">
+                        <h3>📜 상담 이력</h3>
+                        <table><thead><tr><th>날짜</th><th>대상</th><th>유형</th><th>내용</th><th>작성자</th></tr></thead><tbody id="counsel-history-tbody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="erp" class="section">
+                    <div class="card">
+                        <h3>💰 수납 관리</h3>
+                        <div class="row" style="margin-bottom: 20px;">
+                            <span style="color:var(--text-sub); font-size:14px;">수납 내역 관리</span>
+                            <button class="btn-green" style="margin-left: auto;" onclick="openPaymentModal()">+ 수납 등록</button>
+                        </div>
+                        <table><thead><tr><th>학생명</th><th>내역</th><th>금액</th><th>날짜</th><th>상태</th><th>관리</th></tr></thead><tbody id="payment-list-tbody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="lms" class="section">
+                    <div class="card">
+                        <h3>🏫 반 관리</h3>
+                        <div class="row">
+                            <input type="text" id="new-class-input" placeholder="반 이름" style="width: 200px;">
+                            <select id="new-class-teacher-select" style="width: 150px;"><option value="">강사 선택</option></select>
+                            <button class="btn-green" onclick="addNewClass()">+ 추가</button>
+                        </div>
+                        <table><thead><tr><th>반 이름</th><th>담임</th><th>원생 수</th><th>관리</th></tr></thead><tbody id="class-list-tbody"></tbody></table>
+                    </div>
+                    <div class="card">
+                        <h3>📅 출석/과제</h3>
+                        <div class="row" style="margin-bottom: 20px; justify-content: space-between;">
+                            <div style="display:flex; gap:10px;"><select id="attendance-class-select" style="width: 200px;"><option value="">반 선택</option></select><input type="date" id="attendance-date" style="width: 150px;"><button class="btn-blue" onclick="loadAttendance()">조회</button></div>
+                            <button class="btn-green" onclick="saveAttendanceData()">💾 저장</button>
+                        </div>
+                        <table><thead><tr><th>이름</th><th>출결</th><th>과제</th><th>비고</th></tr></thead><tbody id="attendance-list-tbody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="hr" class="section">
+                    <div class="card">
+                        <h3>👥 강사 관리</h3>
+                        <div class="row">
+                            <input type="text" placeholder="강사 검색..." style="width: 300px;">
+                            <button class="btn-blue">검색</button>
+                            <button class="btn-green" style="margin-left: auto;" onclick="openTeacherModal()">+ 강사 등록</button>
+                        </div>
+                        <table><thead><tr><th>이름</th><th>과목</th><th>연락처</th><th>관리</th></tr></thead><tbody id="teacher-list-tbody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="sms" class="section">
+                    <div class="messenger-wrapper">
+                        <div class="chat-list-area">
+                            <div class="chat-list-header">채팅 목록 <button class="btn-green" style="font-size:12px; padding:6px 12px;" onclick="openNewChatModal()">+ 새 채팅</button></div>
+                            <div id="chat-list-container" style="flex-grow:1; overflow-y:auto;"></div>
+                        </div>
+                        <div class="chat-room-area">
+                            <div id="chat-room-header" class="msg-header" style="display:none;"></div>
+                            <div id="chat-room-body" class="msg-body"><div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">대화방을 선택하세요.</div></div>
+                            <div id="chat-input-area" class="msg-input-area" style="display:none;"><input type="text" id="msg-input" placeholder="입력..." onkeypress="if(event.key==='Enter') sendMsg()"><button class="btn-blue" onclick="sendMsg()">전송</button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="academy_mgmt" class="section">
+                    <div class="card">
+                        <h3>🏢 가맹 학원 관리 (Super Admin)</h3>
+                        <div class="row" style="margin-bottom: 20px;">
+                            <button class="btn-green" style="margin-left: auto;" onclick="openAcademyModal()">+ 학원 추가</button>
+                        </div>
+                        <table><thead><tr><th>No</th><th>학원명</th><th>원장 이름</th><th>ID</th><th>PW</th><th>관리</th></tr></thead><tbody id="academy-list-tbody"></tbody></table>
+                    </div>
+                </div>
+
+                <div id="profile-detail-section" class="section">
+                    <div class="profile-header">
+                        <div style="flex-grow: 1;">
+                            <h2 style="margin:0; color:var(--text-main); font-size:28px;" id="prof-name">-</h2>
+                            <p style="margin:5px 0 0 0; color:var(--text-sub);" id="prof-school">-</p>
+                        </div>
+                        <button class="btn-gray" onclick="closeProfilePage()">목록으로</button>
+                    </div>
+                    <div class="profile-tabs"><button class="tab-btn active" onclick="switchTab('tab-homework')">📚 과제</button><button class="tab-btn" onclick="switchTab('tab-grade')">💯 성적</button><button class="tab-btn" onclick="switchTab('tab-attend')">🕒 출결</button></div>
+                    <div id="tab-homework" class="analysis-container active"><div class="card"><h3>📊 과제 수행도</h3><div class="graph-container" id="homework-graph-container"></div><div style="margin-top:20px;" id="homework-comment"></div></div></div>
+                    <div id="tab-grade" class="analysis-container"><div class="card"><h3>📝 시험 점수</h3><div class="row" style="margin-bottom: 20px;"><input type="text" id="exam-name" placeholder="시험명"><input type="number" id="exam-score" placeholder="점수"><button class="btn-dark" onclick="addScore()">추가</button></div><div class="graph-container" id="score-graph"></div></div></div>
+                    <div id="tab-attend" class="analysis-container"><div class="card"><h3>🕒 통합 출결</h3><table><thead><tr><th>날짜</th><th>상태</th><th>비고</th></tr></thead><tbody id="attend-history-tbody"></tbody></table></div></div>
+                </div>
+            </div> 
+        </div> 
+    </div>
+
+    <div id="student-modal" class="modal"><div class="modal-content"><h3>원생 등록</h3><input type="text" id="reg-id" placeholder="고유번호"><input type="text" id="reg-name" placeholder="이름"><input type="text" id="reg-school" placeholder="학교"><input type="text" id="reg-phone" placeholder="전화번호"><select id="reg-status"><option>재원</option><option>미납</option></select><div style="text-align:right; margin-top:20px;"><button class="btn-gray" onclick="document.getElementById('student-modal').style.display='none'">취소</button><button class="btn-blue" onclick="saveStudent()">등록</button></div></div></div>
+    <div id="academy-modal" class="modal"><div class="modal-content"><h3>학원 등록</h3><span class="modal-label">학원명</span><input type="text" id="new-aca-name"><span class="modal-label">원장명</span><input type="text" id="new-aca-owner"><span class="modal-label">ID</span><input type="text" id="new-aca-id"><span class="modal-label">PW</span><input type="text" id="new-aca-pw"><div style="text-align:right; margin-top:25px;"><button class="btn-gray" onclick="document.getElementById('academy-modal').style.display='none'">취소</button> <button class="btn-blue" onclick="saveAcademy()">등록</button></div></div></div>
+    <div id="teacher-modal" class="modal"><div class="modal-content"><h3>강사 등록</h3><span class="modal-label">이름</span><input type="text" id="teach-name"><span class="modal-label">과목</span><input type="text" id="teach-subject"><span class="modal-label">연락처</span><input type="text" id="teach-phone"><div style="text-align:right; margin-top:25px;"><button class="btn-gray" onclick="document.getElementById('teacher-modal').style.display='none'">취소</button> <button class="btn-blue" onclick="saveTeacher()">등록</button></div></div></div>
+    <div id="payment-modal" class="modal"><div class="modal-content"><h3>수납 등록</h3><span class="modal-label">학생</span><select id="pay-student-select"></select><span class="modal-label">내역</span><input type="text" id="pay-desc"><span class="modal-label">금액</span><input type="number" id="pay-amount"><span class="modal-label">일자</span><input type="date" id="pay-date"><div style="text-align:right; margin-top:25px;"><button class="btn-gray" onclick="document.getElementById('payment-modal').style.display='none'">취소</button> <button class="btn-blue" onclick="savePayment()">등록</button></div></div></div>
+    <div id="new-chat-modal" class="modal"><div class="modal-content"><h3>대화 상대</h3><div style="margin-bottom:15px; max-height:250px; overflow-y:auto; border:1px solid var(--border); padding:15px;" id="user-list-container"></div><div style="text-align:right;"><button class="btn-gray" onclick="document.getElementById('new-chat-modal').style.display='none'">취소</button> <button class="btn-blue" onclick="createChat()">채팅 시작</button></div></div></div>
+    <div id="class-student-modal" class="modal"><div class="modal-content"><h3>반 배정</h3><div class="row"><select id="new-class-student-select"></select> <button class="btn-blue" onclick="addStudentToClass()">추가</button></div><table style="margin-top:10px;"><thead><tr><th>이름</th><th>삭제</th></tr></thead><tbody id="class-student-tbody"></tbody></table><div style="text-align:right; margin-top:20px;"><button class="btn-gray" onclick="document.getElementById('class-student-modal').style.display='none'">닫기</button></div></div></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove, push, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // 선생님의 Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
+            authDomain: "maniaca-965fa.firebaseapp.com",
+            databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "maniaca-965fa",
+            storageBucket: "maniaca-965fa.firebasestorage.app",
+            messagingSenderId: "24110097950",
+            appId: "1:24110097950:web:c90fe8736b29a8b787300f",
+            measurementId: "G-CDGPKJLT8B"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- 전역 변수 ---
+        window.allStudents = []; window.allTeachers = []; window.allClasses = []; window.classStudents = {}; 
+        window.allPayments = []; window.anonymousCounseling = []; window.allChats = []; window.allAcademies = [];
+        window.currentUserRole = ''; window.currentUserName = ''; window.currentUserId = ''; window.currentAcademyName = 'Maniaca';
+        window.activeChatId = null; window.currentEditingClass = null;
+
+        // --- 로그인 & 초기화 ---
+        window.tryLogin = function() {
+            var id = document.getElementById('userid').value;
+            var pw = document.getElementById('userpw').value;
+            // 1. 관리자 확인
+            if(id === 'admin' && pw === '1234') { loginSuccess('admin', 'super_admin', '관리자', 'Maniaca(본사)'); return; }
+            // 2. DB에서 학원(원장) 계정 확인
+            onValue(ref(db, 'academies'), (snapshot) => {
+                const data = snapshot.val(); let found = null;
+                if (data) Object.keys(data).forEach(key => { if(data[key].id === id && data[key].pw === pw) found = data[key]; });
+                if (found) loginSuccess(found.id, 'director', found.owner + ' 원장님', found.name);
+                else alert('정보 불일치');
+            }, {onlyOnce:true});
+        };
+
+        window.loginSuccess = function(uid, role, name, aca) {
+            window.currentUserId = uid; window.currentUserRole = role; window.currentUserName = name; window.currentAcademyName = aca;
+            document.getElementById('login-page').style.display='none'; document.getElementById('dashboard-page').style.display='flex';
+            document.getElementById('user-display-name').innerText = name; document.getElementById('sidebar-logo').innerText = aca;
+            
+            var dMenus = document.querySelectorAll('.director-menu'); var aMenu = document.querySelector('.admin-menu'); var cMenus = document.querySelectorAll('.common-menu');
+            cMenus.forEach(e=>e.style.display='block');
+
+            if(role === 'super_admin') {
+                dMenus.forEach(e => e.style.display = 'none'); aMenu.style.display = 'block';
+                window.goMenu('academy_mgmt');
+            } else {
+                dMenus.forEach(e => e.style.display = 'block'); aMenu.style.display = 'none';
+                window.goMenu('crm');
+                // 원장 로그인 시 데이터 로드 리스너 등록
+                loadDirectorData();
+            }
+            loadCommonData(); // 채팅 등
+        };
+
+        window.logout = function() { location.reload(); };
+        window.goMenu = function(id) {
+            document.querySelectorAll('.section').forEach(e=>e.classList.remove('active')); document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(e=>e.classList.remove('active'));
+            var t = document.querySelector(`.menu-item[onclick="goMenu('${id}')"]`); if(t) t.classList.add('active');
+            document.getElementById('header-title').innerText = document.getElementById(id).querySelector('h3').innerText.split(' (')[0];
+            if(id === 'lms') updateTeacherSelect();
+            if(id === 'sms') renderChatList();
+            if(id === 'counseling') { updateCounselStudentList(); toggleCounselInput(); }
+        };
+
+        // --- 데이터 로드 함수들 ---
+        function loadDirectorData() {
+            // 학생
+            onValue(ref(db, 'students'), (snap) => {
+                window.allStudents = []; const data = snap.val();
+                var t = document.getElementById('student-list-tbody'); t.innerHTML = "";
+                if(data) Object.keys(data).forEach(k => { var s = data[k]; window.allStudents.push(s); 
+                    t.innerHTML += `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.school}</td><td>${s.phone}</td><td><span class="badge ${s.status==='재원'?'badge-green':'badge-red'}">${s.status}</span></td><td><button class="btn-dark" onclick="openProfilePage('${s.id}')">상세</button><button class="btn-red" onclick="deleteData('students/${s.id}')">삭제</button></td></tr>`;
+                }); else t.innerHTML = '<tr><td colspan="6" style="padding:30px">데이터 없음</td></tr>';
+            });
+            // 강사
+            onValue(ref(db, 'teachers'), (snap) => {
+                window.allTeachers = []; const data = snap.val();
+                var t = document.getElementById('teacher-list-tbody'); t.innerHTML="";
+                if(data) Object.keys(data).forEach(k => { var tc = data[k]; window.allTeachers.push(tc);
+                    t.innerHTML += `<tr><td>${tc.name}</td><td>${tc.subject}</td><td>${tc.phone}</td><td><button class="btn-red" onclick="deleteData('teachers/${k}')">삭제</button></td></tr>`;
+                }); else t.innerHTML = '<tr><td colspan="4" style="padding:30px">강사 없음</td></tr>';
+            });
+            // 반 (LMS)
+            onValue(ref(db, 'classes'), (snap) => {
+                window.allClasses = []; window.classStudents = {}; const data = snap.val();
+                var t = document.getElementById('class-list-tbody'); var s = document.getElementById('attendance-class-select');
+                t.innerHTML=""; s.innerHTML='<option value="">반 선택</option>';
+                if(data) Object.keys(data).forEach(k => { var c = data[k]; c.key = k; window.allClasses.push(c);
+                    if(c.students) window.classStudents[c.name] = Object.values(c.students);
+                    t.innerHTML += `<tr><td>${c.name}</td><td>${c.teacher}</td><td>${c.students ? Object.keys(c.students).length : 0}명</td><td><button class="btn-dark" onclick="openClassModal('${k}','${c.name}')">관리</button><button class="btn-red" onclick="deleteData('classes/${k}')">삭제</button></td></tr>`;
+                    s.innerHTML += `<option value="${k}">${c.name}</option>`;
+                }); else t.innerHTML = '<tr><td colspan="4" style="padding:30px">반 없음</td></tr>';
+            });
+            // 수납 (ERP)
+            onValue(ref(db, 'payments'), (snap) => {
+                window.allPayments = []; const data = snap.val();
+                var t = document.getElementById('payment-list-tbody'); t.innerHTML="";
+                if(data) Object.keys(data).forEach(k => { var p = data[k]; p.key = k; window.allPayments.push(p);
+                    var b = p.isPaid?'badge-green':'badge-red'; var txt=p.isPaid?'완료':'미납';
+                    t.innerHTML += `<tr><td>${p.student}</td><td>${p.desc}</td><td>${Number(p.amount).toLocaleString()}</td><td>${p.date}</td><td><span class="badge ${b} badge-status" onclick="togglePayment('${k}', ${p.isPaid})">${txt}</span></td><td><button class="btn-red" onclick="deleteData('payments/${k}')">삭제</button></td></tr>`;
+                }); else t.innerHTML = '<tr><td colspan="6" style="padding:30px">내역 없음</td></tr>';
+            });
+            // 신입생 상담
+            onValue(ref(db, 'counseling/anonymous'), (snap) => {
+                window.anonymousCounseling = []; const data = snap.val();
+                if(data) Object.keys(data).forEach(k => window.anonymousCounseling.push(data[k]));
+            });
+        }
+
+        function loadCommonData() {
+            // 채팅
+            onValue(ref(db, 'chats'), (snap) => {
+                window.allChats = []; const data = snap.val();
+                if(data) Object.keys(data).forEach(k => { var c = data[k]; c.id = k; window.allChats.push(c); });
+                if(document.getElementById('sms').classList.contains('active')) renderChatList();
+            });
+            // 학원 목록 (채팅 상대용 + 관리자용)
+            onValue(ref(db, 'academies'), (snap) => {
+                window.allAcademies = []; const data = snap.val();
+                var t = document.getElementById('academy-list-tbody'); t.innerHTML="";
+                if(data) { var idx=1; Object.keys(data).forEach(k => { var a=data[k]; a.key=k; window.allAcademies.push(a);
+                    if(window.currentUserRole === 'super_admin') 
+                        t.innerHTML += `<tr><td>${idx++}</td><td>${a.name}</td><td>${a.owner}</td><td>${a.id}</td><td>${a.pw}</td><td><button class="btn-red" onclick="deleteData('academies/${k}')">삭제</button></td></tr>`;
+                }); }
+            });
+        }
+
+        // --- 공통 삭제 ---
+        window.deleteData = function(path) { if(confirm('삭제하시겠습니까?')) remove(ref(db, path)); };
+
+        // --- CRM (학생) ---
+        window.openStudentModal = function() { document.getElementById('student-modal').style.display='flex'; };
+        window.saveStudent = function() {
+            var id = document.getElementById('reg-id').value; var name = document.getElementById('reg-name').value;
+            if(!name || !id) return alert('필수 입력');
+            set(ref(db, 'students/' + id), {
+                id: id, name: name, school: document.getElementById('reg-school').value,
+                phone: document.getElementById('reg-phone').value, status: document.getElementById('reg-status').value
+            }).then(() => { alert("저장됨"); document.getElementById('student-modal').style.display='none'; });
+        };
+
+        // --- 상담 ---
+        window.updateCounselStudentList = function() { var s=document.getElementById('counsel-student-select'); s.innerHTML='<option value="">선택</option>'; window.allStudents.forEach(st=>s.innerHTML+=`<option value="${st.id}">${st.name}</option>`); };
+        window.toggleCounselInput = function() { var t=document.getElementById('counsel-type').value; 
+            if(t==='신입생상담'){ document.getElementById('counsel-student-select').style.display='none'; document.getElementById('counsel-new-name').style.display='block'; loadAnonymousCounselingHistory(); }
+            else { document.getElementById('counsel-student-select').style.display='block'; document.getElementById('counsel-new-name').style.display='none'; loadStudentCounselingHistory(); }
+        };
+        window.saveCounseling = function() {
+            var type=document.getElementById('counsel-type').value, date=document.getElementById('counsel-date').value, content=document.getElementById('counsel-content').value;
+            if(type==='신입생상담') {
+                var nm = document.getElementById('counsel-new-name').value;
+                push(ref(db, 'counseling/anonymous'), { date:date, type:type, name:nm, content:content, writer:window.currentUserName });
+            } else {
+                var sid = document.getElementById('counsel-student-select').value;
+                if(!sid) return alert('학생 선택');
+                push(ref(db, `students/${sid}/counseling`), { date:date, type:type, content:content, writer:window.currentUserName });
+            }
+            alert('저장 완료'); document.getElementById('counsel-content').value='';
+        };
+        window.loadStudentCounselingHistory = function() {
+            var sid=document.getElementById('counsel-student-select').value; var t=document.getElementById('counsel-history-tbody'); t.innerHTML='';
+            var st = window.allStudents.find(s=>s.id===sid);
+            if(st && st.counseling) {
+                Object.values(st.counseling).sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(h=>{
+                    t.innerHTML+=`<tr><td>${h.date}</td><td>${st.name}</td><td>${h.type}</td><td style="text-align:left">${h.content}</td><td>${h.writer}</td></tr>`;
+                });
+            } else t.innerHTML='<tr><td colspan="5" style="padding:20px">이력 없음</td></tr>';
+        };
+        window.loadAnonymousCounselingHistory = function() {
+            var t=document.getElementById('counsel-history-tbody'); t.innerHTML='';
+            if(window.anonymousCounseling.length>0) {
+                window.anonymousCounseling.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(h=>{
+                    t.innerHTML+=`<tr><td>${h.date}</td><td>${h.name} (신입)</td><td>${h.type}</td><td style="text-align:left">${h.content}</td><td>${h.writer}</td></tr>`;
+                });
+            } else t.innerHTML='<tr><td colspan="5" style="padding:20px">이력 없음</td></tr>';
+        };
+
+        // --- ERP ---
+        window.openPaymentModal = function() { var s=document.getElementById('pay-student-select'); s.innerHTML='<option value="">선택</option>'; window.allStudents.forEach(st=>s.innerHTML+=`<option value="${st.name}">${st.name}</option>`); document.getElementById('payment-modal').style.display='flex'; };
+        window.savePayment = function() {
+            push(ref(db, 'payments'), {
+                student: document.getElementById('pay-student-select').value, desc: document.getElementById('pay-desc').value,
+                amount: document.getElementById('pay-amount').value, date: document.getElementById('pay-date').value, isPaid: false
+            }); document.getElementById('payment-modal').style.display='none';
+        };
+        window.togglePayment = function(key, currentStatus) { update(ref(db, 'payments/'+key), { isPaid: !currentStatus }); };
+
+        // --- LMS ---
+        window.updateTeacherSelect = function() { var s=document.getElementById('new-class-teacher-select'); s.innerHTML='<option>선택</option>'; window.allTeachers.forEach(t=>s.innerHTML+=`<option>${t.name}</option>`); };
+        window.addNewClass = function() {
+            var name = document.getElementById('new-class-input').value; var t = document.getElementById('new-class-teacher-select').value;
+            if(!name) return;
+            push(ref(db, 'classes'), { name: name, teacher: t });
+            document.getElementById('new-class-input').value='';
+        };
+        window.openClassModal = function(key, name) {
+            window.currentEditingClass = key; document.getElementById('modal-class-name').innerText=name;
+            var s = document.getElementById('new-class-student-select'); s.innerHTML='<option value="">선택</option>';
+            window.allStudents.forEach(st=>s.innerHTML+=`<option value="${st.id}">${st.name}</option>`);
+            document.getElementById('class-student-modal').style.display='flex'; renderClassStudents(key);
+        };
+        window.renderClassStudents = function(classKey) {
+            var t=document.getElementById('class-student-tbody'); t.innerHTML='';
+            var cls = window.allClasses.find(c=>c.key===classKey);
+            if(cls && cls.students) {
+                Object.keys(cls.students).forEach(k => {
+                    t.innerHTML+=`<tr><td>${cls.students[k]}</td><td><button class="btn-red" onclick="removeStudentFromClass('${classKey}','${k}')">삭제</button></td></tr>`;
+                });
+            }
+        };
+        window.addStudentToClass = function() {
+            var sid = document.getElementById('new-class-student-select').value; if(!sid)return;
+            var st = window.allStudents.find(s=>s.id===sid);
+            push(ref(db, `classes/${window.currentEditingClass}/students`), st.name);
+            renderClassStudents(window.currentEditingClass);
+        };
+        window.removeStudentFromClass = function(ck, sk) { remove(ref(db, `classes/${ck}/students/${sk}`)); renderClassStudents(ck); };
+        window.loadAttendance = function() {
+            var ck = document.getElementById('attendance-class-select').value;
+            var t = document.getElementById('attendance-list-tbody'); t.innerHTML='';
+            var cls = window.allClasses.find(c=>c.key===ck);
+            if(cls && cls.students) {
+                Object.values(cls.students).forEach((name, i) => {
+                    t.innerHTML += `<tr class="att-row" data-name="${name}"><td>${name}</td><td><label><input type="radio" name="a${i}" value="출석" checked>출</label> <label><input type="radio" name="a${i}" value="지각">지</label> <label><input type="radio" name="a${i}" value="결석">결</label></td><td><label><input type="radio" name="h${i}" value="O">O</label> <label><input type="radio" name="h${i}" value="X">X</label></td><td><input type="text" class="note-inp"></td></tr>`;
+                });
+            } else t.innerHTML='<tr><td colspan="4" style="padding:20px">원생 없음</td></tr>';
+        };
+        window.saveAttendanceData = function() {
+            var date = document.getElementById('attendance-date').value;
+            document.querySelectorAll('.att-row').forEach((r,i) => {
+                var name = r.getAttribute('data-name');
+                var att = document.querySelector(`input[name="a${i}"]:checked`).value;
+                var hw = document.querySelector(`input[name="h${i}"]:checked`) ? document.querySelector(`input[name="h${i}"]:checked`).value : '-';
+                var note = r.querySelector('.note-inp').value;
+                var st = window.allStudents.find(s=>s.name===name);
+                if(st) push(ref(db, `students/${st.id}/history`), {date:date, att:att, hw:hw, note:note});
+            });
+            alert('저장 완료');
+        };
+
+        // --- HR ---
+        window.openTeacherModal = function() { document.getElementById('teacher-modal').style.display='flex'; };
+        window.saveTeacher = function() {
+            push(ref(db, 'teachers'), {
+                name: document.getElementById('teach-name').value,
+                subject: document.getElementById('teach-subject').value,
+                phone: document.getElementById('teach-phone').value
+            }); document.getElementById('teacher-modal').style.display='none';
+        };
+
+        // --- Academy ---
+        window.openAcademyModal = function() { document.getElementById('academy-modal').style.display='flex'; };
+        window.saveAcademy = function() {
+            push(ref(db, 'academies'), {
+                name: document.getElementById('new-aca-name').value, owner: document.getElementById('new-aca-owner').value,
+                id: document.getElementById('new-aca-id').value, pw: document.getElementById('new-aca-pw').value
+            }); document.getElementById('academy-modal').style.display='none';
+        };
+
+        // --- Messenger ---
+        window.openNewChatModal = function() {
+            var c=document.getElementById('user-list-container'); c.innerHTML='';
+            // 본사 + 타학원 리스트
+            if(window.currentUserId !== 'admin') c.innerHTML += `<div><input type="checkbox" class="c-target" value="admin" data-n="본사관리자"> 본사관리자</div>`;
+            window.allAcademies.forEach(a => {
+                if(a.id !== window.currentUserId) c.innerHTML += `<div><input type="checkbox" class="c-target" value="${a.id}" data-n="${a.name}"> ${a.name}</div>`;
+            });
+            document.getElementById('new-chat-modal').style.display='flex';
+        };
+        window.createChat = function() {
+            var mems=[window.currentUserId], names=[window.currentUserName];
+            document.querySelectorAll('.c-target:checked').forEach(e=>{ mems.push(e.value); names.push(e.getAttribute('data-n')); });
+            if(mems.length<2) return;
+            var cKey = push(ref(db, 'chats')).key;
+            set(ref(db, `chats/${cKey}`), { members: mems, name: names.join(', ') });
+            document.getElementById('new-chat-modal').style.display='none';
+        };
+        window.renderChatList = function() {
+            var c=document.getElementById('chat-list-container'); c.innerHTML='';
+            window.allChats.forEach(chat => {
+                if(chat.members && chat.members.includes(window.currentUserId)) {
+                    c.innerHTML += `<div class="chat-item" onclick="selectChat('${chat.id}')">${chat.name}</div>`;
+                }
+            });
+        };
+        window.selectChat = function(cid) {
+            window.activeChatId = cid; 
+            var chat = window.allChats.find(c=>c.id===cid);
+            document.getElementById('chat-room-header').style.display='block'; document.getElementById('chat-room-header').innerText=chat.name;
+            document.getElementById('chat-input-area').style.display='flex';
+            renderMessages(chat);
+        };
+        function renderMessages(chat) {
+            var b=document.getElementById('chat-room-body'); b.innerHTML='';
+            if(chat.messages) Object.values(chat.messages).forEach(m=>{
+                var me = m.sid === window.currentUserId;
+                b.innerHTML += `<div class="bubble ${me?'bubble-me':'bubble-other'}"><div><small>${m.sname}</small></div>${m.txt}</div>`;
+            });
+            b.scrollTop = b.scrollHeight;
+        }
+        window.sendMsg = function() {
+            var txt = document.getElementById('msg-input').value; if(!txt) return;
+            push(ref(db, `chats/${window.activeChatId}/messages`), {
+                sid: window.currentUserId, sname: window.currentUserName, txt: txt, time: Date.now()
+            });
+            document.getElementById('msg-input').value='';
+        };
+
+        // --- Profile (Read Only) ---
+        window.openProfilePage = function(sid) {
+            window.currentProfileIndex = sid;
+            var s = window.allStudents.find(st=>st.id===sid);
+            document.getElementById('prof-name').innerText=s.name; document.getElementById('prof-school').innerText=s.school;
+            window.goMenu('profile-detail-section'); window.switchTab('tab-homework');
+        };
+        window.closeProfilePage = function() { window.goMenu('crm'); };
+        window.switchTab = function(tid) {
+            document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.analysis-container').forEach(e=>e.classList.remove('active'));
+            document.getElementById(tid).classList.add('active');
+            // 탭별 데이터 로드 (간소화: 출결만 예시)
+            if(tid==='tab-attend') {
+                var t=document.getElementById('attend-history-tbody'); t.innerHTML='';
+                var s=window.allStudents.find(st=>st.id===window.currentProfileIndex);
+                if(s && s.history) Object.values(s.history).forEach(h=>t.innerHTML+=`<tr><td>${h.date}</td><td>${h.att}</td><td>${h.note||''}</td></tr>`);
+            }
+        };
+        // 성적 추가
+        window.addScore = function() {
+            var n=document.getElementById('exam-name').value, sc=document.getElementById('exam-score').value;
+            if(n) push(ref(db, `students/${window.currentProfileIndex}/scores`), {name:n, score:sc});
+        };
+
+    </script>
+</body>
+</html>
