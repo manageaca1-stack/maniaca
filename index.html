@@ -9,9 +9,8 @@
         body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg); color: #1e293b; overflow-x: hidden; }
         .hidden { display: none !important; }
         .flex { display: flex; }
-        #landing-page, #login-page { height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #4f46e5 0%, #0f172a 100%); color: white; position: fixed; top: 0; left: 0; }
-        #landing-page { z-index: 1000; }
-        #login-page { z-index: 1100; }
+        #landing-page, #login-page { height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #4f46e5 0%, #0f172a 100%); color: white; position: fixed; top: 0; left: 0; z-index: 2000; }
+        #login-page { z-index: 2100; }
         nav { width: 260px; background: var(--nav-bg); color: white; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
         nav h2 { text-align: center; padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin: 0; }
         nav ul { list-style: none; padding: 20px; flex-grow: 1; }
@@ -19,14 +18,14 @@
         nav li:hover { background: rgba(255,255,255,0.05); color: white; }
         nav li.active-menu { background: var(--primary) !important; color: white !important; }
         .content { margin-left: 260px; padding: 40px; width: calc(100% - 340px); min-height: 100vh; }
-        .card { background: white; padding: 25px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px; color: #1e293b; }
+        .card { background: white; padding: 25px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
         th { background: #f8fafc; padding: 15px; border-bottom: 2px solid var(--border); font-size: 0.9rem; }
         td { padding: 15px; border-bottom: 1px solid var(--border); background: #fff; text-align: center; font-size: 0.95rem; }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-red { background: #fee2e2; color: #dc2626; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 8px; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(4px); }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 450px; max-height: 90vh; overflow-y: auto; }
     </style>
@@ -58,7 +57,7 @@
             <li data-menu="class-mgmt">4. 수업 관리</li>
             <li data-menu="teacher-mgmt">5. 강사 관리</li>
         </ul>
-        <div class="logout-area"><button class="btn" style="width:100%;" id="logout-btn">로그아웃</button></div>
+        <div class="logout-area"><button class="btn" style="width:100%; background:#fef2f2; color:#ef4444;" id="logout-btn">로그아웃</button></div>
     </nav>
 
     <div class="content">
@@ -118,7 +117,7 @@
 
         <div id="student-detail-page" class="menu-section hidden"><h2 id="det-name-title"></h2><div class="card" id="det-profile-card"></div><button class="btn btn-primary" id="go-attendance-btn">출석 통계</button> <button class="btn btn-primary" id="go-counsel-btn">상담 기록</button> <button class="btn btn-primary" id="go-grade-btn">성적 분석</button></div>
         <div id="student-attendance-page" class="menu-section hidden"><h2>출석 기록</h2><div class="card"><table><thead><tr><th>수업</th><th>회차</th><th>상태</th></tr></thead><tbody id="attendance-list-body"></tbody></table></div></div>
-        <div id="student-counsel-page" class="menu-section hidden"><h2>상담 관리</h2><div class="card"><input type="date" id="c-date"><input type="text" id="c-title" placeholder="제목"><textarea id="c-content" style="height:100px;"></textarea><button class="btn btn-primary" id="save-c-btn">저장</button></div><div class="card"><table><tbody id="c-list-body"></tbody></table></div></div>
+        <div id="student-counsel-page" class="menu-section hidden"><h2>상담 관리</h2><div class="card"><input type="date" id="c-date"><input type="text" id="c-title" placeholder="제목"><textarea id="c-content" style="height:100px; margin-top:10px;"></textarea><button class="btn btn-primary" id="save-c-btn" style="margin-top:10px;">저장</button></div><div class="card"><table><tbody id="c-list-body"></tbody></table></div></div>
         <div id="student-grade-page" class="menu-section hidden"><h2>성적 분석</h2><div class="card"><div id="grade-graph" style="height:150px; background:#f8fafc; display:flex; align-items:flex-end; justify-content:space-around;"></div></div></div>
     </div>
 </div>
@@ -176,18 +175,10 @@
 
     function sync() { set(ref(db, 'maniaca'), { students, classes }); }
 
-    // 시작하기 버튼 & 로그인
-    document.getElementById('start-btn').onclick = () => {
-        document.getElementById('landing-page').classList.add('hidden');
-        document.getElementById('login-page').classList.remove('hidden');
-    };
-    document.getElementById('login-btn').onclick = () => {
-        sessionStorage.setItem('isLoggedIn', 'true');
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('main-system').classList.remove('hidden');
-        showMenu('dashboard');
-    };
-
+    // 네비게이션
+    document.getElementById('start-btn').onclick = () => { document.getElementById('landing-page').classList.add('hidden'); document.getElementById('login-page').classList.remove('hidden'); };
+    document.getElementById('login-btn').onclick = () => { sessionStorage.setItem('isLoggedIn', 'true'); document.getElementById('login-page').classList.add('hidden'); document.getElementById('main-system').classList.remove('hidden'); showMenu('dashboard'); };
+    
     window.showMenu = (id) => {
         document.querySelectorAll('.menu-section').forEach(m => m.classList.add('hidden'));
         let targetId = id.startsWith('menu-') ? id : 'menu-' + id;
@@ -203,30 +194,27 @@
         if(navItem) navItem.classList.add('active-menu');
     };
 
-    window.openModal = (id) => { 
-        document.getElementById('modal-overlay').style.display = 'flex'; 
-        document.querySelectorAll('.modal-content').forEach(m => m.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-        if(id === 'add-student-modal') renderSelection();
-    };
+    window.openModal = (id) => { document.getElementById('modal-overlay').style.display = 'flex'; document.querySelectorAll('.modal-content').forEach(m => m.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); if(id === 'add-student-modal') renderSelection(); };
     window.closeModal = () => { document.getElementById('modal-overlay').style.display = 'none'; };
 
-    // [중요수정] 수업 생성 시 배열 초기화
+    // [수정] 수업 추가 시 배열 초기화
     document.getElementById('save-class-btn').onclick = () => {
         const name = document.getElementById('c-name-in').value;
         const teacher = document.getElementById('c-teacher-in').value;
         if(!name) return alert("수업명을 입력하세요.");
-        classes.push({ name: name, teacher: teacher, students: [], sessions: [] }); // 빈 배열로 초기화 필수
+        classes.push({ name: name, teacher: teacher, students: [], sessions: [] });
         sync(); closeModal();
+        document.getElementById('c-name-in').value = ""; document.getElementById('c-teacher-in').value = "";
     };
 
-    // [중요수정] 수강생 추가 로직
+    // [수정] 수강생 추가 및 차시 실시간 동기화
     window.addStToClass = (sid) => {
         const c = classes.find(x => x.name === currentClassName);
-        if(!c.students) c.students = []; // 방어 코드
+        if(!c.students) c.students = [];
         if(!c.students.includes(sid)) {
             c.students.push(sid);
-            if(c.sessions) { // 기존 차시 명단 동기화
+            // 이미 생성된 모든 차시 명단에도 추가
+            if(c.sessions) {
                 const s = students.find(st => st.id === sid);
                 c.sessions.forEach(sess => {
                     if(!sess.records) sess.records = [];
@@ -237,27 +225,33 @@
         }
     };
 
-    // [중요수정] 차시 추가 로직
+    // [수정] 차시 생성
     document.getElementById('save-sess-btn').onclick = () => {
         const c = classes.find(x => x.name === currentClassName);
-        const sessName = document.getElementById('sess-name-in').value;
-        if(!sessName) return alert("차시 제목을 입력하세요.");
-        if(!c.sessions) c.sessions = []; // 방어 코드
+        const sName = document.getElementById('sess-name-in').value;
+        if(!sName) return alert("제목 입력");
+        if(!c.sessions) c.sessions = [];
         const recs = (c.students || []).map(sid => {
             const s = students.find(st => st.id === sid);
             return { id: sid, name: s.name, att: "미출석", hw: "○", score: "" };
         });
-        c.sessions.push({ name: sessName, comment: "", records: recs });
+        c.sessions.push({ name: sName, comment: "", records: recs });
         sync(); closeModal();
         document.getElementById('sess-name-in').value = "";
     };
 
     // 렌더링 함수들
+    function render() {
+        document.getElementById('dash-count').innerText = students.length;
+        document.getElementById('student-list-body').innerHTML = students.map(s => `<tr><td onclick="window.showDet('${s.id}')" style="color:var(--primary); cursor:pointer;">${s.name}</td><td>${s.id}</td><td>${s.school}/${s.grade}</td><td>${s.levelTest.score}점</td><td><button onclick="window.delStu('${s.id}')">삭제</button></td></tr>`).join('');
+        document.getElementById('class-list-body').innerHTML = classes.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td><td>${c.sessions?.length || 0}회</td><td><button class="btn btn-primary" onclick="window.showClass('${c.name}')">상세</button></td></tr>`).join('');
+    }
+    window.showClass = (name) => { currentClassName = name; document.getElementById('class-title').innerText = name; showMenu('class-detail-page'); };
     function renderClassSts() {
         const c = classes.find(x => x.name === currentClassName);
         document.getElementById('class-stu-body').innerHTML = (c.students || []).map(sid => {
             const s = students.find(st => st.id === sid);
-            return s ? `<tr><td>${s.name}</td><td>${s.id}</td><td><button class="btn btn-red" onclick="window.remSt('${sid}')">제외</button></td></tr>` : "";
+            return s ? `<tr><td>${s.name}</td><td>${s.id}</td><td><button onclick="window.remSt('${sid}')">제외</button></td></tr>` : "";
         }).join('');
     }
     window.remSt = (sid) => {
@@ -268,27 +262,19 @@
     };
     function renderSessions() {
         const c = classes.find(x => x.name === currentClassName);
-        document.getElementById('session-area').innerHTML = (c.sessions || []).map((s, i) => `<div class="card" style="cursor:pointer; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between;" onclick="window.showSess(${i})"><b>${i+1}회차: ${s.name}</b> <span>출결 관리 →</span></div>`).join('');
+        document.getElementById('session-area').innerHTML = (c.sessions || []).map((s, i) => `<div class="card" style="cursor:pointer; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between;" onclick="window.showSess(${i})"><b>${i+1}회차: ${s.name}</b> <span>보기 →</span></div>`).join('');
     }
-    window.showSess = (i) => { currentSessIdx = i; const c = classes.find(x => x.name === currentClassName); document.getElementById('sess-title').innerText = c.sessions[i].name; document.getElementById('sess-comment').value = c.sessions[i].comment || ""; showMenu('session-detail-page'); };
+    window.showSess = (i) => { currentSessIdx = i; const c = classes.find(x => x.name === currentClassName); document.getElementById('sess-title').innerText = c.sessions[i].name; showMenu('session-detail-page'); };
     function renderSessSts() {
         const c = classes.find(x => x.name === currentClassName);
         const s = c.sessions[currentSessIdx];
-        document.getElementById('sess-stu-body').innerHTML = s.records.map((r, i) => `<tr><td><b>${r.name}</b></td><td><select onchange="window.upR(${i},'att',this.value)"><option ${r.att==='출석'?'selected':''}>출석</option><option ${r.att==='미출석'?'selected':''}>미출석</option></select></td><td><select onchange="window.upR(${i},'hw',this.value)"><option ${r.hw==='○'?'selected':''}>○</option><option ${r.hw==='X'?'selected':''}>X</option></select></td><td><input type="number" value="${r.score}" onchange="window.upR(${i},'score',this.value)" style="width:60px;"></td></tr>`).join('');
+        document.getElementById('sess-stu-body').innerHTML = s.records.map((r, i) => `<tr><td>${r.name}</td><td><select onchange="window.upR(${i},'att',this.value)"><option ${r.att==='출석'?'selected':''}>출석</option><option ${r.att==='미출석'?'selected':''}>미출석</option></select></td><td><select onchange="window.upR(${i},'hw',this.value)"><option ${r.hw==='○'?'selected':''}>○</option><option ${r.hw==='X'?'selected':''}>X</option></select></td><td><input type="number" value="${r.score}" onchange="window.upR(${i},'score',this.value)" style="width:60px;"></td></tr>`).join('');
     }
     window.upR = (i, f, v) => { const c = classes.find(x => x.name === currentClassName); c.sessions[currentSessIdx].records[i][f] = v; sync(); };
-    function render() {
-        document.getElementById('dash-count').innerText = students.length;
-        document.getElementById('student-list-body').innerHTML = students.map(s => `<tr><td onclick="window.showDet('${s.id}')" style="color:var(--primary); cursor:pointer; font-weight:700;">${s.name}</td><td>${s.id}</td><td>${s.school}/${s.grade}</td><td>${s.levelTest.score}점</td><td><button class="btn btn-red" onclick="window.delStu('${s.id}')">삭제</button></td></tr>`).join('');
-        document.getElementById('class-list-body').innerHTML = classes.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td><td>${c.sessions?.length || 0}회</td><td><button class="btn btn-primary" onclick="window.showClass('${c.name}')">상세</button></td></tr>`).join('');
-    }
-    window.showClass = (name) => { currentClassName = name; document.getElementById('class-title').innerText = name; showMenu('class-detail-page'); };
-    window.showDet = (sid) => { const s = students.find(x => x.id === sid); currentStudentId = sid; document.getElementById('det-name-title').innerText = s.name; document.getElementById('det-profile-card').innerHTML = `<p>${s.school} ${s.grade} | ${s.pPhone}</p>`; showMenu('student-detail-page'); };
-    function renderSelection() { const c = classes.find(x => x.name === currentClassName); document.getElementById('selection-list').innerHTML = students.map(s => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${s.name}</span> <button class="btn btn-outline" onclick="window.addStToClass('${s.id}')">${(c.students||[]).includes(s.id)?'배정됨':'추가'}</button></div>`).join(''); }
+    function renderSelection() { const c = classes.find(x => x.name === currentClassName); document.getElementById('selection-list').innerHTML = students.map(s => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${s.name}</span> <button onclick="window.addStToClass('${s.id}')">${(c.students||[]).includes(s.id)?'배정됨':'추가'}</button></div>`).join(''); }
     function renderPay() { document.getElementById('pay-list-body').innerHTML = students.map((s, idx) => `<tr><td>${s.name}</td><td>${s.id}</td><td><input type="number" value="${s.payAmount||0}" onchange="students[${idx}].payAmount=this.value;sync();"></td><td><select onchange="students[${idx}].payStatus=this.value;sync();"><option ${s.payStatus==='미납'?'selected':''}>미납</option><option ${s.payStatus==='완료'?'selected':''}>완료</option></select></td><td><button>할인</button></td></tr>`).join(''); }
 
-    document.getElementById('save-stu-btn').onclick = saveStudent;
-    function saveStudent() { const s = { name: document.getElementById('in-name').value, id: document.getElementById('in-id').value, school: document.getElementById('in-school').value, grade: document.getElementById('in-grade').value, pPhone: document.getElementById('in-p-phone').value, sPhone: document.getElementById('in-s-phone').value, parentPw: document.getElementById('in-parent-pw').value, levelTest: {score:"-", rank:"-"}, counsels: [], grades: {academy:[]}, payAmount: "300000", payStatus: "미납" }; students.push(s); sync(); closeModal(); }
+    document.getElementById('save-stu-btn').onclick = () => { const s = { name: document.getElementById('in-name').value, id: document.getElementById('in-id').value, school: document.getElementById('in-school').value, grade: document.getElementById('in-grade').value, pPhone: document.getElementById('in-p-phone').value, sPhone: document.getElementById('in-s-phone').value, parentPw: document.getElementById('in-parent-pw').value, levelTest: {score:"-", rank:"-"}, counsels: [], grades: {academy:[]}, payAmount: "300000", payStatus: "미납" }; students.push(s); sync(); closeModal(); };
     document.getElementById('logout-btn').onclick = () => { sessionStorage.removeItem('isLoggedIn'); location.reload(); };
     document.querySelectorAll('#nav-list li').forEach(li => li.onclick = (e) => showMenu(e.currentTarget.getAttribute('data-menu')));
 
