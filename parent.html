@@ -2,229 +2,211 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maniaca Parents Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>매니아카 - 학부모 전용</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
         :root {
-            --primary: #6366f1;
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-            --radius: 20px;
+            --primary: #4f46e5; --bg: #f1f5f9;
+            --white: #ffffff; --text: #1e293b;
+            --muted: #64748b; --accent: #10b981;
         }
-
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Pretendard', sans-serif; background: #f1f5f9; color: var(--text-main); height: 100vh; display: flex; justify-content: center; }
-
-        /* 모바일 레이아웃 */
-        .mobile-container {
-            width: 100%; max-width: 480px; height: 100%; background: #f8fafc;
-            display: flex; flex-direction: column; overflow: hidden; position: relative;
-        }
-
-        /* 로그인 섹션 */
-        #login-page {
-            position: absolute; top:0; left:0; width:100%; height:100%; z-index: 100;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px;
-        }
-        .login-box {
-            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
-            padding: 40px 25px; border-radius: 30px; width: 100%; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        input { padding: 15px; margin: 8px 0; border: 1px solid #ddd; border-radius: 12px; width: 100%; font-size: 16px; }
-        .btn-login { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; background: var(--primary); color: white; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
+        .hidden { display: none !important; }
+        
+        /* 로그인 화면 */
+        #login-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; background: var(--white); }
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header h1 { font-size: 2.5rem; color: var(--primary); margin: 0; font-weight: 900; }
+        .login-header p { color: var(--muted); margin-top: 10px; }
+        
+        input { width: 100%; padding: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
 
         /* 메인 대시보드 */
-        #main-page { display: none; flex-direction: column; height: 100%; width: 100%; max-width: 480px; }
-        
-        .header {
-            padding: 30px 20px 15px; background: white; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 10;
-        }
-        .header-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; }
-        .st-info h2 { margin: 0; font-size: 22px; color: #1e293b; }
-        .st-info p { margin: 5px 0 0; color: #64748b; font-size: 14px; }
-        
-        .tab-menu { display: flex; gap: 8px; margin-top: 10px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: #f1f5f9; border-radius: 12px; color: #64748b; font-weight: 600; cursor: pointer; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 30px 30px; position: sticky; top: 0; z-index: 100; }
+        header h2 { margin: 0; font-size: 1.4rem; }
+        header p { margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem; }
 
-        .content-area { flex: 1; overflow-y: auto; padding: 20px; }
-        .card { background: white; border-radius: 18px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; }
-
-        /* 데이터 리스트 */
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .item:last-child { border-bottom: none; }
-        .date { font-size: 12px; color: #94a3b8; }
-        .val { font-size: 15px; font-weight: 600; }
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
-        .status-ok { background: #dcfce7; color: #166534; }
-        .status-no { background: #fee2e2; color: #991b1b; }
+        .container { padding: 20px; padding-bottom: 100px; }
+        .section-title { font-size: 1.1rem; font-weight: 700; margin: 25px 0 15px; display: flex; justify-content: space-between; align-items: center; }
         
-        .section { display: none; }
-        .section.active { display: block; }
+        .card { background: var(--white); padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        
+        /* 출석부 스타일 */
+        .att-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .att-item:last-child { border: none; }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; }
+        .badge.present { background: #ecfdf5; color: #10b981; }
+        .badge.absent { background: #fef2f2; color: #ef4444; }
+
+        /* 성적 그래프 스타일 */
+        .grade-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .bar-bg { flex-grow: 1; height: 10px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--primary); border-radius: 10px; transition: width 0.5s; }
+
+        /* 하단 탭 바 */
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #e2e8f0; box-shadow: 0 -5px 15px rgba(0,0,0,0.03); }
+        .tab-item { text-align: center; color: var(--muted); font-size: 0.75rem; cursor: pointer; flex: 1; }
+        .tab-item.active { color: var(--primary); font-weight: 700; }
+        .tab-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
-    <div id="login-page">
-        <div class="login-box">
-            <h2 style="color:var(--primary); margin:0;">Maniaca</h2>
-            <p style="color:#64748b; margin-bottom:25px; font-size:14px;">학부모 전용 로그인</p>
-            <input type="text" id="parent-id" placeholder="학부모 ID (학생고유번호)">
-            <input type="password" id="parent-pw" placeholder="비밀번호">
-            <button class="btn-login" onclick="tryLogin()">로그인</button>
+<div id="login-page">
+    <div class="login-header">
+        <h1>MANIACA</h1>
+        <p>학부모 전용 안심 서비스</p>
+    </div>
+    <input type="text" id="parent-sid" placeholder="자녀 고유번호 (4자리)">
+    <input type="password" id="parent-pw" placeholder="학부모 전용 비밀번호">
+    <button class="btn-login" id="login-btn">로그인</button>
+    <p style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin-top: 20px;">비밀번호는 학원에 문의해주세요.</p>
+</div>
+
+<div id="main-app" class="hidden">
+    <header>
+        <h2 id="student-name-display">김철수 학생</h2>
+        <p id="student-info-display">대치본원 | 중등부 2학년</p>
+    </header>
+
+    <div class="container">
+        <div id="view-attendance" class="view-section">
+            <div class="section-title">최근 출석 현황</div>
+            <div class="card" id="parent-att-list">
+                </div>
+        </div>
+
+        <div id="view-grades" class="view-section hidden">
+            <div class="section-title">성적 분석 리포트</div>
+            <div class="card">
+                <h4 style="margin:0 0 15px;">학원 시험 평균: <span id="p-grade-avg" style="color:var(--primary);">0점</span></h4>
+                <div id="parent-grade-chart">
+                    </div>
+            </div>
+            <div class="card" id="p-grade-list">
+                </div>
+        </div>
+
+        <div id="view-payments" class="view-section hidden">
+            <div class="section-title">수납 및 결제 내역</div>
+            <div class="card">
+                <div class="att-item">
+                    <span>2026년 1월 교육비</span>
+                    <span class="badge present">완납</span>
+                </div>
+                <div style="text-align: right; margin-top: 10px; font-weight: 700;">300,000원</div>
+            </div>
         </div>
     </div>
 
-    <div id="main-page">
-        <div class="header">
-            <div class="header-top">
-                <div class="st-info">
-                    <h2 id="view-name">로딩 중...</h2>
-                    <p id="view-school">학교 정보</p>
-                </div>
-                <button onclick="location.reload()" style="background:none; border:1px solid #ddd; padding:5px 10px; border-radius:8px; font-size:12px;">로그아웃</button>
-            </div>
-            <div class="tab-menu">
-                <button class="tab-btn active" onclick="showTab('tab-att')">출결</button>
-                <button class="tab-btn" onclick="showTab('tab-score')">성적</button>
-                <button class="tab-btn" onclick="showTab('tab-pay')">수납</button>
-            </div>
-        </div>
-
-        <div class="content-area">
-            <div id="tab-att" class="section active">
-                <div class="card">
-                    <div class="card-title">🕒 최근 출석 현황</div>
-                    <div id="list-att"></div>
-                </div>
-            </div>
-            <div id="tab-score" class="section">
-                <div class="card">
-                    <div class="card-title">📝 성적 리포트</div>
-                    <div id="list-score"></div>
-                </div>
-            </div>
-            <div id="tab-pay" class="section">
-                <div class="card">
-                    <div class="card-title">💳 수납/결제 내역</div>
-                    <div id="list-pay"></div>
-                </div>
-            </div>
-        </div>
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="switchView('attendance')"><span class="tab-icon">📅</span>출결현황</div>
+        <div class="tab-item" onclick="switchView('grades')"><span class="tab-icon">📊</span>성적표</div>
+        <div class="tab-item" onclick="switchView('payments')"><span class="tab-icon">💳</span>수납내역</div>
+        <div class="tab-item" onclick="location.reload()"><span class="tab-icon">👤</span>로그아웃</div>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 선생님의 Firebase 설정 적용
-        const firebaseConfig = {
-            apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
-            authDomain: "maniaca-965fa.firebaseapp.com",
-            databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "maniaca-965fa",
-            storageBucket: "maniaca-965fa.firebasestorage.app",
-            messagingSenderId: "24110097950",
-            appId: "1:24110097950:web:c90fe8736b29a8b787300f",
-            measurementId: "G-CDGPKJLT8B"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
+        authDomain: "maniaca-965fa.firebaseapp.com",
+        databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "maniaca-965fa",
+        storageBucket: "maniaca-965fa.firebasestorage.app",
+        messagingSenderId: "24110097950",
+        appId: "1:24110097950:web:c90fe8736b29a8b787300f"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        let currentStudent = null;
+    let currentStudent = null;
+    let allData = null;
 
-        // 로그인 로직 (학생 고유번호 = ID 로 가정)
-        window.tryLogin = function() {
-            const id = document.getElementById('parent-id').value;
-            const pw = document.getElementById('parent-pw').value;
+    // 1. 로그인 로직
+    document.getElementById('login-btn').onclick = () => {
+        const sid = document.getElementById('parent-sid').value;
+        const pw = document.getElementById('parent-pw').value;
 
-            onValue(ref(db, `students/${id}`), (snapshot) => {
-                const data = snapshot.val();
-                // 원생 정보가 있고, 비밀번호가 일치하면 (비밀번호 기능이 없다면 우선 통과)
-                if(data) {
-                    currentStudent = data;
-                    startApp();
-                } else {
-                    alert("정보를 찾을 수 없습니다. 아이디를 확인해주세요.");
-                }
-            }, { onlyOnce: true });
-        };
+        if(!sid || !pw) return alert("정보를 입력하세요.");
 
-        function startApp() {
-            document.getElementById('login-page').style.display = 'none';
-            document.getElementById('main-page').style.display = 'flex';
+        onValue(ref(db, 'maniaca'), (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            allData = data;
+
+            const student = data.students.find(s => s.id === sid);
+            // 학부모 비번은 임시로 '1234'로 설정 (나중에 원생 등록 시 추가 가능)
+            if(student && pw === "1234") { 
+                currentStudent = student;
+                loadStudentData();
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            } else {
+                alert("번호 또는 비밀번호가 틀렸습니다.");
+            }
+        }, { onlyOnce: true });
+    };
+
+    // 2. 데이터 로드 및 렌더링
+    function loadStudentData() {
+        document.getElementById('student-name-display').innerText = `${currentStudent.name} 학생`;
+        document.getElementById('student-info-display').innerText = `${currentStudent.school} | ${currentStudent.grade}`;
+
+        // 출석 데이터
+        const attList = document.getElementById('parent-att-list');
+        attList.innerHTML = "";
+        allData.classes.forEach(c => {
+            if(c.sessions) {
+                c.sessions.forEach(sess => {
+                    const rec = sess.records.find(r => r.id === currentStudent.id);
+                    if(rec) {
+                        attList.innerHTML += `
+                            <div class="att-item">
+                                <div>
+                                    <div style="font-weight:700;">${c.name}</div>
+                                    <div style="font-size:0.8rem; color:var(--muted);">${sess.name}</div>
+                                </div>
+                                <span class="badge ${rec.att === '출석' ? 'present' : 'absent'}">${rec.att}</span>
+                            </div>
+                        `;
+                    }
+                });
+            }
+        });
+
+        // 성적 데이터
+        if(currentStudent.grades && currentStudent.grades.academy) {
+            const grades = currentStudent.grades.academy;
+            const avg = (grades.reduce((a,b)=>a+b.score,0)/grades.length).toFixed(1);
+            document.getElementById('p-grade-avg').innerText = avg + "점";
             
-            document.getElementById('view-name').innerText = currentStudent.name + " 학생";
-            document.getElementById('view-school').innerText = currentStudent.school;
-
-            loadData();
+            document.getElementById('parent-grade-chart').innerHTML = grades.slice(-3).map(g => `
+                <div style="margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:5px;">
+                        <span>${g.name}</span><span>${g.score}점</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill" style="width:${g.score}%"></div></div>
+                </div>
+            `).join('');
         }
+    }
 
-        function loadData() {
-            const sid = currentStudent.id;
+    // 3. 뷰 전환 함수
+    window.switchView = (view) => {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('view-' + view).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    };
+</script>
 
-            // 1. 출결 로드
-            onValue(ref(db, `students/${sid}/history`), (snap) => {
-                const data = snap.val();
-                const container = document.getElementById('list-att');
-                container.innerHTML = "";
-                if(data) {
-                    Object.values(data).reverse().forEach(h => {
-                        container.innerHTML += `
-                            <div class="item">
-                                <div><div class="date">${h.date}</div><div class="val">${h.note || '정상'}</div></div>
-                                <span class="badge ${h.att === '출석' ? 'status-ok' : 'status-no'}">${h.att}</span>
-                            </div>`;
-                    });
-                } else { container.innerHTML = "<p>기록이 없습니다.</p>"; }
-            });
-
-            // 2. 성적 로드
-            onValue(ref(db, `students/${sid}/scores`), (snap) => {
-                const data = snap.val();
-                const container = document.getElementById('list-score');
-                container.innerHTML = "";
-                if(data) {
-                    Object.values(data).reverse().forEach(s => {
-                        container.innerHTML += `
-                            <div class="item">
-                                <div class="val">${s.name}</div>
-                                <div style="color:var(--primary); font-weight:800;">${s.score}점</div>
-                            </div>`;
-                    });
-                } else { container.innerHTML = "<p>등록된 성적이 없습니다.</p>"; }
-            });
-
-            // 3. 수납 로드 (전체 결제 내역 중 학생 이름 필터링)
-            onValue(ref(db, 'payments'), (snap) => {
-                const data = snap.val();
-                const container = document.getElementById('list-pay');
-                container.innerHTML = "";
-                if(data) {
-                    Object.values(data).filter(p => p.student === currentStudent.name).reverse().forEach(p => {
-                        container.innerHTML += `
-                            <div class="item">
-                                <div><div class="date">${p.date}</div><div class="val">${p.desc}</div></div>
-                                <span class="badge ${p.isPaid ? 'status-ok' : 'status-no'}">${p.isPaid ? '수납완료' : '미납'}</span>
-                            </div>`;
-                    });
-                } else { container.innerHTML = "<p>내역이 없습니다.</p>"; }
-            });
-        }
-
-        window.showTab = function(tid) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tid).classList.add('active');
-            event.target.classList.add('active');
-        };
-    </script>
 </body>
 </html>
