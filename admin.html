@@ -2,231 +2,154 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maniaca HQ - Master Control Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>MANIACA - 가맹 학원 관리 (본사용)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        /* =========================================
-           1. Core Design System
-           ========================================= */
-        :root {
-            --p-color: #4338ca;
-            --p-dark: #312e81;
-            --bg-body: #f8fafc;
-            --sidebar-bg: #0f172a;
-            --radius: 20px;
-            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+        :root { 
+            --admin-bg: #1e293b; --primary: #6366f1;
+            --border: #e2e8f0; --bg-light: #f8fafc;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
-        body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
-
-        /* =========================================
-           2. Login Overlay (Security Layer)
-           ========================================= */
-        #master-auth-overlay {
-            position: fixed; inset: 0; z-index: 9999;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .auth-card {
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
-            padding: 50px; border-radius: 30px; width: 420px; text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-        }
-        .auth-card h1 { color: white; margin-bottom: 30px; letter-spacing: -2px; font-weight: 900; }
-        .auth-input {
-            width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px;
-            border: none; background: rgba(255,255,255,0.9); font-size: 16px;
-        }
-        .btn-auth {
-            width: 100%; padding: 16px; border-radius: 12px; border: none;
-            background: var(--p-color); color: white; font-weight: 800; font-size: 16px; cursor: pointer;
-        }
-
-        /* =========================================
-           3. Admin Dashboard Layout
-           ========================================= */
-        #master-app { display: none; width: 100%; height: 100%; }
-        .sidebar { width: 300px; background: var(--sidebar-bg); color: white; padding: 50px 30px; display: flex; flex-direction: column; }
-        .main-workspace { flex: 1; padding: 60px; overflow-y: auto; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg-light); display: flex; }
         
-        .section-card {
-            background: white; padding: 40px; border-radius: var(--radius);
-            box-shadow: var(--shadow); margin-bottom: 40px; border: 1px solid #e2e8f0;
-        }
-        .section-card h2 { margin-bottom: 30px; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 10px; }
-        
-        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 15px; }
-        .form-input:focus { outline: none; border-color: var(--p-color); background: white; }
+        /* 사이드바 */
+        nav { width: 280px; background: var(--admin-bg); color: white; height: 100vh; position: fixed; }
+        nav h2 { text-align: center; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin: 0; font-weight: 900; }
+        nav ul { list-style: none; padding: 20px; }
+        nav li { padding: 15px 20px; background: var(--primary); border-radius: 10px; cursor: pointer; text-align: center; font-weight: 700; }
 
-        .btn-master { padding: 15px 30px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; background: var(--p-color); color: white; transition: 0.2s; }
-        .btn-master:hover { background: var(--p-dark); transform: translateY(-2px); }
-
-        /* Table Design */
-        .master-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; }
-        .master-table th { text-align: left; padding: 15px 25px; color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase; }
-        .master-table td { padding: 20px 25px; background: white; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
-        .master-table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 15px; border-bottom-left-radius: 15px; }
-        .master-table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
+        /* 메인 컨텐츠 */
+        .content { margin-left: 280px; padding: 50px; width: 100%; }
+        .card { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; }
         
-        .badge-active { background: #dcfce7; color: #15803d; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
-        .btn-terminate { color: #ef4444; background: none; border: none; font-weight: 700; cursor: pointer; }
+        h1 { font-size: 2rem; color: #0f172a; margin-bottom: 40px; }
+        h3 { margin-top: 0; color: #475569; }
+
+        /* 입력 폼 */
+        .form-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        input { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-red { background: #fee2e2; color: #dc2626; padding: 8px 15px; }
+
+        /* 학원 목록 테이블 */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; border-bottom: 2px solid var(--border); color: #64748b; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); color: #1e293b; }
+        tr:hover { background: #f1f5f9; }
     </style>
 </head>
 <body>
 
-    <div id="master-auth-overlay">
-        <div class="auth-card">
-            <h1>HQ MASTER</h1>
-            <input type="text" id="m-id" class="auth-input" placeholder="Master ID">
-            <input type="password" id="m-pw" class="auth-input" placeholder="Security Password">
-            <button class="btn-auth" onclick="MasterControl.login()">Verify Authority</button>
-            <p style="color: rgba(255,255,255,0.4); margin-top: 20px; font-size: 12px;">Authorized Personnel Only</p>
+<nav>
+    <h2>MANIACA HQ</h2>
+    <ul>
+        <li>가맹 학원 계정 관리</li>
+    </ul>
+</nav>
+
+<div class="content">
+    <h1>본사 통합 시스템 관리자</h1>
+
+    <div class="card">
+        <h3>신규 가맹 학원 계정 생성</h3>
+        <div class="form-group">
+            <input type="text" id="aca-name" placeholder="학원명 (예: 매니아카 대치점)">
+            <input type="text" id="aca-id" placeholder="학원 관리자 아이디">
+            <input type="text" id="aca-pw" placeholder="학원 관리자 비밀번호">
         </div>
+        <button class="btn btn-primary" id="create-btn">가맹 학원 계정 발급</button>
     </div>
 
-    <div id="master-app" style="display: flex;">
-        <aside class="sidebar">
-            <h1 style="font-weight: 900; letter-spacing: -2px; margin-bottom: 50px;">MANIACA.HQ</h1>
-            <nav style="flex: 1;">
-                <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; font-weight: 700; margin-bottom: 10px;">
-                    <i class="fa-solid fa-server" style="margin-right: 10px;"></i> 인프라 통합 관리
-                </div>
-            </nav>
-            <button onclick="location.reload()" style="background:none; border:1px solid rgba(255,255,255,0.3); color:white; padding:12px; border-radius:10px; cursor:pointer;">Logout</button>
-        </aside>
-
-        <main class="main-workspace">
-            <div class="section-card">
-                <h2><i class="fa-solid fa-plus-circle"></i> 신규 가맹 학원 생성</h2>
-                <div class="grid-form">
-                    <input type="text" id="aca-name" class="form-input" placeholder="가맹 학원 명칭 (예: 마니아카 대치본점)">
-                    <input type="text" id="aca-owner" class="form-input" placeholder="원장 실명">
-                    <input type="text" id="aca-id" class="form-input" placeholder="접속 ID (영문/숫자)">
-                    <input type="password" id="aca-pw" class="form-input" placeholder="초기 접속 비밀번호">
-                </div>
-                <div style="margin-top: 30px; text-align: right;">
-                    <button class="btn-master" onclick="MasterControl.createAcademy()">인프라 생성 및 계정 배포</button>
-                </div>
-            </div>
-
-            <div class="section-card">
-                <h2><i class="fa-solid fa-list-check"></i> 가맹 지점 인프라 상태</h2>
-                <div style="overflow-x: auto;">
-                    <table class="master-table">
-                        <thead>
-                            <tr>
-                                <th>지점명</th>
-                                <th>원장명</th>
-                                <th>접속 ID</th>
-                                <th>시스템 상태</th>
-                                <th>인프라 제어</th>
-                            </tr>
-                        </thead>
-                        <tbody id="master-list-render">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+    <div class="card">
+        <h3>가맹 학원 목록</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>학원명</th>
+                    <th>계정 아이디</th>
+                    <th>비밀번호</th>
+                    <th>생성일</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="aca-list-body">
+                </tbody>
+        </table>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 선생님의 Firebase 설정 (동일하게 유지)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
-            authDomain: "maniaca-965fa.firebaseapp.com",
-            databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "maniaca-965fa",
-            storageBucket: "maniaca-965fa.firebasestorage.app",
-            messagingSenderId: "24110097950",
-            appId: "1:24110097950:web:c90fe8736b29a8b787300f"
-        };
+    // Firebase 설정
+    const firebaseConfig = {
+        apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
+        authDomain: "maniaca-965fa.firebaseapp.com",
+        databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "maniaca-965fa",
+        storageBucket: "maniaca-965fa.firebasestorage.app",
+        messagingSenderId: "24110097950",
+        appId: "1:24110097950:web:c90fe8736b29a8b787300f"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        /**
-         * MASTER CONTROL CORE
-         */
-        const MasterControl = {
-            // [Security] 로그인 검증
-            login() {
-                const id = document.getElementById('m-id').value;
-                const pw = document.getElementById('m-pw').value;
+    // 학원 생성 함수
+    document.getElementById('create-btn').onclick = () => {
+        const name = document.getElementById('aca-name').value;
+        const id = document.getElementById('aca-id').value;
+        const pw = document.getElementById('aca-pw').value;
 
-                // 요청하신 고정 계정 정보
-                if(id === 'admin' && pw === 'admin0001') {
-                    document.getElementById('master-auth-overlay').style.display = 'none';
-                    document.getElementById('master-app').style.display = 'flex';
-                    this.loadAcademies();
-                } else {
-                    alert("인증에 실패하였습니다. 본사 보안실에 문의하십시오.");
-                }
-            },
+        if(!name || !id || !pw) return alert("모든 정보를 입력해주세요.");
 
-            // [Data] 학원 생성
-            createAcademy() {
-                const name = document.getElementById('aca-name').value;
-                const owner = document.getElementById('aca-owner').value;
-                const id = document.getElementById('aca-id').value;
-                const pw = document.getElementById('aca-pw').value;
+        const academyRef = ref(db, 'academies/' + id);
+        set(academyRef, {
+            name: name,
+            id: id,
+            pw: pw,
+            createdAt: new Date().toLocaleDateString()
+        }).then(() => {
+            alert("신규 가맹 학원이 등록되었습니다.");
+            document.getElementById('aca-name').value = "";
+            document.getElementById('aca-id').value = "";
+            document.getElementById('aca-pw').value = "";
+        });
+    };
 
-                if(!name || !id || !pw) return alert("필수 정보를 누락하였습니다.");
+    // 학원 목록 실시간 렌더링
+    onValue(ref(db, 'academies'), (snapshot) => {
+        const data = snapshot.val();
+        const listBody = document.getElementById('aca-list-body');
+        listBody.innerHTML = "";
 
-                const newRef = push(ref(db, 'academies'));
-                set(newRef, {
-                    name, owner, id, pw,
-                    role: 'director',
-                    status: 'active',
-                    created_at: new Date().toISOString()
-                }).then(() => {
-                    alert(`${name} 인프라 생성이 완료되었습니다.`);
-                    ['aca-name','aca-owner','aca-id','aca-pw'].forEach(el => document.getElementById(el).value = "");
-                });
-            },
+        if (data) {
+            Object.values(data).forEach(aca => {
+                listBody.innerHTML += `
+                    <tr>
+                        <td><strong>${aca.name}</strong></td>
+                        <td>${aca.id}</td>
+                        <td>${aca.pw}</td>
+                        <td>${aca.createdAt}</td>
+                        <td>
+                            <button class="btn btn-red" onclick="deleteAca('${aca.id}')">해지</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            listBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>등록된 가맹 학원이 없습니다.</td></tr>";
+        }
+    });
 
-            // [Sync] 실시간 목록 로드
-            loadAcademies() {
-                onValue(ref(db, 'academies'), snap => {
-                    const data = snap.val();
-                    const tbody = document.getElementById('master-list-render');
-                    tbody.innerHTML = "";
+    // 학원 계정 삭제 함수
+    window.deleteAca = (id) => {
+        if(confirm("해당 학원 계정을 정말 해지하시겠습니까?\n데이터는 복구되지 않습니다.")) {
+            remove(ref(db, 'academies/' + id));
+        }
+    };
+</script>
 
-                    if(data) {
-                        Object.entries(data).forEach(([key, a]) => {
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td style="font-weight:800; color:#1e293b;">${a.name}</td>
-                                    <td>${a.owner || '-'}</td>
-                                    <td><code style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-weight:700; color:var(--p-color);">${a.id}</code></td>
-                                    <td><span class="badge-active">ACTIVE</span></td>
-                                    <td><button class="btn-terminate" onclick="MasterControl.terminate('${key}')">파기</button></td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:40px; color:#94a3b8;'>활성화된 가맹 지점이 없습니다.</td></tr>";
-                    }
-                });
-            },
-
-            // [Action] 인프라 파기
-            terminate(key) {
-                if(confirm("해당 가맹 지점의 모든 데이터와 계정 권한을 즉시 파기하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
-                    remove(ref(db, `academies/${key}`));
-                }
-            }
-        };
-
-        window.MasterControl = MasterControl;
-
-    </script>
 </body>
 </html>
