@@ -16,8 +16,9 @@
     .toast{animation:toastIn .2s ease-out}
     @keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
     .modal-backdrop{background:rgba(0,0,0,.45)}
-    .tbl th{color:rgb(100 116 139);font-weight:600;padding:.5rem .75rem;text-align:left}
-    .tbl td{padding:.65rem .75rem}
+    .tbl th{color:rgb(100 116 139);font-weight:600;padding:.5rem .75rem;text-align:left;white-space:nowrap}
+    .tbl td{padding:.65rem .75rem;white-space:nowrap}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -25,7 +26,7 @@
 
   <div id="modalRoot" class="hidden fixed inset-0 z-50 modal-backdrop">
     <div class="min-h-screen flex items-center justify-center p-6">
-      <div id="modalCard" class="w-full max-w-3xl rounded-3xl bg-white border border-slate-200 shadow-xl"></div>
+      <div id="modalCard" class="w-full max-w-4xl rounded-3xl bg-white border border-slate-200 shadow-xl"></div>
     </div>
   </div>
 
@@ -93,7 +94,7 @@
         <div class="mt-5 px-2 py-3 rounded-2xl bg-slate-50 border border-slate-200">
           <div class="text-xs text-slate-500">로그인 사용자</div>
           <div class="font-semibold" id="whoami">-</div>
-          <div class="text-xs text-slate-500 mt-1">학원 코드: <span class="font-mono" id="whoCode">-</span></div>
+          <div class="text-xs text-slate-500 mt-1">학원 코드: <span class="mono" id="whoCode">-</span></div>
         </div>
       </aside>
 
@@ -132,7 +133,7 @@
           <div class="flex items-end justify-between gap-3 flex-wrap">
             <div>
               <h2 class="text-2xl font-bold">원생</h2>
-              <p class="text-slate-600 text-sm mt-1">학부모 사이트 비밀번호 포함</p>
+              <p class="text-slate-600 text-sm mt-1">학생 고유번호(키오스크 연동) + 연락처 3개</p>
             </div>
             <button class="btnP" onclick="Students.openCreate()">원생 등록</button>
           </div>
@@ -141,7 +142,18 @@
             <div class="font-semibold">원생 목록</div>
             <div class="mt-4 overflow-auto">
               <table class="tbl min-w-full text-sm">
-                <thead><tr><th>이름</th><th>학년</th><th>연락처</th><th>관리</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>학생명</th>
+                    <th>고유번호</th>
+                    <th>학교</th>
+                    <th>학년</th>
+                    <th>부모(1)</th>
+                    <th>부모(2)</th>
+                    <th>학생</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
                 <tbody id="studentRows" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
@@ -156,7 +168,6 @@
               <p class="text-slate-600 text-sm mt-1">할인(%) 입력 → 실수납 자동 반영</p>
             </div>
             <div class="flex gap-2">
-              <!-- ✅ (수정 2) 학생 자동 등록 버튼: 실제 등록 로직 연결 -->
               <button class="btn" onclick="Payments.openAutoRegister()">학생 자동 등록</button>
               <button class="btnP" onclick="Payments.openCreate()">수납 등록</button>
             </div>
@@ -274,6 +285,7 @@
               <button class="btnP" onclick="Students.openMonthlyHomework()">월별 과제 통계</button>
             </div>
           </div>
+
           <div class="bg-white border border-slate-200 rounded-3xl p-5">
             <div class="font-semibold">기본 정보</div>
             <div class="mt-3 text-sm text-slate-700" id="sdInfo">-</div>
@@ -315,7 +327,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, set, update, push, get, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, set, push, get, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCMpX7R7IwOIaUSjWUpzqDQf7MlqZ7nhls",
@@ -343,9 +355,10 @@
         const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,"0");
         return `${y}-${m}`;
       },
-      uid(prefix="id"){ return prefix + "-" + Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); },
       money(n){ return (Number(n)||0).toLocaleString("ko-KR"); },
-      clamp(n,min,max){ n=Number(n)||0; return Math.max(min, Math.min(max,n)); }
+      clamp(n,min,max){ n=Number(n)||0; return Math.max(min, Math.min(max,n)); },
+      normPhone(s){ return String(s||"").replace(/[^\d]/g,""); },
+      normId(s){ return String(s||"").trim().replace(/\s+/g,""); }
     };
 
     const Toast = {
@@ -370,8 +383,7 @@
         document.getElementById("modalCard").innerHTML = "";
       }
     };
-
-    // ✅ (수정 1) inline onclick에서 Modal을 찾을 수 있게 전역으로 노출
+    // inline onclick에서 접근 가능해야 함
     window.Modal = Modal;
 
     const State = {
@@ -450,7 +462,6 @@
         const password = document.getElementById("lgPass").value.trim();
         if (!code || !username || !password) return Toast.show("학원코드/아이디/비밀번호를 입력해주세요.", "error");
 
-        // code -> academyId
         const idxSnap = await get(ref(db, `academyCodeIndex/${code}`));
         if (!idxSnap.exists()){
           await logLogin({username, academyCode:code, success:false, note:"CODE_NOT_FOUND"});
@@ -458,7 +469,6 @@
         }
         const academyId = idxSnap.val();
 
-        // academy active check
         const acSnap = await get(ref(db, `academies/${academyId}`));
         if (!acSnap.exists() || acSnap.val().status!=="ACTIVE"){
           await logLogin({username, academyCode:code, success:false, note:"ACADEMY_INACTIVE"});
@@ -466,7 +476,6 @@
         }
         const academy = acSnap.val();
 
-        // account check
         const accSnap = await get(ref(db, `accounts/${username}`));
         if (!accSnap.exists()){
           await logLogin({username, academyCode:code, success:false, note:"NO_ACCOUNT"});
@@ -486,7 +495,6 @@
           return Toast.show("이 계정은 해당 학원 소속이 아닙니다.", "error");
         }
 
-        // session
         const session = { academyId, academyCode: code, academyName: academy.name, username, role: acc.role };
         localStorage.setItem("academySession", JSON.stringify(session));
         await logLogin({username, academyCode:code, success:true, note:acc.role});
@@ -570,16 +578,49 @@
             <div class="flex items-start justify-between gap-3">
               <div>
                 <div class="text-xl font-bold">원생 등록</div>
-                <div class="text-sm text-slate-600 mt-1">학부모 사이트 비밀번호 포함</div>
+                <div class="text-sm text-slate-600 mt-1">학생 고유번호는 키오스크 출석에 사용됩니다(학원 내 중복 불가).</div>
               </div>
               <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
 
             <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
-              <input id="stName" class="field" placeholder="이름" />
-              <input id="stGrade" class="field" placeholder="학년 (예: 중2)" />
-              <input id="stPhone" class="field" placeholder="연락처" />
-              <input id="stParentPw" class="field" placeholder="학부모 사이트 비밀번호" />
+              <div>
+                <div class="text-xs text-slate-500 mb-1">학생명</div>
+                <input id="stName" class="field" placeholder="예: 홍길동" />
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">학생 고유번호</div>
+                <input id="stNo" class="field mono" placeholder="예: 24001 (학원 내 유일)" />
+              </div>
+
+              <div>
+                <div class="text-xs text-slate-500 mb-1">학교</div>
+                <input id="stSchool" class="field" placeholder="예: ○○중" />
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">학년</div>
+                <input id="stGrade" class="field" placeholder="예: 중2" />
+              </div>
+
+              <div>
+                <div class="text-xs text-slate-500 mb-1">부모님 전화번호 (1)</div>
+                <input id="stP1" class="field mono" placeholder="010-0000-0000" inputmode="tel" />
+              </div>
+              <div>
+                <div class="text-xs text-slate-500 mb-1">부모님 전화번호 (2)</div>
+                <input id="stP2" class="field mono" placeholder="010-0000-0000" inputmode="tel" />
+              </div>
+
+              <div class="sm:col-span-2">
+                <div class="text-xs text-slate-500 mb-1">학생 전화번호</div>
+                <input id="stSPhone" class="field mono" placeholder="010-0000-0000" inputmode="tel" />
+              </div>
+
+              <!-- 기존 요구가 있었던 ‘학부모 사이트 비번’은 선택 항목으로 유지 -->
+              <div class="sm:col-span-2">
+                <div class="text-xs text-slate-500 mb-1">학부모 사이트 비밀번호 (선택)</div>
+                <input id="stParentPw" class="field mono" placeholder="(선택) 학부모 사이트 비밀번호" />
+              </div>
             </div>
 
             <div class="mt-5 flex justify-end gap-2">
@@ -591,16 +632,49 @@
       },
 
       async create(){
+        if (!State.academyId) return Toast.show("학원 정보가 없습니다.", "error");
+
         const name = document.getElementById("stName").value.trim();
+        const studentNoRaw = document.getElementById("stNo").value;
+        const studentNo = Util.normId(studentNoRaw);
+        const school = document.getElementById("stSchool").value.trim();
         const grade = document.getElementById("stGrade").value.trim();
-        const phone = document.getElementById("stPhone").value.trim();
-        const parentPw = document.getElementById("stParentPw").value.trim();
-        if (!name) return Toast.show("이름은 필수입니다.", "error");
+
+        const parentPhone1 = Util.normPhone(document.getElementById("stP1").value);
+        const parentPhone2 = Util.normPhone(document.getElementById("stP2").value);
+        const studentPhone = Util.normPhone(document.getElementById("stSPhone").value);
+        const parentPw = (document.getElementById("stParentPw").value||"").trim();
+
+        if (!name) return Toast.show("학생명은 필수입니다.", "error");
+        if (!studentNo) return Toast.show("학생 고유번호는 필수입니다.", "error");
+
+        // (키오스크 대비) 학원별 고유번호 인덱스 중복 확인
+        const idxRef = ref(db, `academyStudentNoIndex/${State.academyId}/${studentNo}`);
+        const idxSnap = await get(idxRef);
+        if (idxSnap.exists()){
+          return Toast.show("이미 사용 중인 학생 고유번호입니다.", "error");
+        }
 
         const id = push(ref(db, `academyData/${State.academyId}/students`)).key;
+
+        // 학생 데이터 저장
         await set(ref(db, `academyData/${State.academyId}/students/${id}`), {
-          id,name,grade,phone,parentPw,createdAt:Date.now(),createdAtKST:Util.nowKST()
+          id,
+          name,
+          studentNo,
+          school,
+          grade,
+          parentPhone1,
+          parentPhone2,
+          studentPhone,
+          parentPw, // 선택
+          createdAt: Date.now(),
+          createdAtKST: Util.nowKST()
         });
+
+        // 고유번호 인덱스 저장(키오스크에서 studentNo로 studentId 조회)
+        await set(idxRef, id);
+
         Toast.show("등록되었습니다.", "success");
         Modal.close();
       },
@@ -610,15 +684,19 @@
         tbody.innerHTML="";
         const list = Object.values(State.students||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
         if (list.length===0){
-          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="4">원생이 없습니다.</td></tr>`;
+          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="8">원생이 없습니다.</td></tr>`;
           return;
         }
         for (const s of list){
           const tr=document.createElement("tr");
           tr.innerHTML=`
-            <td class="font-medium">${s.name}</td>
+            <td class="font-medium">${s.name||"-"}</td>
+            <td class="mono text-xs">${s.studentNo||"-"}</td>
+            <td>${s.school||"-"}</td>
             <td>${s.grade||"-"}</td>
-            <td class="font-mono text-xs">${s.phone||"-"}</td>
+            <td class="mono text-xs">${Students.fmtPhone(s.parentPhone1)}</td>
+            <td class="mono text-xs">${Students.fmtPhone(s.parentPhone2)}</td>
+            <td class="mono text-xs">${Students.fmtPhone(s.studentPhone)}</td>
             <td class="space-x-1">
               <button class="btn" onclick="Students.openDetail('${s.id}')">상세</button>
               <button class="btn" onclick="Students.remove('${s.id}')">삭제</button>
@@ -626,6 +704,14 @@
           `;
           tbody.appendChild(tr);
         }
+      },
+
+      fmtPhone(num){
+        const s = String(num||"");
+        if (!s) return "-";
+        if (s.length===11) return `${s.slice(0,3)}-${s.slice(3,7)}-${s.slice(7)}`;
+        if (s.length===10) return `${s.slice(0,3)}-${s.slice(3,6)}-${s.slice(6)}`;
+        return s;
       },
 
       openDetail(id){
@@ -636,12 +722,18 @@
       renderDetail(){
         const st = (State.students||{})[this.selectedStudentId];
         if (!st) return;
-        document.getElementById("sdTitle").textContent = st.name;
+
+        document.getElementById("sdTitle").textContent = st.name || "-";
         document.getElementById("sdInfo").innerHTML = `
           <div class="grid sm:grid-cols-2 gap-2">
+            <div><span class="text-slate-500">학생명:</span> <b>${st.name||"-"}</b></div>
+            <div><span class="text-slate-500">학생 고유번호:</span> <span class="mono">${st.studentNo||"-"}</span></div>
+            <div><span class="text-slate-500">학교:</span> ${st.school||"-"}</div>
             <div><span class="text-slate-500">학년:</span> ${st.grade||"-"}</div>
-            <div><span class="text-slate-500">연락처:</span> ${st.phone||"-"}</div>
-            <div class="sm:col-span-2"><span class="text-slate-500">학부모 사이트 비번:</span> <span class="font-mono">${st.parentPw||"-"}</span></div>
+            <div><span class="text-slate-500">부모님(1):</span> <span class="mono">${Students.fmtPhone(st.parentPhone1)}</span></div>
+            <div><span class="text-slate-500">부모님(2):</span> <span class="mono">${Students.fmtPhone(st.parentPhone2)}</span></div>
+            <div class="sm:col-span-2"><span class="text-slate-500">학생 전화번호:</span> <span class="mono">${Students.fmtPhone(st.studentPhone)}</span></div>
+            <div class="sm:col-span-2"><span class="text-slate-500">학부모 사이트 비번(선택):</span> <span class="mono">${st.parentPw||"-"}</span></div>
           </div>
         `;
       },
@@ -691,7 +783,7 @@
           tr.innerHTML=`
             <td>${it.className}</td>
             <td>${it.sessionNo}</td>
-            <td class="font-mono text-xs">${it.date}</td>
+            <td class="mono text-xs">${it.date}</td>
             <td>${label(it.value)}</td>
           `;
           rows.appendChild(tr);
@@ -700,7 +792,16 @@
 
       async remove(id){
         if (!confirm("삭제할까요?")) return;
+        const st = (State.students||{})[id];
+
+        // 학생 데이터 삭제
         await set(ref(db, `academyData/${State.academyId}/students/${id}`), null);
+
+        // 고유번호 인덱스도 함께 삭제(있을 때만)
+        if (st?.studentNo){
+          await set(ref(db, `academyStudentNoIndex/${State.academyId}/${st.studentNo}`), null);
+        }
+
         Toast.show("삭제되었습니다.", "success");
       }
     };
@@ -800,7 +901,6 @@
         this.recalc();
       },
 
-      // ✅ 학생 자동 등록: 모달 열기
       openAutoRegister(){
         if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
         const cnt = Object.keys(State.students||{}).length;
@@ -824,7 +924,7 @@
             </div>
 
             <div class="mt-3 text-xs text-slate-500">
-              • 이미 같은 날짜에 등록된 항목이 있으면(원생별) 자동으로 건너뜁니다.
+              • 같은 날짜에 이미 등록된 학생은 자동으로 건너뜁니다.
             </div>
 
             <div class="mt-5 flex justify-end gap-2">
@@ -835,7 +935,6 @@
         `);
       },
 
-      // ✅ 실제 일괄 등록 로직
       async autoRegisterStudents(){
         if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
 
@@ -849,7 +948,6 @@
 
         const netAmount = Math.round(amount * (1 - discountPercent / 100));
 
-        // 중복 방지: 같은 date + studentId 가 이미 있으면 skip
         const existing = new Set(
           Object.values(State.payments||{})
             .filter(p => (p.date||"") === date)
@@ -927,7 +1025,7 @@
         for (const p of list){
           const tr=document.createElement("tr");
           tr.innerHTML=`
-            <td class="font-mono text-xs">${p.date}</td>
+            <td class="mono text-xs">${p.date}</td>
             <td class="font-medium">${sMap[p.studentId]||"-"}</td>
             <td>${Util.money(p.amount)}</td>
             <td>${Number(p.discountPercent||0)}%</td>
@@ -1086,7 +1184,7 @@
           tr.innerHTML=`
             <td class="font-medium">${c.name}</td>
             <td>${s.no}</td>
-            <td class="font-mono text-xs">${s.date}</td>
+            <td class="mono text-xs">${s.date}</td>
             <td><button class="btn" onclick="Classes.openHomework('${c.id}','${s.id}')">과제 체크</button></td>
             <td><button class="btn" onclick="Classes.openTest('${c.id}','${s.id}')">시험 점수</button></td>
             <td><button class="btn" onclick="Classes.removeSession('${c.id}','${s.id}')">삭제</button></td>
@@ -1312,7 +1410,7 @@
           const target = n.target==="ALL"?"전체":`코드:${n.academyCode}`;
           const tr=document.createElement("tr");
           tr.innerHTML=`
-            <td class="font-mono text-xs">${n.updatedAtKST||n.createdAtKST||"-"}</td>
+            <td class="mono text-xs">${n.updatedAtKST||n.createdAtKST||"-"}</td>
             <td class="font-medium">${n.title||"-"}</td>
             <td>${target}</td>
             <td><button class="btn" onclick="Notices.view('${n.id}')">보기</button></td>
@@ -1350,7 +1448,6 @@
     if (saved){
       try{
         const s = JSON.parse(saved);
-        // verify still valid
         const acSnap = await get(ref(db, `academies/${s.academyId}`));
         const accSnap = await get(ref(db, `accounts/${s.username}`));
         if (acSnap.exists() && acSnap.val().status==="ACTIVE" && accSnap.exists()){
