@@ -25,12 +25,17 @@
         #landing-page { z-index: 2000; }
         #login-page { z-index: 1500; }
 
-        nav { width: 280px; background: var(--nav-bg); color: white; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; }
+        nav { width: 280px; background: var(--nav-bg); color: white; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
         nav h2 { text-align: center; padding: 40px 0; font-size: 1.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin: 0; }
-        nav ul { list-style: none; padding: 20px; margin: 0; }
+        nav ul { list-style: none; padding: 20px; margin: 0; flex-grow: 1; }
         nav li { padding: 18px 25px; cursor: pointer; border-radius: 12px; margin-bottom: 8px; color: var(--nav-text); font-size: 1.1rem; transition: 0.2s; }
         nav li:hover { background: rgba(255,255,255,0.05); color: #fff; }
         nav li.active-menu { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+        
+        /* 로그아웃 버튼 스타일 */
+        .logout-area { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .btn-logout { width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .btn-logout:hover { background: #ef4444; color: white; }
 
         .content { margin-left: 280px; padding: 40px; width: calc(100% - 360px); min-height: 100vh; }
         h2 { font-size: 2rem; margin-bottom: 30px; font-weight: 800; color: #0f172a; }
@@ -79,9 +84,12 @@
             <li data-menu="dashboard" class="active-menu">1. 대쉬보드</li>
             <li data-menu="student-mgmt">2. 원생 관리</li>
             <li data-menu="pay-mgmt">3. 수납 관리</li>
-            <li data-menu="class-mgmt">4. 수업 관리</li>
-            <li data-menu="teacher-mgmt">5. 강사 관리</li>
+            <li onclick="alert('준비중')">4. 수업 관리</li>
+            <li onclick="alert('준비중')">5. 강사 관리</li>
         </ul>
+        <div class="logout-area">
+            <button class="btn-logout" id="logout-btn">로그아웃</button>
+        </div>
     </nav>
 
     <div class="content">
@@ -129,8 +137,9 @@
             <button class="btn" style="background:none;" onclick="showMenu('student-detail-page')">← 상세페이지로</button>
             <h2>상담 관리</h2>
             <div class="card">
-                <input type="date" id="counsel-date">
-                <input type="text" id="counsel-title" placeholder="상담 제목" style="margin: 10px 0;">
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
+                    <input type="date" id="counsel-date"> <input type="text" id="counsel-title" placeholder="상담 제목">
+                </div>
                 <textarea id="counsel-content" style="height:120px; margin-bottom:10px;" placeholder="내용"></textarea>
                 <button class="btn btn-primary" id="save-counsel-btn">상담 내용 저장</button>
             </div>
@@ -178,57 +187,6 @@
                 <table><thead><tr><th>학생명</th><th>고유번호</th><th>수납 금액</th><th>납부 여부</th><th>할인</th></tr></thead><tbody id="pay-list-body"></tbody></table>
             </div>
         </div>
-
-        <div id="menu-class-mgmt" class="menu-section hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                <h2>수업 관리</h2>
-                <button class="btn btn-primary" onclick="openModal('class-reg-modal')">수업 추가</button>
-            </div>
-            <table><thead><tr><th>수업명</th><th>강사</th><th>강의실</th></tr></thead><tbody id="class-list-body"></tbody></table>
-        </div>
-
-        <div id="class-detail-page" class="menu-section hidden">
-            <button class="btn" style="background:none; margin-bottom: 20px;" onclick="showMenu('class-mgmt')">← 수업 목록으로</button>
-            <h2 id="class-det-title">수업 상세 정보</h2>
-            <div class="card" id="class-info-card" style="border-top: 5px solid var(--primary);"></div>
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                    <h3>수업 참여 학생 목록</h3>
-                    <button class="btn btn-primary" onclick="openModal('add-student-to-class-modal')">+ 학생 추가하기</button>
-                </div>
-                <table><thead><tr><th>학생명</th><th>고유번호</th><th>관리</th></tr></thead><tbody id="class-student-list-body"></tbody></table>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3>차시 관리</h3>
-                <button class="btn btn-primary" onclick="openModal('session-reg-modal')">+ 새 차시 추가</button>
-            </div>
-            <div id="session-list-area"></div>
-        </div>
-
-        <div id="session-detail-page" class="menu-section hidden">
-            <button class="btn" style="background:none; margin-bottom: 20px;" onclick="showMenu('class-detail-page')">← 차시 목록으로</button>
-            <h2 id="session-det-title">차시 상세 관리</h2>
-            <div class="card">
-                <h3>차시 코멘트</h3>
-                <textarea id="session-comment" style="height:100px;"></textarea>
-                <button class="btn btn-primary" style="margin-top:10px;" id="save-session-comment-btn">코멘트 저장</button>
-            </div>
-            <div class="card">
-                <table><thead><tr><th>학생명</th><th>출석</th><th>과제</th><th>시험</th></tr></thead><tbody id="session-student-body"></tbody></table>
-            </div>
-            <div class="card" style="background:#f1f5f9; border: 2px dashed var(--primary);">
-                <h3>KIOSK 출석</h3>
-                <div style="display:flex; gap:20px; align-items:center;">
-                    <input type="text" id="kiosk-id-input" style="width: 300px; background:white;" placeholder="고유번호 입력">
-                    <button class="btn btn-primary" id="kiosk-btn">입력</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="menu-teacher-mgmt" class="menu-section hidden">
-            <h2>강사 관리</h2>
-            <div class="card"><h3>강사 추가</h3><button class="btn btn-primary" onclick="alert('준비중')">등록하기</button></div>
-        </div>
     </div>
 </div>
 
@@ -241,11 +199,6 @@
         <input type="text" id="in-grade" placeholder="학년">
         <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="save-student-btn">등록</button>
     </div>
-    <div class="modal-content hidden" id="add-student-to-class-modal">
-        <h3>수업에 학생 추가</h3>
-        <div id="all-students-selection-list" style="margin:15px 0;"></div>
-        <button class="btn btn-red" style="width:100%" onclick="closeModal()">닫기</button>
-    </div>
     <div class="modal-content hidden" id="counsel-edit-modal">
         <h3>상담 상세 및 수정</h3>
         <input type="hidden" id="edit-counsel-index">
@@ -254,22 +207,11 @@
         <textarea id="edit-counsel-content" style="height:200px; margin: 10px 0;"></textarea>
         <div style="display:flex; gap:10px;"><button class="btn btn-primary" style="flex:1" id="update-counsel-btn">수정</button><button class="btn btn-red" style="flex:1" onclick="closeModal()">닫기</button></div>
     </div>
-    <div class="modal-content hidden" id="class-reg-modal">
-        <h3>수업 추가</h3>
-        <input type="text" id="c-name" placeholder="수업명"> 
-        <input type="text" id="c-teacher" placeholder="강사"> 
-        <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="save-class-btn">추가</button>
-    </div>
-    <div class="modal-content hidden" id="session-reg-modal">
-        <h3>새 차시 추가</h3>
-        <input type="text" id="session-name-input" placeholder="차시 제목">
-        <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="save-session-btn">저장</button>
-    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
@@ -285,50 +227,60 @@
     const firebaseApp = initializeApp(firebaseConfig);
     const db = getDatabase(firebaseApp);
 
-    // 전역 변수
     let students = [];
     let classes = [];
     let currentStudentId = null;
-    let currentClassName = null;
-    let currentSessionIdx = null;
 
-    // 데이터 동기화 (DB -> Local 변수)
+    // --- 로그인 유지 로직 ---
+    function checkLoginStatus() {
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        if (isLoggedIn === 'true') {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-system').classList.remove('hidden');
+            showMenu('dashboard');
+        }
+    }
+
     onValue(ref(db, 'maniaca'), (snapshot) => {
         const data = snapshot.val();
         if (data) {
             students = data.students || [];
             classes = data.classes || [];
             render();
-            // 현재 활성화된 페이지 리프레시 로직
             const activePage = document.querySelector('.menu-section:not(.hidden)');
             if(activePage) {
                 const id = activePage.id;
                 if(id === 'student-counsel-page') renderCounsel();
                 if(id === 'student-grade-page') renderGrades();
                 if(id === 'student-attendance-page') renderAttendance();
-                if(id === 'class-detail-page') { renderClassStudents(); renderSessions(); }
-                if(id === 'session-detail-page') renderSessionStudents();
                 if(id === 'pay-mgmt') renderPaymentList();
             }
         }
     });
 
-    // DB 저장 헬퍼
     function syncDB() {
         set(ref(db, 'maniaca'), { students, classes });
     }
 
-    // 기본 네비게이션 함수들 (window 객체에 바인딩)
     window.goTo = (id) => {
         document.querySelectorAll('section, #main-system').forEach(el => el.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
     };
 
     window.goToDashboard = () => {
+        // 로그인 상태 저장
+        sessionStorage.setItem('isLoggedIn', 'true');
         document.getElementById('landing-page').classList.add('hidden');
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('main-system').classList.remove('hidden');
         showMenu('dashboard');
+    };
+
+    // 로그아웃 함수
+    window.logout = () => {
+        sessionStorage.removeItem('isLoggedIn');
+        location.reload(); // 페이지 새로고침하여 초기 상태로 복구
     };
 
     window.showMenu = (id) => {
@@ -339,8 +291,6 @@
         if(id === 'student-counsel-page') renderCounsel();
         if(id === 'student-grade-page') renderGrades();
         if(id === 'student-attendance-page') renderAttendance();
-        if(id === 'class-detail-page') { renderClassStudents(); renderSessions(); }
-        if(id === 'session-detail-page') renderSessionStudents();
         if(id === 'pay-mgmt') renderPaymentList();
 
         if(!id.includes('page')) {
@@ -354,14 +304,11 @@
         document.getElementById('modal-overlay').style.display = 'flex';
         document.querySelectorAll('.modal-content').forEach(m => m.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
-        if(id === 'add-student-to-class-modal') renderAllStudentsForSelection();
     };
 
     window.closeModal = () => { document.getElementById('modal-overlay').style.display = 'none'; };
 
-    // --- 기능 로직 ---
-
-    // 1. 학생 관리
+    // 학생 관리 (절대 수정 금지 원칙 준수)
     function saveStudent() {
         const s = { 
             name: document.getElementById('in-name').value, 
@@ -386,7 +333,7 @@
         }
     };
 
-    // 2. 상담 & 성적
+    // 상담 & 성적 & 기타 렌더링 함수들...
     function saveCounsel() {
         const s = students.find(x => x.id === currentStudentId);
         if(s) {
@@ -444,7 +391,6 @@
         if(!s || !s.grades) return;
         document.getElementById('academy-grade-list').innerHTML = (s.grades.academy || []).map((g,i) => `<tr><td>${g.name}</td><td>${g.score}</td><td><button onclick="window.delGrade('academy',${i})">X</button></td></tr>`).join('');
         document.getElementById('school-grade-list').innerHTML = (s.grades.school || []).map((g,i) => `<tr><td>${g.name}</td><td>${g.score}</td><td><button onclick="window.delGrade('school',${i})">X</button></td></tr>`).join('');
-        
         const aAvg = s.grades.academy.length ? (s.grades.academy.reduce((a,b)=>a+b.score, 0)/s.grades.academy.length).toFixed(1) : 0;
         document.getElementById('grade-avg-academy').innerText = aAvg + "점";
         const container = document.getElementById('grade-graph-container');
@@ -457,118 +403,6 @@
         syncDB();
     };
 
-    // 3. 수업 & 차시
-    function saveClass() {
-        const c = { 
-            name: document.getElementById('c-name').value, 
-            teacher: document.getElementById('c-teacher').value, 
-            students: [], sessions: [] 
-        };
-        classes.push(c);
-        syncDB();
-        closeModal();
-    }
-
-    window.showClassDetail = (name) => {
-        currentClassName = name;
-        const c = classes.find(x => x.name === name);
-        document.getElementById('class-det-title').innerText = c.name + " 상세";
-        document.getElementById('class-info-card').innerHTML = `<p>강사: ${c.teacher}</p>`;
-        showMenu('class-detail-page');
-    };
-
-    function renderAllStudentsForSelection() {
-        const area = document.getElementById('all-students-selection-list');
-        const c = classes.find(x => x.name === currentClassName);
-        area.innerHTML = students.map(s => {
-            const isAdded = (c.students || []).includes(s.id);
-            return `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>${s.name}</span>${isAdded ? '<span>추가됨</span>' : `<button onclick="window.addStudentToClass('${s.id}')">추가</button>`}</div>`;
-        }).join('');
-    }
-
-    window.addStudentToClass = (sid) => {
-        const c = classes.find(x => x.name === currentClassName);
-        if(!c.students) c.students = [];
-        if(!c.students.includes(sid)) {
-            c.students.push(sid);
-            syncDB();
-        }
-    };
-
-    function renderClassStudents() {
-        const c = classes.find(x => x.name === currentClassName);
-        const body = document.getElementById('class-student-list-body');
-        body.innerHTML = (c.students || []).map(sid => {
-            const s = students.find(st => st.id === sid);
-            return s ? `<tr><td>${s.name}</td><td>${s.id}</td><td><button onclick="window.removeStudentFromClass('${sid}')">제외</button></td></tr>` : "";
-        }).join('');
-    }
-
-    window.removeStudentFromClass = (sid) => {
-        const c = classes.find(x => x.name === currentClassName);
-        c.students = c.students.filter(id => id !== sid);
-        syncDB();
-    };
-
-    function saveSession() {
-        const sName = document.getElementById('session-name-input').value;
-        const c = classes.find(x => x.name === currentClassName);
-        if(c) {
-            if(!c.sessions) c.sessions = [];
-            const sessStudents = (c.students || []).map(sid => {
-                const s = students.find(st => st.id === sid);
-                return { id: sid, name: s ? s.name : "알 수 없음", att: "출석", hw: "○", score: "" };
-            });
-            c.sessions.push({ name: sName, comment: "", records: sessStudents });
-            syncDB();
-            document.getElementById('session-name-input').value = "";
-            closeModal();
-        }
-    }
-
-    function renderSessions() {
-        const c = classes.find(x => x.name === currentClassName);
-        const area = document.getElementById('session-list-area');
-        area.innerHTML = (c.sessions || []).map((s, i) => `<div class="card" style="cursor:pointer;" onclick="window.showSessionDetail(${i})">${i+1}회차: ${s.name} →</div>`).join('');
-    }
-
-    window.showSessionDetail = (idx) => {
-        currentSessionIdx = idx;
-        const c = classes.find(x => x.name === currentClassName);
-        const s = c.sessions[idx];
-        document.getElementById('session-det-title').innerText = s.name + " 상세";
-        document.getElementById('session-comment').value = s.comment || "";
-        showMenu('session-detail-page');
-    };
-
-    function renderSessionStudents() {
-        const c = classes.find(x => x.name === currentClassName);
-        const s = c.sessions[currentSessionIdx];
-        const body = document.getElementById('session-student-body');
-        body.innerHTML = s.records.map((r, i) => `<tr><td>${r.name}</td><td><select onchange="window.upRecord(${i},'att',this.value)"><option ${r.att==='출석'?'selected':''}>출석</option><option ${r.att==='결석'?'selected':''}>결석</option></select></td><td><select onchange="window.upRecord(${i},'hw',this.value)"><option ${r.hw==='○'?'selected':''}>○</option><option ${r.hw==='X'?'selected':''}>X</option></select></td><td><input type="number" value="${r.score}" onchange="window.upRecord(${i},'score',this.value)"></td></tr>`).join('');
-    }
-
-    window.upRecord = (i, f, v) => {
-        const c = classes.find(x => x.name === currentClassName);
-        c.sessions[currentSessionIdx].records[i][f] = v;
-        syncDB();
-    };
-
-    function saveSessionComment() {
-        const c = classes.find(x => x.name === currentClassName);
-        c.sessions[currentSessionIdx].comment = document.getElementById('session-comment').value;
-        syncDB();
-        alert("저장됨");
-    }
-
-    function kioskCheck() {
-        const kid = document.getElementById('kiosk-id-input').value;
-        const c = classes.find(x => x.name === currentClassName);
-        const rec = c.sessions[currentSessionIdx].records.find(r => r.id === kid);
-        if(rec) { rec.att = "출석"; syncDB(); alert(rec.name + " 출석 완료"); }
-    }
-
-    // 4. 수납 및 출석 통계
     function renderPaymentList() {
         document.getElementById('pay-list-body').innerHTML = students.map(s => `<tr><td>${s.name}</td><td>${s.id}</td><td>300,000</td><td>미납</td><td>할인</td></tr>`).join('');
     }
@@ -586,25 +420,20 @@
         });
     }
 
-    // 5. 대시보드 및 원생 목록 (절대 수정 금지 원칙 준수)
     function render() {
         document.getElementById('dash-count').innerText = students.length;
         document.getElementById('student-list-body').innerHTML = students.map(s => `<tr><td onclick="window.showStudentDetail('${s.id}')" style="color:var(--primary); cursor:pointer; font-weight:700;">${s.name}</td><td>${s.id}</td><td>${s.school || '-'}</td><td>${s.grade || '-'}</td><td>테스트</td></tr>`).join('');
-        document.getElementById('class-list-body').innerHTML = classes.map(c => `<tr><td onclick="window.showClassDetail('${c.name}')" style="color:var(--primary); cursor:pointer; font-weight:700;">${c.name}</td><td>${c.teacher}</td><td>-</td></tr>`).join('');
     }
 
-    // 이벤트 리스너 바인딩 (module 스코프 때문)
+    // 초기화 및 버튼 바인딩
     document.getElementById('start-btn').onclick = () => goTo('login-page');
-    document.getElementById('login-btn').onclick = () => goToDashboard();
+    document.getElementById('login-btn').onclick = goToDashboard;
+    document.getElementById('logout-btn').onclick = logout;
     document.getElementById('save-student-btn').onclick = saveStudent;
-    document.getElementById('save-class-btn').onclick = saveClass;
-    document.getElementById('save-session-btn').onclick = saveSession;
     document.getElementById('save-counsel-btn').onclick = saveCounsel;
     document.getElementById('update-counsel-btn').onclick = updateCounsel;
     document.getElementById('add-acad-grade-btn').onclick = () => addGrade('academy');
     document.getElementById('add-school-grade-btn').onclick = () => addGrade('school');
-    document.getElementById('save-session-comment-btn').onclick = saveSessionComment;
-    document.getElementById('kiosk-btn').onclick = kioskCheck;
     document.getElementById('go-attendance-btn').onclick = () => showMenu('student-attendance-page');
     document.getElementById('go-counsel-btn').onclick = () => showMenu('student-counsel-page');
     document.getElementById('go-grade-btn').onclick = () => showMenu('student-grade-page');
@@ -612,6 +441,9 @@
     document.querySelectorAll('#nav-list li').forEach(li => {
         li.onclick = (e) => showMenu(e.currentTarget.getAttribute('data-menu'));
     });
+
+    // 새로고침 시 로그인 체크 실행
+    checkLoginStatus();
 
 </script>
 </body>
