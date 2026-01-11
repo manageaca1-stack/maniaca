@@ -29,20 +29,19 @@
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(4px); }
         .modal-content { background: white; padding: 30px; border-radius: 20px; width: 450px; max-height: 90vh; overflow-y: auto; }
-        .stat-card p { font-size: 2rem; font-weight: 800; margin: 10px 0 0; color: var(--primary); }
     </style>
 </head>
 <body>
 
 <section id="landing-page">
-    <h1 style="font-size: 4rem; font-weight: 900; margin: 0;">MANIACA</h1>
-    <p style="font-size: 1.2rem; opacity: 0.9; margin: 20px 0 40px;">스마트한 학원 관리 통합 솔루션</p>
-    <button class="btn btn-primary" style="padding: 15px 50px; font-size: 1.1rem; border-radius: 50px;" id="start-btn">시작하기</button>
+    <h1>MANIACA</h1>
+    <p>학원 통합 관리 솔루션</p>
+    <button class="btn btn-primary" id="start-btn">시작하기</button>
 </section>
 
 <section id="login-page" class="hidden">
-    <div class="card" style="width: 400px;">
-        <h2 style="text-align:center; margin-top:0;">LOGIN</h2>
+    <div class="card" style="width: 400px; text-align: center;">
+        <h2>LOGIN</h2>
         <input type="text" id="login-id" placeholder="아이디">
         <input type="password" id="login-pw" placeholder="비밀번호" style="margin-top:10px;">
         <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="login-btn">로그인</button>
@@ -66,10 +65,10 @@
         <div id="menu-dashboard" class="menu-section">
             <h2>대쉬보드</h2>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                <div class="card stat-card"><h3>학생 수</h3><p id="dash-count">0</p></div>
-                <div class="card stat-card"><h3>오늘의 수업</h3><p>-</p></div>
-                <div class="card stat-card"><h3>학교 점유율</h3><p>-</p></div>
-                <div class="card stat-card"><h3>해당 달 매출</h3><p>₩ 0</p></div>
+                <div class="card"><h3>학생 수</h3><p id="dash-count" style="font-size:2rem; font-weight:800; color:var(--primary);">0</p></div>
+                <div class="card"><h3>오늘의 수업</h3><p>-</p></div>
+                <div class="card"><h3>수납 미납자</h3><p>-</p></div>
+                <div class="card"><h3>매출 현황</h3><p>₩ 0</p></div>
             </div>
         </div>
 
@@ -84,16 +83,6 @@
             </table>
         </div>
 
-        <div id="menu-pay-mgmt" class="menu-section hidden">
-            <h2>수납 관리</h2>
-            <div class="card">
-                <table>
-                    <thead><tr><th>학생명</th><th>고유번호</th><th>수납 금액 (원)</th><th>납부 여부</th><th>할인</th></tr></thead>
-                    <tbody id="pay-list-body"></tbody>
-                </table>
-            </div>
-        </div>
-
         <div id="student-detail-page" class="menu-section hidden">
             <button class="btn" style="background:none; margin-bottom:20px;" onclick="showMenu('student-mgmt')">← 목록으로</button>
             <h2 id="det-name-title">상세 정보</h2>
@@ -104,6 +93,49 @@
                 <button class="btn btn-primary" id="go-grade-btn">성적 분석</button>
             </div>
         </div>
+
+        <div id="menu-pay-mgmt" class="menu-section hidden">
+            <h2>수납 관리</h2>
+            <div class="card">
+                <table><thead><tr><th>학생명</th><th>고유번호</th><th>수납 금액</th><th>납부 여부</th><th>할인</th></tr></thead><tbody id="pay-list-body"></tbody></table>
+            </div>
+        </div>
+
+        <div id="menu-class-mgmt" class="menu-section hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>수업 관리</h2>
+                <button class="btn btn-primary" onclick="openModal('class-reg-modal')">수업 추가</button>
+            </div>
+            <table><thead><tr><th>수업명</th><th>강사</th><th>상세</th></tr></thead><tbody id="class-list-body"></tbody></table>
+        </div>
+
+        <div id="class-detail-page" class="menu-section hidden">
+            <button class="btn" style="background:none;" onclick="showMenu('class-mgmt')">← 수업 목록</button>
+            <h2 id="class-title">수업 정보</h2>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>수강생 목록</h3>
+                    <button class="btn btn-primary" onclick="openModal('add-student-modal')">학생 추가</button>
+                </div>
+                <table style="margin-top:15px;">
+                    <thead><tr><th>이름</th><th>번호</th><th>학교/학년</th><th>관리</th></tr></thead>
+                    <tbody id="class-stu-body"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>차시 관리</h3>
+                <button class="btn btn-primary" onclick="openModal('session-reg-modal')">차시 추가</button>
+                <div id="session-area" style="margin-top:15px;"></div>
+            </div>
+        </div>
+
+        <div id="session-detail-page" class="menu-section hidden">
+            <button class="btn" style="background:none;" onclick="showMenu('class-detail-page')">← 차시 목록</button>
+            <h2 id="sess-title">차시 상세</h2>
+            <div class="card"><textarea id="sess-comment" style="height:80px;"></textarea><button class="btn btn-primary" id="save-comment-btn" style="margin-top:10px;">코멘트 저장</button></div>
+            <div class="card"><table><thead><tr><th>이름</th><th>출결</th><th>과제</th><th>시험</th></tr></thead><tbody id="sess-stu-body"></tbody></table></div>
+        </div>
+
         <div id="student-attendance-page" class="menu-section hidden">
             <button class="btn" style="background:none;" onclick="showMenu('student-detail-page')">← 뒤로</button>
             <h2>월별 출석 통계</h2>
@@ -124,31 +156,12 @@
             <h2>성적 분석 리포트</h2>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                 <div class="card">
-                    <h3>학원 시험</h3>
+                    <h3>시험 기록</h3>
                     <div style="display:flex; gap:5px;"><input type="text" id="g-name" placeholder="차시"><input type="number" id="g-score" placeholder="점수"><button class="btn btn-primary" id="add-g-btn">추가</button></div>
                     <table style="margin-top:10px;"><tbody id="g-list-body"></tbody></table>
                 </div>
                 <div class="card"><div id="grade-graph" style="height:150px; background:#f8fafc; display:flex; align-items:flex-end; justify-content:space-around; padding:10px; border-radius:10px;"></div></div>
             </div>
-        </div>
-        <div id="menu-class-mgmt" class="menu-section hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>수업 관리</h2>
-                <button class="btn btn-primary" onclick="openModal('class-reg-modal')">수업 추가</button>
-            </div>
-            <table><thead><tr><th>수업명</th><th>강사</th><th>상세</th></tr></thead><tbody id="class-list-body"></tbody></table>
-        </div>
-        <div id="class-detail-page" class="menu-section hidden">
-            <button class="btn" style="background:none;" onclick="showMenu('class-mgmt')">← 수업 목록</button>
-            <h2 id="class-title">수업 정보</h2>
-            <div class="card"><button class="btn btn-primary" onclick="openModal('add-student-modal')">학생 추가</button><table style="margin-top:15px;"><tbody id="class-stu-body"></tbody></table></div>
-            <div class="card"><h3>차시 관리</h3><button class="btn btn-primary" onclick="openModal('session-reg-modal')">차시 추가</button><div id="session-area" style="margin-top:15px;"></div></div>
-        </div>
-        <div id="session-detail-page" class="menu-section hidden">
-            <button class="btn" style="background:none;" onclick="showMenu('class-detail-page')">← 차시 목록</button>
-            <h2 id="sess-title">차시 상세</h2>
-            <div class="card"><textarea id="sess-comment" style="height:80px;"></textarea><button class="btn btn-primary" id="save-comment-btn" style="margin-top:10px;">코멘트 저장</button></div>
-            <div class="card"><table><thead><tr><th>이름</th><th>출결</th><th>과제</th><th>시험</th></tr></thead><tbody id="sess-stu-body"></tbody></table></div>
         </div>
     </div>
 </div>
@@ -166,39 +179,39 @@
         <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="save-stu-btn">등록 완료</button>
     </div>
 
+    <div class="modal-content hidden" id="add-student-modal">
+        <h3>수업에 학생 추가</h3>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">추가 버튼을 누르면 해당 학생이 수업에 배정됩니다.</p>
+        <div id="selection-list" style="margin:15px 0; max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:10px; padding:10px;"></div>
+        <button class="btn btn-red" style="width:100%" onclick="closeModal()">닫기</button>
+    </div>
+
     <div class="modal-content hidden" id="discount-modal">
         <h3>수납 할인 설정</h3>
         <input type="hidden" id="discount-sid">
-        <p id="discount-target-info" style="font-weight:700; color:var(--primary); margin-bottom:10px;"></p>
-        <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">현재 입력된 금액에서 %만큼 차감합니다.</p>
+        <p id="discount-target-info" style="font-weight:700; color:var(--primary);"></p>
         <select id="discount-reason" style="margin-bottom:10px;">
             <option value="none">할인 사유 선택</option>
             <option value="형제할인">형제 할인</option>
             <option value="지인추천">지인 추천</option>
-            <option value="장기수강">장기 수강 할인</option>
             <option value="이벤트">이벤트 프로모션</option>
         </select>
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-            <input type="number" id="discount-percent" placeholder="할인율 입력 (0~100)" min="0" max="100">
-            <span style="font-weight:700;">%</span>
-        </div>
-        <button class="btn btn-primary" style="width:100%;" id="apply-discount-btn">현재 금액에서 할인 적용</button>
-        <button class="btn" style="width:100%; margin-top:10px; background:#f1f5f9;" onclick="closeModal()">취소</button>
+        <input type="number" id="discount-percent" placeholder="할인율 (%)" style="margin-bottom:20px;">
+        <button class="btn btn-primary" style="width:100%;" id="apply-discount-btn">할인 적용</button>
     </div>
 
     <div class="modal-content hidden" id="level-modal">
         <h3>레벨테스트 등록</h3>
         <input type="hidden" id="level-sid">
-        <p id="level-test-name" style="font-weight:700; margin-bottom:15px;"></p>
+        <p id="level-test-name" style="font-weight:700;"></p>
         <input type="number" id="level-score" placeholder="점수">
         <input type="text" id="level-rank" placeholder="등급">
         <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="save-level-btn">저장</button>
     </div>
 
-    <div class="modal-content hidden" id="add-student-modal"><h3>추가 리스트</h3><div id="selection-list"></div><button class="btn btn-red" style="width:100%" onclick="closeModal()">닫기</button></div>
-    <div class="modal-content hidden" id="session-reg-modal"><h3>차시 추가</h3><input type="text" id="sess-name-in"><button class="btn btn-primary" id="save-sess-btn">저장</button></div>
-    <div class="modal-content hidden" id="class-reg-modal"><h3>수업 개설</h3><input type="text" id="c-name-in"><input type="text" id="c-teacher-in"><button class="btn btn-primary" id="save-class-btn">개설</button></div>
-    <div class="modal-content hidden" id="counsel-edit-modal"><h3>상담 수정</h3><input type="hidden" id="edit-c-idx"><textarea id="edit-c-content" style="height:150px;"></textarea><button class="btn btn-primary" id="update-counsel-btn">수정 완료</button></div>
+    <div class="modal-content hidden" id="session-reg-modal"><h3>새 차시 추가</h3><input type="text" id="sess-name-in" placeholder="차시 제목"><button class="btn btn-primary" style="width:100%; margin-top:10px;" id="save-sess-btn">저장</button></div>
+    <div class="modal-content hidden" id="class-reg-modal"><h3>수업 개설</h3><input type="text" id="c-name-in" placeholder="수업명"><input type="text" id="c-teacher-in" placeholder="강사명"><button class="btn btn-primary" style="width:100%; margin-top:10px;" id="save-class-btn">개설</button></div>
+    <div class="modal-content hidden" id="counsel-edit-modal"><h3>상담 수정</h3><input type="hidden" id="edit-c-idx"><textarea id="edit-c-content" style="height:150px;"></textarea><button class="btn btn-primary" style="width:100%; margin-top:10px;" id="update-counsel-btn">수정 완료</button></div>
 </div>
 
 <script type="module">
@@ -244,7 +257,6 @@
         document.querySelectorAll('.menu-section').forEach(m => m.classList.add('hidden'));
         const target = document.getElementById(id) || document.getElementById('menu-' + id);
         if (target) target.classList.remove('hidden');
-        if(id === 'pay-mgmt') renderPay();
         if(!id.includes('page')) {
             document.querySelectorAll('nav li').forEach(li => li.classList.remove('active-menu'));
             const navItem = document.querySelector(`nav li[data-menu="${id}"]`);
@@ -255,83 +267,85 @@
         document.getElementById('modal-overlay').style.display = 'flex'; 
         document.querySelectorAll('.modal-content').forEach(m => m.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
+        if(id === 'add-student-modal') renderSelection();
     };
     window.closeModal = () => { document.getElementById('modal-overlay').style.display = 'none'; };
 
-    // --- 원생 등록 ---
-    function saveStudent() {
-        const s = {
-            name: document.getElementById('in-name').value, id: document.getElementById('in-id').value,
-            school: document.getElementById('in-school').value, grade: document.getElementById('in-grade').value,
-            pPhone: document.getElementById('in-p-phone').value, sPhone: document.getElementById('in-s-phone').value,
-            parentPw: document.getElementById('in-parent-pw').value, 
-            levelTest: {score:"-", rank:"-"}, counsels: [], grades: {academy:[]},
-            payAmount: "300000", payStatus: "미납", discountRate: "0", discountReason: "none"
-        };
-        students.push(s); sync(); closeModal();
+    // --- 수업 학생 추가 로직 (수정 핵심) ---
+    function renderSelection() {
+        const c = classes.find(x => x.name === currentClassName);
+        const listArea = document.getElementById('selection-list');
+        listArea.innerHTML = students.map(s => {
+            const isAdded = (c.students || []).includes(s.id);
+            return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f8fafc;">
+                <span>${s.name} (${s.id})</span>
+                ${isAdded ? '<span style="color:#94a3b8; font-size:0.8rem;">이미 추가됨</span>' : `<button class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;" onclick="window.addStToClass('${s.id}')">추가</button>`}
+            </div>`;
+        }).join('');
     }
 
-    // --- 수납 관리 (사용자 입력 금액 기준 할인) ---
-    function renderPay() {
-        document.getElementById('pay-list-body').innerHTML = students.map((s, idx) => `
-            <tr>
-                <td>${s.name}</td>
-                <td>${s.id}</td>
-                <td><input type="number" id="pay-input-${idx}" value="${s.payAmount || '0'}" onchange="window.upPay(${idx}, 'payAmount', this.value)" style="text-align:right;"></td>
-                <td><select onchange="window.upPay(${idx}, 'payStatus', this.value)"><option value="미납" ${s.payStatus==='미납'?'selected':''}>미납</option><option value="납부완료" ${s.payStatus==='납부완료'?'selected':''}>납부완료</option></select></td>
-                <td>
-                    <div style="font-size:0.75rem; color:var(--primary); margin-bottom:5px;">${s.discountReason !== 'none' ? s.discountReason + '(' + s.discountRate + '%)' : ''}</div>
-                    <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="window.openDisc('${s.id}', ${idx})">할인 설정</button>
-                </td>
-            </tr>`).join('');
-    }
-    window.upPay = (idx, f, v) => { students[idx][f] = v; sync(); };
-    window.openDisc = (sid, idx) => { 
-        const s = students.find(x => x.id === sid);
-        document.getElementById('discount-sid').value = sid; 
-        document.getElementById('discount-target-info').innerText = `${s.name} 학생 (현재 금액: ${s.payAmount}원)`;
-        document.getElementById('discount-reason').value = s.discountReason || "none";
-        document.getElementById('discount-percent').value = "0"; // 할인율은 매번 새로 입력
-        openModal('discount-modal'); 
-    };
-
-    document.getElementById('apply-discount-btn').onclick = () => {
-        const sid = document.getElementById('discount-sid').value;
-        const reason = document.getElementById('discount-reason').value;
-        const rate = parseInt(document.getElementById('discount-percent').value) || 0;
-        const s = students.find(x => x.id === sid);
-        
-        if(s) {
-            // [핵심] 30만이 아니라 s.payAmount(현재 입력된 금액)에서 계산
-            const currentAmount = parseInt(s.payAmount) || 0;
-            s.discountReason = reason;
-            s.discountRate = rate;
-            s.payAmount = Math.floor(currentAmount * (1 - (rate / 100)));
-            sync(); closeModal();
+    window.addStToClass = (sid) => {
+        const c = classes.find(x => x.name === currentClassName);
+        if(!c.students) c.students = [];
+        if(!c.students.includes(sid)) {
+            c.students.push(sid);
+            sync();
+            renderSelection(); // 모달 내 리스트 갱신
         }
     };
 
-    // --- 나머지 기능 유지 ---
+    function renderClassSts() {
+        const c = classes.find(x => x.name === currentClassName);
+        const body = document.getElementById('class-stu-body');
+        body.innerHTML = (c.students || []).map(sid => {
+            const s = students.find(st => st.id === sid);
+            return s ? `<tr><td>${s.name}</td><td>${s.id}</td><td>${s.school} / ${s.grade}</td><td><button class="btn btn-red" style="padding:4px 8px;" onclick="window.remStFromClass('${sid}')">제외</button></td></tr>` : "";
+        }).join('');
+    }
+
+    window.remStFromClass = (sid) => {
+        const c = classes.find(x => x.name === currentClassName);
+        c.students = c.students.filter(id => id !== sid);
+        sync();
+    };
+
+    // --- 수납/할인 로직 (유지) ---
+    function renderPay() {
+        document.getElementById('pay-list-body').innerHTML = students.map((s, idx) => `<tr><td>${s.name}</td><td>${s.id}</td><td><input type="number" value="${s.payAmount || '0'}" onchange="window.upPay(${idx}, 'payAmount', this.value)" style="text-align:right;"></td><td><select onchange="window.upPay(${idx}, 'payStatus', this.value)"><option value="미납" ${s.payStatus==='미납'?'selected':''}>미납</option><option value="납부완료" ${s.payStatus==='납부완료'?'selected':''}>납부완료</option></select></td><td><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="window.openDisc('${s.id}')">할인</button></td></tr>`).join('');
+    }
+    window.upPay = (idx, f, v) => { students[idx][f] = v; sync(); };
+    window.openDisc = (sid) => { const s = students.find(x => x.id === sid); document.getElementById('discount-sid').value = sid; document.getElementById('discount-target-info').innerText = `${s.name} (현재: ${s.payAmount}원)`; openModal('discount-modal'); };
+    document.getElementById('apply-discount-btn').onclick = () => {
+        const s = students.find(x => x.id === document.getElementById('discount-sid').value);
+        const rate = parseInt(document.getElementById('discount-percent').value) || 0;
+        s.payAmount = Math.floor(parseInt(s.payAmount) * (1 - (rate / 100)));
+        sync(); closeModal();
+    };
+
+    // --- 기본 기능 (보존) ---
+    function saveStudent() {
+        const s = { name: document.getElementById('in-name').value, id: document.getElementById('in-id').value, school: document.getElementById('in-school').value, grade: document.getElementById('in-grade').value, pPhone: document.getElementById('in-p-phone').value, sPhone: document.getElementById('in-s-phone').value, parentPw: document.getElementById('in-parent-pw').value, levelTest: {score:"-", rank:"-"}, counsels: [], grades: {academy:[]}, payAmount: "300000", payStatus: "미납" };
+        students.push(s); sync(); closeModal();
+    }
+    window.showDetail = (sid) => { const s = students.find(x => x.id === sid); currentStudentId = sid; document.getElementById('det-name-title').innerText = s.name + " 학생 상세"; document.getElementById('det-profile-card').innerHTML = `<p><b>학교/학년:</b> ${s.school} ${s.grade} | <b>부모번호:</b> ${s.pPhone} | <b>부모비번:</b> ${s.parentPw}</p>`; showMenu('student-detail-page'); };
+    window.delStu = (sid) => { if(confirm("삭제?")) { students = students.filter(s => s.id !== sid); sync(); } };
     window.openLevel = (sid) => { const s = students.find(x => x.id === sid); document.getElementById('level-sid').value = sid; document.getElementById('level-test-name').innerText = s.name; openModal('level-modal'); };
     document.getElementById('save-level-btn').onclick = () => { const s = students.find(x => x.id === document.getElementById('level-sid').value); s.levelTest = { score: document.getElementById('level-score').value, rank: document.getElementById('level-rank').value }; sync(); closeModal(); };
-    window.showDetail = (sid) => { const s = students.find(x => x.id === sid); currentStudentId = sid; document.getElementById('det-name-title').innerText = s.name + " 학생 상세"; document.getElementById('det-profile-card').innerHTML = `<p><b>학교/학년:</b> ${s.school} ${s.grade} | <b>부모번호:</b> ${s.pPhone} | <b>부모비번:</b> ${s.parentPw}</p>`; showMenu('student-detail-page'); };
-    window.delStu = (sid) => { if(confirm("삭제하시겠습니까?")) { students = students.filter(s => s.id !== sid); sync(); } };
     function saveCounsel() { const s = students.find(x => x.id === currentStudentId); if(!s.counsels) s.counsels = []; s.counsels.push({ date: document.getElementById('c-date').value, title: document.getElementById('c-title').value, content: document.getElementById('c-content').value }); sync(); }
     function renderCounsel() { const s = students.find(x => x.id === currentStudentId); document.getElementById('c-list-body').innerHTML = (s.counsels || []).map((c, i) => `<tr><td>${c.date}</td><td onclick="window.editC(${i})" style="color:var(--primary); cursor:pointer;">${c.title}</td><td><button class="btn btn-red" onclick="window.delC(${i})">삭제</button></td></tr>`).join(''); }
     window.editC = (i) => { const s = students.find(x => x.id === currentStudentId); const c = s.counsels[i]; document.getElementById('edit-c-idx').value = i; document.getElementById('edit-c-content').value = c.content; openModal('counsel-edit-modal'); };
     window.delC = (i) => { if(confirm("삭제?")) { const s = students.find(x => x.id === currentStudentId); s.counsels.splice(i, 1); sync(); } };
-    function updateCounsel() { const idx = document.getElementById('edit-c-idx').value; const s = students.find(x => x.id === currentStudentId); s.counsels[idx].content = document.getElementById('edit-c-content').value; sync(); closeModal(); }
+    function updateCounsel() { const s = students.find(x => x.id === currentStudentId); s.counsels[document.getElementById('edit-c-idx').value].content = document.getElementById('edit-c-content').value; sync(); closeModal(); }
     function addGrade() { const s = students.find(x => x.id === currentStudentId); if(!s.grades) s.grades = {academy:[]}; s.grades.academy.push({ name: document.getElementById('g-name').value, score: parseInt(document.getElementById('g-score').value) }); sync(); }
     function renderGrades() { const s = students.find(x => x.id === currentStudentId); document.getElementById('g-list-body').innerHTML = (s?.grades?.academy || []).map(g => `<tr><td>${g.name}</td><td>${g.score}점</td></tr>`).join(''); const gph = document.getElementById('grade-graph'); gph.innerHTML = (s?.grades?.academy || []).slice(-5).map(g => `<div style="text-align:center;"><div style="width:25px; background:var(--primary); height:${g.score}px; border-radius:4px 4px 0 0;"></div><span style="font-size:0.6rem;">${g.score}</span></div>`).join(''); }
     function saveClass() { classes.push({ name: document.getElementById('c-name-in').value, teacher: document.getElementById('c-teacher-in').value, students: [], sessions: [] }); sync(); closeModal(); }
     window.showClass = (name) => { currentClassName = name; const c = classes.find(x => x.name === name); document.getElementById('class-title').innerText = c.name + " 관리"; showMenu('class-detail-page'); };
-    function renderClassSts() { const c = classes.find(x => x.name === currentClassName); document.getElementById('class-stu-body').innerHTML = (c.students || []).map(sid => { const s = students.find(st => st.id === sid); return s ? `<tr><td>${s.name}</td><td>${s.id}</td><td><button onclick="window.remSt('${sid}')">제외</button></td></tr>` : ""; }).join(''); }
-    window.remSt = (sid) => { const c = classes.find(x => x.name === currentClassName); c.students = c.students.filter(id => id !== sid); sync(); };
     function saveSession() { const c = classes.find(x => x.name === currentClassName); if(!c.sessions) c.sessions = []; const recs = (c.students || []).map(sid => ({ id: sid, name: students.find(s=>s.id===sid).name, att: "미출석", hw: "○", score: "" })); c.sessions.push({ name: document.getElementById('sess-name-in').value, comment: "", records: recs }); sync(); closeModal(); }
     function renderSessions() { const c = classes.find(x => x.name === currentClassName); document.getElementById('session-area').innerHTML = (c.sessions || []).map((s, i) => `<div class="card" style="cursor:pointer;" onclick="window.showSess(${i})">${i+1}회차: ${s.name} →</div>`).join(''); }
     window.showSess = (i) => { currentSessIdx = i; const c = classes.find(x => x.name === currentClassName); document.getElementById('sess-title').innerText = c.sessions[i].name; document.getElementById('sess-comment').value = c.sessions[i].comment || ""; showMenu('session-detail-page'); };
     function renderSessSts() { const c = classes.find(x => x.name === currentClassName); const s = c.sessions[currentSessIdx]; document.getElementById('sess-stu-body').innerHTML = s.records.map((r, i) => `<tr><td>${r.name}</td><td><select onchange="window.upR(${i},'att',this.value)"><option ${r.att==='출석'?'selected':''}>출석</option><option ${r.att==='미출석'?'selected':''}>미출석</option></select></td><td><select onchange="window.upR(${i},'hw',this.value)"><option ${r.hw==='○'?'selected':''}>○</option><option ${r.hw==='X'?'selected':''}>X</option></select></td><td><input type="number" value="${r.score}" onchange="window.upR(${i},'score',this.value)" style="width:50px;"></td></tr>`).join(''); }
     window.upR = (i, f, v) => { const c = classes.find(x => x.name === currentClassName); c.sessions[currentSessIdx].records[i][f] = v; sync(); };
+    document.getElementById('save-comment-btn').onclick = () => { const c = classes.find(x => x.name === currentClassName); c.sessions[currentSessIdx].comment = document.getElementById('sess-comment').value; sync(); alert("저장!"); };
     function renderAttendance() { let h = ""; classes.forEach(c => { (c.sessions || []).forEach(sess => { const r = sess.records.find(re => re.id === currentStudentId); if(r) h += `<tr><td>${c.name}</td><td>${sess.name}</td><td>${r.att}</td></tr>`; }); }); document.getElementById('attendance-list-body').innerHTML = h; }
 
     function render() {
