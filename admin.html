@@ -24,7 +24,7 @@
     }
   </style>
 
-  <!-- ✅ 모듈이 죽어도 무조건 반응/진단 뜨게 하는 안전장치 (module 밖) -->
+  <!-- ✅ module이 죽어도 무조건 반응/진단 뜨게 하는 안전장치 (module 밖) -->
   <script>
     (function(){
       function showDebug(msg){
@@ -34,7 +34,7 @@
         el.textContent = msg;
       }
 
-      // 모듈 스크립트가 에러로 로드 실패하면 여기서라도 잡힘
+      // module 스크립트가 파싱/런타임 에러로 죽으면 여기서라도 표시
       window.addEventListener("error", function(e){
         showDebug("[전역 에러] " + (e && e.message ? e.message : "스크립트 에러"));
         console.error(e);
@@ -57,7 +57,7 @@
           }
         });
 
-        // 1초 후에도 Auth가 없으면, 모듈이 아예 실행 안 된 것
+        // 1초 후에도 Auth가 없으면, module이 실행 안 된 것
         setTimeout(function(){
           if (!(window.Auth && typeof window.Auth.login === "function")){
             showDebug("모듈 스크립트가 실행되지 않았어요. (CSP/차단/경로 문제 가능성 큼)");
@@ -102,7 +102,6 @@
           <label class="block font-medium mt-3">비밀번호</label>
           <input id="lgPass" type="password" class="field" placeholder="예: 1234" />
 
-          <!-- ✅ PATCH: id 추가 -->
           <button id="loginBtn" class="mt-4 w-full btnP" type="button">로그인</button>
 
           <div class="mt-4 text-xs text-slate-500">
@@ -367,6 +366,8 @@
     }
 
     async function bootstrapDefaults(){
+      // 주의: rules가 잠겨있으면 여기서 PERMISSION_DENIED가 발생하고
+      // 전역 디버그바/토스트로 표시될 것.
       const snap = await get(ref(db, "_bootstrapDone"));
       if (snap.exists()) return;
 
@@ -397,18 +398,20 @@
         document.getElementById(`tab-${tab}`).classList.remove("hidden");
       },
       applyRoleGates(){
-        const super = Session.user?.role==="SUPERADMIN";
+        // ✅ FIX: 'super' 예약어 사용 금지 → isSuper 로 변경
+        const isSuper = Session.user?.role === "SUPERADMIN";
+
         const gate = (id, enabled)=>{
           const el = document.getElementById(id);
           if (!el) return;
           el.disabled = !enabled;
           el.className = enabled ? "btnP" : "btn bg-slate-100 text-slate-400 cursor-not-allowed";
         };
-        gate("btnCreateAcademy", super);
-        gate("btnCreateAcc", super);
-        gate("btnCreateNotice", super);
+        gate("btnCreateAcademy", isSuper);
+        gate("btnCreateAcc", isSuper);
+        gate("btnCreateNotice", isSuper);
 
-        const roleName = Session.user?.role==="SUPERADMIN" ? "슈퍼관리자" : "본사 운영자";
+        const roleName = isSuper ? "슈퍼관리자" : "본사 운영자";
         document.getElementById("topRole").textContent = roleName;
         document.getElementById("whoami").textContent = Session.user?.username || "-";
         document.getElementById("whoRoleMini").textContent = `권한: ${roleName}`;
@@ -455,10 +458,20 @@
     };
     window.Auth = Auth;
 
-    // (나머지 기능들은 동일하게 필요하면 이어서 붙이면 됨)
-    // 지금은 “로그인 무반응”을 잡는 게 목적이라 최소로 둠
+    // --- 아래부터는 “로그인 후” 동작용(지금은 리스트 바인딩 최소) ---
+    // 필요하면 여기서 Academies/Accounts/Notices/Logs 구현을 추가로 붙이면 됨.
+    // (너가 이전에 받은 풀기능 버전이 있다면, 그걸 여기에 이어 붙여도 되고
+    //  super 예약어만 isSuper로 바꾸면 됨)
 
-    // boot
+    // 시계
+    setInterval(()=>{
+      const el=document.getElementById("nowKST");
+      if(el) el.textContent = `KST ${Util.nowKST()}`;
+    }, 10000);
+    const elNow=document.getElementById("nowKST");
+    if(elNow) elNow.textContent = `KST ${Util.nowKST()}`;
+
+    // boot (기본 계정 생성)
     await bootstrapDefaults();
 
     // 세션 복구
@@ -481,9 +494,7 @@
       UI.gotoLogin();
     }
 
-    // 시계
-    setInterval(()=>{ const el=document.getElementById("nowKST"); if(el) el.textContent = `KST ${Util.nowKST()}`; }, 10000);
-    const elNow=document.getElementById("nowKST"); if(elNow) elNow.textContent = `KST ${Util.nowKST()}`;
+    UI.applyRoleGates();
 
   </script>
 </body>
