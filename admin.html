@@ -18,6 +18,7 @@
     .modal-backdrop{background:rgba(0,0,0,.45)}
   </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900">
   <div id="toastHost" class="fixed z-[999] top-4 right-4 space-y-2"></div>
 
@@ -46,14 +47,17 @@
 
         <div class="mt-6 space-y-3 text-sm">
           <label class="block font-medium">아이디</label>
-          <input id="lgUser" class="field" placeholder="아이디 입력" />
+          <input id="lgUser" class="field" placeholder="예: superadmin" />
 
           <label class="block font-medium mt-3">비밀번호</label>
-          <input id="lgPass" type="password" class="field" placeholder="비밀번호 입력" />
+          <input id="lgPass" type="password" class="field" placeholder="예: 1234" />
 
-          <button class="mt-4 w-full btnP" onclick="Auth.login()">로그인</button>
+          <!-- ✅ PATCH: id 추가 + inline onclick 제거 -->
+          <button id="loginBtn" class="mt-4 w-full btnP">로그인</button>
 
-          
+          <div class="mt-4 text-xs text-slate-500">
+            기본 계정(자동 생성): <span class="font-mono">superadmin/1234</span>, <span class="font-mono">hqadmin/1234</span>
+          </div>
         </div>
       </div>
     </main>
@@ -292,7 +296,7 @@
         el.className=`toast ${color} text-white px-4 py-3 rounded-2xl shadow-lg text-sm max-w-sm`;
         el.textContent=msg;
         host.appendChild(el);
-        setTimeout(()=>el.remove(), 2300);
+        setTimeout(()=>el.remove(), 2500);
       }
     };
 
@@ -307,11 +311,14 @@
       }
     };
 
+    // ✅ PATCH: inline onclick에서 접근 가능하게 window에 올림
+    window.Toast = Toast;
+    window.Modal = Modal;
+
     const Session = {
-      user:null, // {username, role}
+      user:null,
       isSuper(){ return this.user?.role==="SUPERADMIN"; },
-      isHQ(){ return this.user?.role==="HQADMIN"; },
-      hasHQAccess(){ return this.isSuper() || this.isHQ(); }
+      isHQ(){ return this.user?.role==="HQADMIN"; }
     };
 
     async function logLogin({site, username, academyCode=null, success, note=""}){
@@ -332,7 +339,6 @@
       const snap = await get(ref(db, "_bootstrapDone"));
       if (snap.exists()) return;
 
-      // default accounts
       const superSnap = await get(ref(db, "accounts/superadmin"));
       if (!superSnap.exists()){
         await set(ref(db, "accounts/superadmin"), { password:"1234", role:"SUPERADMIN", academyId:null, createdAt:Date.now() });
@@ -365,7 +371,6 @@
       },
       applyRoleGates(){
         const super = Session.isSuper();
-        // 슈퍼만 학원 생성/계정추가/공지등록
         const gate = (id, enabled)=>{
           const el = document.getElementById(id);
           el.disabled = !enabled;
@@ -381,32 +386,38 @@
         document.getElementById("whoRoleMini").textContent = `권한: ${roleName}`;
       }
     };
+    window.UI = UI;
 
     const Auth = {
       async login(){
-        const username = document.getElementById("lgUser").value.trim();
-        const password = document.getElementById("lgPass").value.trim();
-        if (!username || !password) return Toast.show("아이디/비밀번호를 입력해주세요.", "error");
+        try{
+          const username = document.getElementById("lgUser").value.trim();
+          const password = document.getElementById("lgPass").value.trim();
+          if (!username || !password) return Toast.show("아이디/비밀번호를 입력해주세요.", "error");
 
-        const snap = await get(ref(db, `accounts/${username}`));
-        if (!snap.exists()){
-          await logLogin({site:"HQ", username, success:false, note:"NO_ACCOUNT"});
-          return Toast.show("계정이 없습니다.", "error");
-        }
-        const acc = snap.val();
-        if (acc.password !== password){
-          await logLogin({site:"HQ", username, success:false, note:"BAD_PASSWORD"});
-          return Toast.show("비밀번호가 틀렸습니다.", "error");
-        }
-        if (!["SUPERADMIN","HQADMIN"].includes(acc.role)){
-          await logLogin({site:"HQ", username, success:false, note:"ROLE_DENIED"});
-          return Toast.show("본사 권한이 없습니다.", "error");
-        }
+          const snap = await get(ref(db, `accounts/${username}`));
+          if (!snap.exists()){
+            await logLogin({site:"HQ", username, success:false, note:"NO_ACCOUNT"});
+            return Toast.show("계정이 없습니다.", "error");
+          }
+          const acc = snap.val();
+          if (acc.password !== password){
+            await logLogin({site:"HQ", username, success:false, note:"BAD_PASSWORD"});
+            return Toast.show("비밀번호가 틀렸습니다.", "error");
+          }
+          if (!["SUPERADMIN","HQADMIN"].includes(acc.role)){
+            await logLogin({site:"HQ", username, success:false, note:"ROLE_DENIED"});
+            return Toast.show("본사 권한이 없습니다.", "error");
+          }
 
-        Session.user = { username, role: acc.role };
-        localStorage.setItem("hqSession", JSON.stringify(Session.user));
-        await logLogin({site:"HQ", username, success:true, note:acc.role});
-        UI.gotoApp();
+          Session.user = { username, role: acc.role };
+          localStorage.setItem("hqSession", JSON.stringify(Session.user));
+          await logLogin({site:"HQ", username, success:true, note:acc.role});
+          UI.gotoApp();
+        } catch (e){
+          Toast.show(`로그인 에러: ${e?.message || e}`, "error");
+          console.error(e);
+        }
       },
       logout(){
         Session.user = null;
@@ -452,7 +463,6 @@
         const pw = document.getElementById("acPw").value.trim();
         if (!name || !owner || !pw) return Toast.show("학원명/원장ID/비번은 필수입니다.", "error");
 
-        // code unique
         if (!code){
           for (let i=0;i<20;i++){
             const c = Util.randCode(8);
@@ -467,7 +477,6 @@
 
         const academyId = Util.uid("ac");
 
-        // create academy
         await set(ref(db, `academies/${academyId}`), {
           id: academyId,
           name,
@@ -480,7 +489,6 @@
 
         await set(ref(db, `academyCodeIndex/${code}`), academyId);
 
-        // create owner account
         const ownerSnap = await get(ref(db, `accounts/${owner}`));
         if (ownerSnap.exists()) return Toast.show("이미 존재하는 원장 ID입니다.", "error");
 
@@ -492,7 +500,6 @@
           createdAtKST: Util.nowKST()
         });
 
-        // optional: seed academyData meta
         await set(ref(db, `academyData/${academyId}/_meta`), { createdAt: Date.now(), createdAtKST: Util.nowKST() });
 
         Toast.show("학원 생성 완료", "success");
@@ -572,7 +579,6 @@
       async openCreate(){
         if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
 
-        // academies options
         const acSnap = await get(ref(db, "academies"));
         const list = Object.values(acSnap.val()||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
         const opts = [`<option value="">(학원 없음)</option>`].concat(
@@ -863,23 +869,40 @@
       }
     };
 
-    // modal close
+    // 모달 close
     document.getElementById("modalRoot").addEventListener("click", (e)=>{ if (e.target.id==="modalRoot") Modal.close(); });
     window.addEventListener("keydown", (e)=>{ if (e.key==="Escape") Modal.close(); });
 
-    // clock
+    // 시계
     setInterval(()=>{ document.getElementById("nowKST").textContent = `KST ${Util.nowKST()}`; }, 10000);
     document.getElementById("nowKST").textContent = `KST ${Util.nowKST()}`;
+
+    // ✅ PATCH: 에러를 화면에 표시 (Vercel에서 "아무 반응" 방지)
+    window.addEventListener("error", (e) => {
+      try { Toast.show(`에러: ${e.message}`, "error"); } catch {}
+      console.error(e);
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      try { Toast.show(`Promise 에러: ${e.reason?.message || e.reason}`, "error"); } catch {}
+      console.error(e);
+    });
 
     // boot
     await bootstrapDefaults();
 
-    // restore session
+    // ✅ PATCH: 로그인 버튼 클릭 바인딩 (inline onclick 제거)
+    const loginBtn = document.getElementById("loginBtn");
+    if (loginBtn) {
+      loginBtn.addEventListener("click", () => Auth.login());
+    } else {
+      Toast.show("loginBtn을 찾지 못했어요. HTML 버튼 id 확인!", "error");
+    }
+
+    // 세션 복구
     const saved = localStorage.getItem("hqSession");
     if (saved){
       try{
         const s = JSON.parse(saved);
-        // re-validate from DB
         const snap = await get(ref(db, `accounts/${s.username}`));
         if (snap.exists() && ["SUPERADMIN","HQADMIN"].includes(snap.val().role)){
           Session.user = { username: s.username, role: snap.val().role };
@@ -888,7 +911,9 @@
           localStorage.removeItem("hqSession");
           UI.gotoLogin();
         }
-      } catch { UI.gotoLogin(); }
+      } catch {
+        UI.gotoLogin();
+      }
     } else {
       UI.gotoLogin();
     }
