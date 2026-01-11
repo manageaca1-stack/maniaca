@@ -3,26 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>매니아카 본사 (Firebase RTDB)</title>
+  <title>매니아카 본사 (RTDB Only)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .modal-backdrop { background: rgba(0,0,0,.45); }
-    .toast { animation: toastIn .2s ease-out; }
-    @keyframes toastIn { from { transform: translateY(10px); opacity: .0; } to { transform: translateY(0); opacity: 1; } }
-    .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .55rem; border-radius:999px; font-size:.75rem; border:1px solid; }
-    .field { width:100%; padding:.85rem 1rem; border-radius:1rem; border:1px solid rgb(226 232 240); }
-    .field:focus { outline:none; box-shadow: 0 0 0 2px rgba(148,163,184,.45); }
-    .btn { padding:.6rem .9rem; border-radius:1rem; border:1px solid rgb(226 232 240); background:#fff; }
-    .btn:hover { background: rgb(241 245 249); }
-    .btnP { padding:.6rem .9rem; border-radius:1rem; background: rgb(15 23 42); color:#fff; }
-    .btnP:hover { background: rgb(30 41 59); }
+    .field{width:100%;padding:.85rem 1rem;border-radius:1rem;border:1px solid rgb(226 232 240)}
+    .field:focus{outline:none;box-shadow:0 0 0 2px rgba(148,163,184,.45)}
+    .btn{padding:.6rem .9rem;border-radius:1rem;border:1px solid rgb(226 232 240);background:#fff}
+    .btn:hover{background:rgb(241 245 249)}
+    .btnP{padding:.6rem .9rem;border-radius:1rem;background:rgb(15 23 42);color:#fff}
+    .btnP:hover{background:rgb(30 41 59)}
+    .chip{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .55rem;border-radius:999px;font-size:.75rem;border:1px solid}
+    .toast{animation:toastIn .2s ease-out}
+    @keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-backdrop{background:rgba(0,0,0,.45)}
   </style>
 </head>
-
 <body class="bg-slate-50 text-slate-900">
   <div id="toastHost" class="fixed z-[999] top-4 right-4 space-y-2"></div>
 
-  <!-- MODAL -->
   <div id="modalRoot" class="hidden fixed inset-0 z-50 modal-backdrop">
     <div class="min-h-screen flex items-center justify-center p-6">
       <div id="modalCard" class="w-full max-w-3xl rounded-3xl bg-white border border-slate-200 shadow-xl"></div>
@@ -36,7 +34,7 @@
         <div class="h-10 w-10 rounded-2xl bg-slate-900 text-white grid place-items-center font-bold">M</div>
         <div>
           <div class="font-semibold leading-tight">매니아카 본사</div>
-          <div class="text-sm text-slate-500 leading-tight">Firebase RTDB</div>
+          <div class="text-sm text-slate-500 leading-tight">RTDB Only</div>
         </div>
       </div>
     </header>
@@ -44,21 +42,20 @@
     <main class="mx-auto max-w-md px-6 py-10">
       <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
         <div class="text-2xl font-bold">본사 로그인</div>
-        <div class="text-sm text-slate-600 mt-2">아이디/비밀번호로 로그인하세요.</div>
+        <div class="text-sm text-slate-600 mt-2">아이디/비밀번호로 로그인</div>
 
         <div class="mt-6 space-y-3 text-sm">
           <label class="block font-medium">아이디</label>
           <input id="lgUser" class="field" placeholder="예: superadmin" />
 
           <label class="block font-medium mt-3">비밀번호</label>
-          <input id="lgPass" type="password" class="field" placeholder="비밀번호" />
-
-          <div class="text-xs text-slate-500 mt-2">
-            * 아이디는 내부적으로 <span class="font-mono">아이디@mania.local</span>로 로그인합니다.<br/>
-            * 초기 계정은 Firebase 콘솔에서 1회 생성 후, RTDB <span class="font-mono">/meta/users/{uid}</span>에 role을 넣어주세요.
-          </div>
+          <input id="lgPass" type="password" class="field" placeholder="예: 1234" />
 
           <button class="mt-4 w-full btnP" onclick="Auth.login()">로그인</button>
+
+          <div class="mt-4 text-xs text-slate-500">
+            기본 계정(자동 생성): <span class="font-mono">superadmin/1234</span>, <span class="font-mono">hqadmin/1234</span>
+          </div>
         </div>
       </div>
     </main>
@@ -75,7 +72,6 @@
             <div class="text-xs text-slate-500 leading-tight" id="topRole">-</div>
           </div>
         </div>
-
         <div class="flex items-center gap-2">
           <div class="text-xs text-slate-500 hidden sm:block" id="nowKST">-</div>
           <button class="btn" onclick="Auth.logout()">로그아웃</button>
@@ -101,10 +97,9 @@
         </div>
 
         <div class="mt-3 px-2 py-3 rounded-2xl bg-slate-50 border border-slate-200">
-          <div class="text-xs text-slate-500">비밀번호 초기화 안내</div>
+          <div class="text-xs text-slate-500">비번 초기화</div>
           <div class="text-xs text-slate-600 mt-1">
-            “진짜 이메일”로 만든 계정만 reset 이메일 발송이 됩니다.<br/>
-            <span class="font-mono">@mania.local</span>은 메일 수신이 없어서 콘솔에서 변경해야 해요.
+            RTDB Only에서는 “이메일 reset” 대신<br/>여기서 <b>비밀번호 직접 변경</b>합니다.
           </div>
         </div>
       </aside>
@@ -114,7 +109,7 @@
         <section id="tab-dashboard" class="tab hidden">
           <div>
             <h2 class="text-2xl font-bold">대시보드</h2>
-            <p class="text-slate-600 text-sm mt-1">무료 버전: 전체 학원 수만 표시</p>
+            <p class="text-slate-600 text-sm mt-1">무료/베타: 전체 학원 수 중심</p>
           </div>
 
           <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -139,7 +134,7 @@
           <div class="flex items-end justify-between gap-3 flex-wrap">
             <div>
               <h2 class="text-2xl font-bold">학원 관리</h2>
-              <p class="text-slate-600 text-sm mt-1">학원 생성 시 학원 코드 + 원장 계정 + 임시비번 발급</p>
+              <p class="text-slate-600 text-sm mt-1">학원 생성 시 학원코드 + 원장계정 + 임시비번 발급</p>
             </div>
             <button id="btnCreateAcademy" class="btnP" onclick="Academies.openCreate()">학원 생성</button>
           </div>
@@ -151,7 +146,7 @@
                 <thead class="text-left text-slate-500">
                   <tr>
                     <th class="py-2 pr-4">학원명</th>
-                    <th class="py-2 pr-4">학원 코드</th>
+                    <th class="py-2 pr-4">학원코드</th>
                     <th class="py-2 pr-4">상태</th>
                     <th class="py-2 pr-4">원장ID</th>
                     <th class="py-2 pr-4">관리</th>
@@ -168,36 +163,34 @@
           <div class="flex items-end justify-between gap-3 flex-wrap">
             <div>
               <h2 class="text-2xl font-bold">계정/권한</h2>
-              <p class="text-slate-600 text-sm mt-1">SUPERADMIN / HQADMIN + 비번 초기화(이메일 reset)</p>
+              <p class="text-slate-600 text-sm mt-1">본사: SUPERADMIN/HQADMIN · 학원: OWNER/ADMIN/TEACHER</p>
             </div>
-            <button id="btnCreateHQ" class="btnP" onclick="Accounts.openCreateHQ()">본사 운영자 추가</button>
+            <button id="btnCreateAcc" class="btnP" onclick="Accounts.openCreate()">계정 추가</button>
           </div>
 
           <div class="bg-white border border-slate-200 rounded-3xl p-5">
-            <div class="font-semibold">본사 계정 목록</div>
+            <div class="font-semibold">계정 목록</div>
             <div class="mt-4 overflow-auto">
               <table class="min-w-full text-sm">
                 <thead class="text-left text-slate-500">
                   <tr>
                     <th class="py-2 pr-4">아이디</th>
                     <th class="py-2 pr-4">권한</th>
+                    <th class="py-2 pr-4">학원</th>
                     <th class="py-2 pr-4">관리</th>
                   </tr>
                 </thead>
-                <tbody id="hqUserRows" class="divide-y divide-slate-100"></tbody>
+                <tbody id="accRows" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </div>
 
           <div class="bg-white border border-slate-200 rounded-3xl p-5">
-            <div class="font-semibold">비밀번호 초기화(Reset Email)</div>
-            <div class="text-sm text-slate-600 mt-1">실제 이메일로 만든 계정만 메일 수신이 됩니다.</div>
+            <div class="font-semibold">비밀번호 변경</div>
             <div class="mt-4 grid md:grid-cols-3 gap-3 text-sm">
-              <input id="rstEmail" class="field md:col-span-2" placeholder="이메일 (예: user@gmail.com)" />
-              <button class="btn" onclick="Accounts.sendReset()">Reset Email 보내기</button>
-            </div>
-            <div class="mt-2 text-xs text-slate-500">
-              * <span class="font-mono">@mania.local</span>은 수신 불가 → Firebase 콘솔에서 비번 변경하세요.
+              <input id="pwUser" class="field" placeholder="아이디" />
+              <input id="pwNew" class="field" placeholder="새 비밀번호" />
+              <button class="btn" onclick="Accounts.setPassword()">변경</button>
             </div>
           </div>
         </section>
@@ -232,11 +225,9 @@
 
         <!-- LOGS -->
         <section id="tab-logs" class="tab hidden">
-          <div class="flex items-end justify-between gap-3 flex-wrap">
-            <div>
-              <h2 class="text-2xl font-bold">로그인 기록</h2>
-              <p class="text-slate-600 text-sm mt-1">성공/실패 기록 (최근 200개 표시)</p>
-            </div>
+          <div>
+            <h2 class="text-2xl font-bold">로그인 기록</h2>
+            <p class="text-slate-600 text-sm mt-1">최근 200개 표시</p>
           </div>
 
           <div class="bg-white border border-slate-200 rounded-3xl p-5">
@@ -246,7 +237,7 @@
                 <thead class="text-left text-slate-500">
                   <tr>
                     <th class="py-2 pr-4">시간(KST)</th>
-                    <th class="py-2 pr-4">타입</th>
+                    <th class="py-2 pr-4">사이트</th>
                     <th class="py-2 pr-4">아이디</th>
                     <th class="py-2 pr-4">학원코드</th>
                     <th class="py-2 pr-4">결과</th>
@@ -263,24 +254,9 @@
   </section>
 
   <script type="module">
-    /********************
-     * Firebase imports
-     ********************/
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+    import { getDatabase, ref, set, update, push, get, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-    import {
-      getDatabase, ref, set, update, push, get, onValue, query, limitToLast, orderByChild
-    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
-    import {
-      getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
-      createUserWithEmailAndPassword, sendPasswordResetEmail
-    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-
-    /********************
-     * Firebase config (provided)
-     ********************/
     const firebaseConfig = {
       apiKey: "AIzaSyCMpX7R7IwOIaUSjWUpzqDQf7MlqZ7nhls",
       authDomain: "maniaca-db-5632f.firebaseapp.com",
@@ -293,274 +269,174 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    try { getAnalytics(app); } catch {}
     const db = getDatabase(app);
-    const auth = getAuth(app);
 
-    /********************
-     * Utilities
-     ********************/
     const Util = {
-      nowKST() {
-        return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-      },
-      uid(prefix="id") {
-        return prefix + "-" + Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
-      },
-      randomCode(len=8) {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let out = "";
-        for (let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+      nowKST(){ return new Date().toLocaleString("ko-KR", { timeZone:"Asia/Seoul" }); },
+      uid(prefix="id"){ return prefix + "-" + Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); },
+      randCode(len=8){
+        const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let out=""; for(let i=0;i<len;i++) out+=chars[Math.floor(Math.random()*chars.length)];
         return out;
       },
-      randomPw(len=8) {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-        let out = "";
-        for (let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+      randPw(len=8){
+        const chars="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        let out=""; for(let i=0;i<len;i++) out+=chars[Math.floor(Math.random()*chars.length)];
         return out;
-      },
-      asEmailFromId(id) {
-        // ID-only login style
-        return `${id}@mania.local`;
       }
     };
 
     const Toast = {
-      show(msg, type="info") {
-        const host = document.getElementById("toastHost");
-        const el = document.createElement("div");
-        const color = type === "error" ? "bg-rose-600" : (type === "success" ? "bg-emerald-600" : "bg-slate-900");
-        el.className = `toast ${color} text-white px-4 py-3 rounded-2xl shadow-lg text-sm max-w-sm`;
-        el.textContent = msg;
+      show(msg, type="info"){
+        const host=document.getElementById("toastHost");
+        const el=document.createElement("div");
+        const color = type==="error"?"bg-rose-600":(type==="success"?"bg-emerald-600":"bg-slate-900");
+        el.className=`toast ${color} text-white px-4 py-3 rounded-2xl shadow-lg text-sm max-w-sm`;
+        el.textContent=msg;
         host.appendChild(el);
-        setTimeout(() => el.remove(), 2200);
+        setTimeout(()=>el.remove(), 2300);
       }
     };
 
     const Modal = {
-      open(html) {
+      open(html){
         document.getElementById("modalCard").innerHTML = html;
         document.getElementById("modalRoot").classList.remove("hidden");
       },
-      close() {
+      close(){
         document.getElementById("modalRoot").classList.add("hidden");
         document.getElementById("modalCard").innerHTML = "";
       }
     };
 
-    /********************
-     * Session + role
-     ********************/
     const Session = {
-      user: null,
-      profile: null, // meta/users/{uid}
-      getRole() { return this.profile?.role || null; },
-      isSuper() { return this.getRole() === "SUPERADMIN"; },
-      isHQ() { return this.getRole() === "HQADMIN"; },
-      hasHQAccess() { return this.isSuper() || this.isHQ(); }
+      user:null, // {username, role}
+      isSuper(){ return this.user?.role==="SUPERADMIN"; },
+      isHQ(){ return this.user?.role==="HQADMIN"; },
+      hasHQAccess(){ return this.isSuper() || this.isHQ(); }
     };
 
-    /********************
-     * Logs
-     ********************/
-    async function writeLoginLog({ type, username, academyCode=null, success, note="" }) {
-      try {
-        const logId = push(ref(db, "loginLogs")).key;
-        await set(ref(db, `loginLogs/${logId}`), {
-          id: logId,
-          atKST: Util.nowKST(),
-          at: Date.now(),
-          type,
-          username,
-          academyCode,
-          success: !!success,
-          note,
-          uid: auth.currentUser?.uid || null
-        });
-      } catch {}
+    async function logLogin({site, username, academyCode=null, success, note=""}){
+      const id = push(ref(db, "loginLogs")).key;
+      await set(ref(db, `loginLogs/${id}`), {
+        id,
+        at: Date.now(),
+        atKST: Util.nowKST(),
+        site,
+        username,
+        academyCode,
+        success: !!success,
+        note
+      });
     }
 
-    /********************
-     * Auth
-     ********************/
-    const Auth = {
-      async login() {
-        const id = document.getElementById("lgUser").value.trim();
-        const pw = document.getElementById("lgPass").value.trim();
-        if (!id || !pw) return Toast.show("아이디/비밀번호를 입력해주세요.", "error");
+    async function bootstrapDefaults(){
+      const snap = await get(ref(db, "_bootstrapDone"));
+      if (snap.exists()) return;
 
-        const email = Util.asEmailFromId(id);
-
-        try {
-          await signInWithEmailAndPassword(auth, email, pw);
-          await writeLoginLog({ type:"HQ", username:id, success:true, note:"AUTH_OK" });
-          Toast.show("로그인 성공", "success");
-        } catch (e) {
-          await writeLoginLog({ type:"HQ", username:id, success:false, note:e?.code || "AUTH_FAIL" });
-          Toast.show("로그인 실패: 아이디/비밀번호를 확인해주세요.", "error");
-        }
-      },
-      async logout() {
-        await signOut(auth);
-        UI.gotoLogin();
+      // default accounts
+      const superSnap = await get(ref(db, "accounts/superadmin"));
+      if (!superSnap.exists()){
+        await set(ref(db, "accounts/superadmin"), { password:"1234", role:"SUPERADMIN", academyId:null, createdAt:Date.now() });
       }
-    };
+      const hqSnap = await get(ref(db, "accounts/hqadmin"));
+      if (!hqSnap.exists()){
+        await set(ref(db, "accounts/hqadmin"), { password:"1234", role:"HQADMIN", academyId:null, createdAt:Date.now() });
+      }
 
-    /********************
-     * UI
-     ********************/
+      await set(ref(db, "_bootstrapDone"), { at: Date.now(), atKST: Util.nowKST() });
+    }
+
     const UI = {
-      gotoLogin() {
+      gotoLogin(){
         document.getElementById("page-login").classList.remove("hidden");
         document.getElementById("page-app").classList.add("hidden");
       },
-      gotoApp() {
+      gotoApp(){
         document.getElementById("page-login").classList.add("hidden");
         document.getElementById("page-app").classList.remove("hidden");
         this.openTab("dashboard");
-        App.refreshAll();
+        this.applyRoleGates();
       },
-      openTab(tab) {
-        document.querySelectorAll(".tab").forEach(el => el.classList.add("hidden"));
+      openTab(tab){
+        document.querySelectorAll(".tab").forEach(el=>el.classList.add("hidden"));
         document.getElementById(`tab-${tab}`).classList.remove("hidden");
-
-        document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("bg-slate-100"));
-        const map = {dashboard:0,academies:1,accounts:2,notices:3,logs:4};
-        const idx = map[tab];
-        if (idx !== undefined) document.querySelectorAll(".nav-btn")[idx].classList.add("bg-slate-100");
-
-        if (tab === "dashboard") Dashboard.renderOnce();
-        if (tab === "academies") Academies.renderOnce();
-        if (tab === "accounts") Accounts.renderOnce();
-        if (tab === "notices") Notices.renderOnce();
-        if (tab === "logs") Logs.renderOnce();
+        document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.remove("bg-slate-100"));
+        const map={dashboard:0,academies:1,accounts:2,notices:3,logs:4};
+        document.querySelectorAll(".nav-btn")[map[tab]]?.classList.add("bg-slate-100");
       },
-      applyRoleGates() {
-        // SUPERADMIN만 학원 생성/운영자 추가/공지 등록 가능(요청대로)
-        document.getElementById("btnCreateAcademy").disabled = !Session.isSuper();
-        document.getElementById("btnCreateAcademy").className = Session.isSuper() ? "btnP" : "btn bg-slate-100 text-slate-400 cursor-not-allowed";
+      applyRoleGates(){
+        const super = Session.isSuper();
+        // 슈퍼만 학원 생성/계정추가/공지등록
+        const gate = (id, enabled)=>{
+          const el = document.getElementById(id);
+          el.disabled = !enabled;
+          el.className = enabled ? "btnP" : "btn bg-slate-100 text-slate-400 cursor-not-allowed";
+        };
+        gate("btnCreateAcademy", super);
+        gate("btnCreateAcc", super);
+        gate("btnCreateNotice", super);
 
-        document.getElementById("btnCreateHQ").disabled = !Session.isSuper();
-        document.getElementById("btnCreateHQ").className = Session.isSuper() ? "btnP" : "btn bg-slate-100 text-slate-400 cursor-not-allowed";
-
-        document.getElementById("btnCreateNotice").disabled = !Session.isSuper();
-        document.getElementById("btnCreateNotice").className = Session.isSuper() ? "btnP" : "btn bg-slate-100 text-slate-400 cursor-not-allowed";
-      }
-    };
-
-    const App = {
-      refreshAll() {
-        const role = Session.getRole();
-        const roleName = role === "SUPERADMIN" ? "슈퍼관리자" : (role === "HQADMIN" ? "본사 운영자" : role || "-");
+        const roleName = Session.user?.role==="SUPERADMIN" ? "슈퍼관리자" : "본사 운영자";
         document.getElementById("topRole").textContent = roleName;
+        document.getElementById("whoami").textContent = Session.user?.username || "-";
         document.getElementById("whoRoleMini").textContent = `권한: ${roleName}`;
-        document.getElementById("whoami").textContent = Session.profile?.username
-          ? `${Session.profile.username}`
-          : (auth.currentUser?.email || "-");
-        document.getElementById("nowKST").textContent = `KST ${Util.nowKST()}`;
-        UI.applyRoleGates();
       }
     };
 
-    /********************
-     * Dashboard
-     ********************/
-    const Dashboard = {
-      inited: false,
-      renderOnce() {
-        if (this.inited) return;
-        this.inited = true;
+    const Auth = {
+      async login(){
+        const username = document.getElementById("lgUser").value.trim();
+        const password = document.getElementById("lgPass").value.trim();
+        if (!username || !password) return Toast.show("아이디/비밀번호를 입력해주세요.", "error");
 
-        // academies count
-        onValue(ref(db, "meta/academies"), snap => {
-          const val = snap.val() || {};
-          document.getElementById("statAcademies").textContent = Object.keys(val).length;
-        });
+        const snap = await get(ref(db, `accounts/${username}`));
+        if (!snap.exists()){
+          await logLogin({site:"HQ", username, success:false, note:"NO_ACCOUNT"});
+          return Toast.show("계정이 없습니다.", "error");
+        }
+        const acc = snap.val();
+        if (acc.password !== password){
+          await logLogin({site:"HQ", username, success:false, note:"BAD_PASSWORD"});
+          return Toast.show("비밀번호가 틀렸습니다.", "error");
+        }
+        if (!["SUPERADMIN","HQADMIN"].includes(acc.role)){
+          await logLogin({site:"HQ", username, success:false, note:"ROLE_DENIED"});
+          return Toast.show("본사 권한이 없습니다.", "error");
+        }
 
-        // notices count
-        onValue(ref(db, "notices"), snap => {
-          const val = snap.val() || {};
-          document.getElementById("statNotices").textContent = Object.keys(val).length;
-        });
-
-        // last success login
-        onValue(query(ref(db, "loginLogs"), orderByChild("at"), limitToLast(50)), snap => {
-          const val = snap.val() || {};
-          const arr = Object.values(val).sort((a,b)=> (b.at||0)-(a.at||0));
-          const last = arr.find(x=>x.success);
-          document.getElementById("statLastLogin").textContent = last
-            ? `${last.atKST} · ${last.type} · ${last.username}`
-            : "-";
-        });
-      }
-    };
-
-    /********************
-     * Academies
-     ********************/
-    const Academies = {
-      inited:false,
-      renderOnce() {
-        if (this.inited) return;
-        this.inited = true;
-
-        onValue(ref(db, "meta/academies"), snap => {
-          const rows = document.getElementById("academyRows");
-          rows.innerHTML = "";
-
-          const data = snap.val() || {};
-          const list = Object.entries(data).map(([id,a]) => ({ id, ...a }))
-            .sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
-
-          if (list.length === 0) {
-            rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="5">학원이 없습니다.</td></tr>`;
-            return;
-          }
-
-          list.forEach(a => {
-            const statusChip = a.status === "ACTIVE"
-              ? `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">ACTIVE</span>`
-              : `<span class="chip bg-slate-50 text-slate-600 border-slate-200">INACTIVE</span>`;
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td class="py-3 pr-4 font-medium">${a.name || "-"}</td>
-              <td class="py-3 pr-4 font-mono text-xs">${a.code || "-"}</td>
-              <td class="py-3 pr-4">${statusChip}</td>
-              <td class="py-3 pr-4 font-mono text-xs">${a.ownerUsername || "-"}</td>
-              <td class="py-3 pr-4">
-                <button class="btn" onclick="Academies.showLoginInfo('${a.id}')">로그인정보</button>
-                <button class="btn ml-1" onclick="Academies.toggleStatus('${a.id}')">상태변경</button>
-              </td>
-            `;
-            rows.appendChild(tr);
-          });
-        });
+        Session.user = { username, role: acc.role };
+        localStorage.setItem("hqSession", JSON.stringify(Session.user));
+        await logLogin({site:"HQ", username, success:true, note:acc.role});
+        UI.gotoApp();
       },
+      logout(){
+        Session.user = null;
+        localStorage.removeItem("hqSession");
+        UI.gotoLogin();
+      }
+    };
+    window.Auth = Auth;
 
-      openCreate() {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 학원을 생성할 수 있어요.", "error");
+    const Academies = {
+      async openCreate(){
+        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 가능합니다.", "error");
 
         Modal.open(`
           <div class="p-6">
             <div class="flex items-start justify-between gap-3">
               <div>
                 <div class="text-xl font-bold">학원 생성</div>
-                <div class="text-sm text-slate-600 mt-1">학원 코드 자동 생성 + 원장 계정/임시비번 생성</div>
+                <div class="text-sm text-slate-600 mt-1">원장계정(OWNER) 자동 생성</div>
               </div>
               <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
 
             <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
               <input id="acName" class="field" placeholder="학원명" />
-              <input id="acOwnerId" class="field" placeholder="원장 ID (예: owner_dae)" />
-              <input id="acOwnerPw" class="field" placeholder="원장 임시 비밀번호" value="${Util.randomPw(8)}" />
-              <input id="acOwnerRealEmail" class="field" placeholder="(선택) 원장 실제 이메일 (reset 가능)" />
-            </div>
-
-            <div class="mt-4 text-xs text-slate-500">
-              * 원장 로그인 이메일은 기본적으로 <span class="font-mono">원장ID@mania.local</span> 로 생성됩니다.<br/>
-              * 실제 이메일을 입력하면 reset 이메일이 가능하지만, 로그인 아이디(원장ID)는 그대로 사용합니다.
+              <input id="acCode" class="field" placeholder="학원코드(비우면 자동 생성)" />
+              <input id="acOwner" class="field" placeholder="원장 ID (예: owner1)" />
+              <input id="acPw" class="field" placeholder="원장 임시 비밀번호" value="${Util.randPw(8)}" />
             </div>
 
             <div class="mt-5 flex justify-end gap-2">
@@ -571,78 +447,65 @@
         `);
       },
 
-      async create() {
+      async create(){
         const name = document.getElementById("acName").value.trim();
-        const ownerId = document.getElementById("acOwnerId").value.trim();
-        const tempPw = document.getElementById("acOwnerPw").value.trim();
-        const realEmail = document.getElementById("acOwnerRealEmail").value.trim();
-
-        if (!name || !ownerId || !tempPw) return Toast.show("학원명/원장ID/임시비번은 필수입니다.", "error");
+        let code = document.getElementById("acCode").value.trim();
+        const owner = document.getElementById("acOwner").value.trim();
+        const pw = document.getElementById("acPw").value.trim();
+        if (!name || !owner || !pw) return Toast.show("학원명/원장ID/비번은 필수입니다.", "error");
 
         // code unique
-        let code = "";
-        for (let i=0;i<20;i++) {
-          const c = Util.randomCode(8);
-          const idxSnap = await get(ref(db, `meta/academyCodeIndex/${c}`));
-          if (!idxSnap.exists()) { code = c; break; }
+        if (!code){
+          for (let i=0;i<20;i++){
+            const c = Util.randCode(8);
+            const idx = await get(ref(db, `academyCodeIndex/${c}`));
+            if (!idx.exists()){ code = c; break; }
+          }
+          if (!code) return Toast.show("코드 생성 실패", "error");
+        } else {
+          const idx = await get(ref(db, `academyCodeIndex/${code}`));
+          if (idx.exists()) return Toast.show("이미 사용 중인 학원코드입니다.", "error");
         }
-        if (!code) return Toast.show("학원 코드 생성 실패(다시 시도)", "error");
 
-        const ownerEmail = realEmail || Util.asEmailFromId(ownerId);
         const academyId = Util.uid("ac");
 
-        try {
-          // create owner auth user
-          const cred = await createUserWithEmailAndPassword(auth, ownerEmail, tempPw);
-          const ownerUid = cred.user.uid;
+        // create academy
+        await set(ref(db, `academies/${academyId}`), {
+          id: academyId,
+          name,
+          code,
+          status: "ACTIVE",
+          ownerUsername: owner,
+          createdAt: Date.now(),
+          createdAtKST: Util.nowKST()
+        });
 
-          // write meta
-          await set(ref(db, `meta/academies/${academyId}`), {
-            name,
-            code,
-            status: "ACTIVE",
-            ownerUid,
-            ownerUsername: ownerId,
-            // 학원용 로그인 UX 편의: 원장ID로 로그인하되, 실제 이메일이 따로 있을 수 있어 기록
-            ownerAuthEmail: ownerEmail,
-            createdAt: Date.now(),
-            createdAtKST: Util.nowKST()
-          });
+        await set(ref(db, `academyCodeIndex/${code}`), academyId);
 
-          await set(ref(db, `meta/academyCodeIndex/${code}`), academyId);
+        // create owner account
+        const ownerSnap = await get(ref(db, `accounts/${owner}`));
+        if (ownerSnap.exists()) return Toast.show("이미 존재하는 원장 ID입니다.", "error");
 
-          await set(ref(db, `meta/users/${ownerUid}`), {
-            role: "OWNER",
-            academyId,
-            username: ownerId
-          });
+        await set(ref(db, `accounts/${owner}`), {
+          password: pw,
+          role: "OWNER",
+          academyId,
+          createdAt: Date.now(),
+          createdAtKST: Util.nowKST()
+        });
 
-          // initialize academyData root (optional)
-          await set(ref(db, `academyData/${academyId}/_meta`), {
-            createdAt: Date.now(),
-            createdAtKST: Util.nowKST()
-          });
+        // optional: seed academyData meta
+        await set(ref(db, `academyData/${academyId}/_meta`), { createdAt: Date.now(), createdAtKST: Util.nowKST() });
 
-          Toast.show("학원 생성 완료", "success");
-          Modal.close();
-          this.showLoginInfo(academyId, tempPw);
-
-        } catch (e) {
-          Toast.show(`생성 실패: ${e?.code || e?.message || "error"}`, "error");
-        }
-      },
-
-      async showLoginInfo(academyId, tempPwMaybe=null) {
-        const snap = await get(ref(db, `meta/academies/${academyId}`));
-        if (!snap.exists()) return;
-        const a = snap.val();
+        Toast.show("학원 생성 완료", "success");
+        Modal.close();
 
         Modal.open(`
           <div class="p-6">
             <div class="flex items-start justify-between gap-3">
               <div>
-                <div class="text-xl font-bold">학원용 로그인 정보</div>
-                <div class="text-sm text-slate-600 mt-1">${a.name}</div>
+                <div class="text-xl font-bold">학원 로그인 정보</div>
+                <div class="text-sm text-slate-600 mt-1">${name}</div>
               </div>
               <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
@@ -650,251 +513,222 @@
             <div class="mt-5 space-y-3 text-sm">
               <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
                 <div class="text-xs text-slate-500">학원 코드</div>
-                <div class="font-mono font-semibold text-lg">${a.code}</div>
+                <div class="font-mono font-semibold text-lg">${code}</div>
               </div>
-
               <div class="grid sm:grid-cols-2 gap-3">
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
                   <div class="text-xs text-slate-500">원장 ID</div>
-                  <div class="font-mono font-semibold">${a.ownerUsername}</div>
+                  <div class="font-mono font-semibold">${owner}</div>
                 </div>
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-                  <div class="text-xs text-slate-500">원장 임시 비밀번호</div>
-                  <div class="font-mono font-semibold">${tempPwMaybe ? tempPwMaybe : "(보안상 표시 불가)"} </div>
+                  <div class="text-xs text-slate-500">임시 비밀번호</div>
+                  <div class="font-mono font-semibold">${pw}</div>
                 </div>
-              </div>
-
-              <div class="text-xs text-slate-500">
-                학원 로그인 조건: <b>학원코드 + 원장ID + 비밀번호</b><br/>
-                (내부 인증은 Firebase Auth + RTDB 매칭으로 처리)
               </div>
             </div>
           </div>
         `);
       },
 
-      async toggleStatus(academyId) {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 변경 가능", "error");
-
-        const snap = await get(ref(db, `meta/academies/${academyId}/status`));
+      async toggleStatus(academyId){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        const snap = await get(ref(db, `academies/${academyId}/status`));
         if (!snap.exists()) return;
-        const cur = snap.val();
-        const next = (cur === "ACTIVE") ? "INACTIVE" : "ACTIVE";
-        await set(ref(db, `meta/academies/${academyId}/status`), next);
-        Toast.show("상태를 변경했습니다.", "success");
-      }
-    };
-
-    window.Academies = Academies;
-
-    /********************
-     * Accounts
-     ********************/
-    const Accounts = {
-      inited:false,
-      renderOnce() {
-        if (this.inited) return;
-        this.inited = true;
-
-        // Note: RTDB에 "본사 계정 리스트"를 따로 유지하면 쉽다.
-        // 여기서는 /meta/users를 읽고 role이 SUPERADMIN/HQADMIN인 uid만 보여준다.
-        onValue(ref(db, "meta/users"), snap => {
-          const rows = document.getElementById("hqUserRows");
-          rows.innerHTML = "";
-          const users = snap.val() || {};
-          const list = Object.entries(users)
-            .map(([uid,u]) => ({ uid, ...u }))
-            .filter(u => u.role === "SUPERADMIN" || u.role === "HQADMIN")
-            .sort((a,b)=> (a.role||"").localeCompare(b.role||""));
-
-          if (list.length === 0) {
-            rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="3">본사 계정이 없습니다.</td></tr>`;
-            return;
-          }
-
-          list.forEach(u => {
-            const roleName = u.role === "SUPERADMIN" ? "슈퍼관리자" : "본사 운영자";
-            const canDelete = Session.isSuper() && u.role !== "SUPERADMIN";
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td class="py-3 pr-4 font-mono text-xs">${u.username || u.uid}</td>
-              <td class="py-3 pr-4">${roleName}</td>
-              <td class="py-3 pr-4">
-                <button class="btn" onclick="Accounts.prefillReset('${u.username || ""}')">reset 준비</button>
-                <button class="${canDelete ? "btn" : "btn bg-slate-100 text-slate-400 cursor-not-allowed"} ml-1"
-                        ${canDelete ? `onclick="Accounts.removeHQ('${u.uid}')"` : "disabled"}>
-                  삭제(권한만)
-                </button>
-              </td>
-            `;
-            rows.appendChild(tr);
-          });
-        });
+        const next = snap.val()==="ACTIVE" ? "INACTIVE" : "ACTIVE";
+        await set(ref(db, `academies/${academyId}/status`), next);
+        Toast.show("상태 변경 완료", "success");
       },
 
-      openCreateHQ() {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 운영자 추가 가능", "error");
+      bindList(){
+        onValue(ref(db, "academies"), (snap)=>{
+          const tbody = document.getElementById("academyRows");
+          tbody.innerHTML = "";
+          const data = snap.val() || {};
+          const list = Object.values(data).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+          if (list.length===0){
+            tbody.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="5">학원이 없습니다.</td></tr>`;
+            return;
+          }
+          for (const a of list){
+            const chip = a.status==="ACTIVE"
+              ? `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">ACTIVE</span>`
+              : `<span class="chip bg-slate-50 text-slate-600 border-slate-200">INACTIVE</span>`;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="py-3 pr-4 font-medium">${a.name||"-"}</td>
+              <td class="py-3 pr-4 font-mono text-xs">${a.code||"-"}</td>
+              <td class="py-3 pr-4">${chip}</td>
+              <td class="py-3 pr-4 font-mono text-xs">${a.ownerUsername||"-"}</td>
+              <td class="py-3 pr-4">
+                <button class="btn" onclick="Academies.toggleStatus('${a.id}')">상태변경</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
+      }
+    };
+    window.Academies = Academies;
+
+    const Accounts = {
+      async openCreate(){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+
+        // academies options
+        const acSnap = await get(ref(db, "academies"));
+        const list = Object.values(acSnap.val()||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+        const opts = [`<option value="">(학원 없음)</option>`].concat(
+          list.map(a=>`<option value="${a.id}">${a.name} (${a.code})</option>`)
+        ).join("");
 
         Modal.open(`
           <div class="p-6">
             <div class="flex items-start justify-between gap-3">
               <div>
-                <div class="text-xl font-bold">본사 운영자 추가</div>
-                <div class="text-sm text-slate-600 mt-1">HQADMIN 생성</div>
+                <div class="text-xl font-bold">계정 추가</div>
+                <div class="text-sm text-slate-600 mt-1">본사/학원 계정 생성</div>
               </div>
               <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
 
             <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
-              <input id="hqId" class="field" placeholder="운영자 ID (예: hqops1)" />
-              <input id="hqPw" class="field" placeholder="임시 비밀번호" value="${Util.randomPw(8)}" />
-              <input id="hqRealEmail" class="field sm:col-span-2" placeholder="(선택) 실제 이메일 (reset 가능)" />
+              <input id="accUser" class="field" placeholder="아이디" />
+              <input id="accPw" class="field" placeholder="비밀번호" value="${Util.randPw(8)}" />
+              <select id="accRole" class="field">
+                <option value="HQADMIN">HQADMIN (본사 운영자)</option>
+                <option value="ADMIN">ADMIN (학원 관리자)</option>
+                <option value="TEACHER">TEACHER (강사)</option>
+              </select>
+              <select id="accAcademy" class="field">${opts}</select>
             </div>
 
             <div class="mt-4 text-xs text-slate-500">
-              * 실제 이메일을 입력하지 않으면 <span class="font-mono">ID@mania.local</span>로 생성됩니다(메일 reset 불가).
+              * HQADMIN은 학원 선택 없이 생성해도 됩니다.<br/>
+              * ADMIN/TEACHER는 반드시 학원을 선택해야 합니다.
             </div>
 
             <div class="mt-5 flex justify-end gap-2">
               <button class="btn" onclick="Modal.close()">취소</button>
-              <button class="btnP" onclick="Accounts.createHQ()">생성</button>
+              <button class="btnP" onclick="Accounts.create()">생성</button>
             </div>
           </div>
         `);
       },
 
-      async createHQ() {
-        const id = document.getElementById("hqId").value.trim();
-        const pw = document.getElementById("hqPw").value.trim();
-        const realEmail = document.getElementById("hqRealEmail").value.trim();
-        if (!id || !pw) return Toast.show("ID/비번을 입력해주세요.", "error");
+      async create(){
+        const username = document.getElementById("accUser").value.trim();
+        const password = document.getElementById("accPw").value.trim();
+        const role = document.getElementById("accRole").value;
+        const academyId = document.getElementById("accAcademy").value || null;
 
-        const email = realEmail || Util.asEmailFromId(id);
+        if (!username || !password) return Toast.show("아이디/비번은 필수", "error");
 
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, email, pw);
-          const uid = cred.user.uid;
+        const exists = await get(ref(db, `accounts/${username}`));
+        if (exists.exists()) return Toast.show("이미 존재하는 아이디", "error");
 
-          await set(ref(db, `meta/users/${uid}`), {
-            role: "HQADMIN",
-            academyId: null,
-            username: id,
-            authEmail: email
-          });
+        if (["ADMIN","TEACHER"].includes(role) && !academyId) return Toast.show("학원을 선택해주세요.", "error");
 
-          Toast.show("운영자 계정을 생성했습니다.", "success");
-          Modal.close();
+        await set(ref(db, `accounts/${username}`), {
+          password,
+          role,
+          academyId: role==="HQADMIN" ? null : academyId,
+          createdAt: Date.now(),
+          createdAtKST: Util.nowKST()
+        });
 
-        } catch (e) {
-          Toast.show(`생성 실패: ${e?.code || e?.message || "error"}`, "error");
-        }
+        Toast.show("계정 생성 완료", "success");
+        Modal.close();
       },
 
-      // ⚠️ 정적 웹에서 다른 유저 Auth 계정 삭제는 불가(권한 문제)
-      // 여기서는 "권한 데이터만" 제거(즉, HQ 접근만 막기)
-      async removeHQ(uid) {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 삭제 가능", "error");
-        if (!confirm("운영자 권한을 제거할까요? (Auth 계정은 남습니다)")) return;
-        await set(ref(db, `meta/users/${uid}`), null);
-        Toast.show("운영자 권한을 제거했습니다.", "success");
+      async setPassword(){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        const username = document.getElementById("pwUser").value.trim();
+        const pw = document.getElementById("pwNew").value.trim();
+        if (!username || !pw) return Toast.show("아이디/새 비번 입력", "error");
+
+        const snap = await get(ref(db, `accounts/${username}`));
+        if (!snap.exists()) return Toast.show("계정이 없습니다.", "error");
+
+        await update(ref(db, `accounts/${username}`), { password: pw, pwUpdatedAt: Date.now(), pwUpdatedAtKST: Util.nowKST() });
+        Toast.show("비밀번호 변경 완료", "success");
       },
 
-      prefillReset(username) {
-        // mania.local은 수신 불가라서 안내용
-        document.getElementById("rstEmail").value = username ? Util.asEmailFromId(username) : "";
-        Toast.show("Reset 대상 이메일을 입력칸에 넣었습니다.");
+      async remove(username){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        if (["superadmin","hqadmin"].includes(username)) return Toast.show("기본 계정은 삭제 금지", "error");
+        if (!confirm("삭제할까요?")) return;
+        await set(ref(db, `accounts/${username}`), null);
+        Toast.show("삭제 완료", "success");
       },
 
-      async sendReset() {
-        const email = document.getElementById("rstEmail").value.trim();
-        if (!email) return Toast.show("이메일을 입력해주세요.", "error");
-        try {
-          await sendPasswordResetEmail(auth, email);
-          Toast.show("Reset 이메일을 보냈습니다.", "success");
-        } catch (e) {
-          Toast.show(`실패: ${e?.code || e?.message || "error"}`, "error");
-        }
-      }
-    };
+      bindList(){
+        onValue(ref(db, "accounts"), async (snap)=>{
+          const tbody = document.getElementById("accRows");
+          tbody.innerHTML = "";
+          const accs = snap.val() || {};
 
-    window.Accounts = Accounts;
+          const acSnap = await get(ref(db, "academies"));
+          const academies = acSnap.val() || {};
+          const acName = (id)=> id ? (academies[id]?.name || "-") : "-";
 
-    /********************
-     * Notices
-     ********************/
-    const Notices = {
-      inited:false,
-      renderOnce() {
-        if (this.inited) return;
-        this.inited = true;
+          const list = Object.entries(accs).map(([username,a])=>({username,...a}))
+            .sort((x,y)=> (x.username||"").localeCompare(y.username||""));
 
-        onValue(ref(db, "notices"), snap => {
-          const rows = document.getElementById("noticeRows");
-          rows.innerHTML = "";
-
-          const data = snap.val() || {};
-          const list = Object.entries(data).map(([id,n]) => ({ id, ...n }))
-            .sort((a,b)=> ((b.updatedAt||b.createdAt)||0) - ((a.updatedAt||a.createdAt)||0));
-
-          if (list.length === 0) {
-            rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="4">공지가 없습니다.</td></tr>`;
+          if (list.length===0){
+            tbody.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="4">계정이 없습니다.</td></tr>`;
             return;
           }
 
-          list.forEach(n => {
-            const target = n.target === "ALL" ? "전체 학원" : `학원코드: ${n.academyCode}`;
+          for (const a of list){
             const tr = document.createElement("tr");
             tr.innerHTML = `
-              <td class="py-3 pr-4">${n.updatedAtKST || n.createdAtKST || "-"}</td>
-              <td class="py-3 pr-4 font-medium">${n.title || "-"}</td>
-              <td class="py-3 pr-4">${target}</td>
+              <td class="py-3 pr-4 font-mono text-xs">${a.username}</td>
+              <td class="py-3 pr-4">${a.role||"-"}</td>
+              <td class="py-3 pr-4">${acName(a.academyId)}</td>
               <td class="py-3 pr-4">
-                <button class="btn" onclick="Notices.view('${n.id}')">보기</button>
-                <button class="btn ml-1" onclick="Notices.openEdit('${n.id}')">수정</button>
-                <button class="btn ml-1" onclick="Notices.remove('${n.id}')">삭제</button>
+                <button class="btn" onclick="Accounts.remove('${a.username}')">삭제</button>
               </td>
             `;
-            rows.appendChild(tr);
-          });
+            tbody.appendChild(tr);
+          }
         });
-      },
+      }
+    };
+    window.Accounts = Accounts;
 
-      openCreate() {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 공지 등록 가능", "error");
-        Modal.open(this.formHtml({ mode:"create" }));
+    const Notices = {
+      openCreate(){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        Modal.open(this.formHtml({mode:"create"}));
       },
-
-      async openEdit(id) {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 수정 가능", "error");
+      async openEdit(id){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
         const snap = await get(ref(db, `notices/${id}`));
         if (!snap.exists()) return;
-        Modal.open(this.formHtml({ mode:"edit", id, notice:snap.val() }));
+        Modal.open(this.formHtml({mode:"edit", id, notice:snap.val()}));
       },
-
-      formHtml({ mode, id="", notice=null }) {
-        const title = notice?.title || "";
+      formHtml({mode, id="", notice=null}){
+        const title = (notice?.title||"").replaceAll('"',"&quot;");
         const content = notice?.content || "";
         const target = notice?.target || "ALL";
         const academyCode = notice?.academyCode || "";
-
         return `
           <div class="p-6">
             <div class="flex items-start justify-between gap-3">
               <div>
-                <div class="text-xl font-bold">${mode==="create" ? "공지 등록" : "공지 수정"}</div>
-                <div class="text-sm text-slate-600 mt-1">전체 또는 학원코드 대상으로 배포</div>
+                <div class="text-xl font-bold">${mode==="create"?"공지 등록":"공지 수정"}</div>
+                <div class="text-sm text-slate-600 mt-1">전체 또는 특정 학원코드 대상</div>
               </div>
               <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
 
             <div class="mt-5 space-y-3 text-sm">
-              <input id="ntTitle" class="field" placeholder="제목" value="${title.replaceAll('"','&quot;')}" />
+              <input id="ntTitle" class="field" placeholder="제목" value="${title}" />
               <textarea id="ntContent" class="field" rows="8" placeholder="내용">${content}</textarea>
-
               <div class="grid sm:grid-cols-2 gap-3">
-                <select id="ntTarget" class="field" onchange="Notices.toggleTargetInput()">
+                <select id="ntTarget" class="field" onchange="Notices.toggleCode()">
                   <option value="ALL" ${target==="ALL"?"selected":""}>전체 학원</option>
-                  <option value="CODE" ${target==="CODE"?"selected":""}>특정 학원 코드</option>
+                  <option value="CODE" ${target==="CODE"?"selected":""}>특정 학원코드</option>
                 </select>
                 <input id="ntCode" class="field" placeholder="학원 코드" value="${academyCode}" ${target==="CODE"?"":"disabled"} />
               </div>
@@ -902,179 +736,173 @@
 
             <div class="mt-5 flex justify-end gap-2">
               <button class="btn" onclick="Modal.close()">취소</button>
-              <button class="btnP" onclick="Notices.${mode==="create" ? "create" : "saveEdit"}('${id}')">${mode==="create" ? "등록" : "저장"}</button>
+              <button class="btnP" onclick="Notices.${mode==="create"?"create":"save"}('${id}')">${mode==="create"?"등록":"저장"}</button>
             </div>
           </div>
         `;
       },
-
-      toggleTargetInput() {
+      toggleCode(){
         const t = document.getElementById("ntTarget").value;
         const code = document.getElementById("ntCode");
-        code.disabled = (t !== "CODE");
-        if (t !== "CODE") code.value = "";
+        code.disabled = (t!=="CODE");
+        if (t!=="CODE") code.value="";
       },
-
-      async create() {
+      async create(){
         const title = document.getElementById("ntTitle").value.trim();
         const content = document.getElementById("ntContent").value.trim();
         const target = document.getElementById("ntTarget").value;
         const academyCode = document.getElementById("ntCode").value.trim();
-
-        if (!title) return Toast.show("제목을 입력해주세요.", "error");
-        if (target === "CODE" && !academyCode) return Toast.show("학원 코드를 입력해주세요.", "error");
+        if (!title) return Toast.show("제목 필수", "error");
+        if (target==="CODE" && !academyCode) return Toast.show("학원 코드 입력", "error");
 
         const id = push(ref(db, "notices")).key;
         await set(ref(db, `notices/${id}`), {
-          id,
-          title,
-          content,
-          target,
-          academyCode: target === "CODE" ? academyCode : null,
+          id, title, content, target,
+          academyCode: target==="CODE"?academyCode:null,
           createdAt: Date.now(),
           createdAtKST: Util.nowKST()
         });
-
-        Toast.show("공지를 등록했습니다.", "success");
+        Toast.show("등록 완료", "success");
         Modal.close();
       },
-
-      async saveEdit(id) {
+      async save(id){
         const title = document.getElementById("ntTitle").value.trim();
         const content = document.getElementById("ntContent").value.trim();
         const target = document.getElementById("ntTarget").value;
         const academyCode = document.getElementById("ntCode").value.trim();
-
-        if (!title) return Toast.show("제목을 입력해주세요.", "error");
-        if (target === "CODE" && !academyCode) return Toast.show("학원 코드를 입력해주세요.", "error");
+        if (!title) return Toast.show("제목 필수", "error");
+        if (target==="CODE" && !academyCode) return Toast.show("학원 코드 입력", "error");
 
         await update(ref(db, `notices/${id}`), {
-          title,
-          content,
-          target,
-          academyCode: target === "CODE" ? academyCode : null,
+          title, content, target,
+          academyCode: target==="CODE"?academyCode:null,
           updatedAt: Date.now(),
           updatedAtKST: Util.nowKST()
         });
-
-        Toast.show("공지를 수정했습니다.", "success");
+        Toast.show("수정 완료", "success");
         Modal.close();
       },
-
-      async view(id) {
-        const snap = await get(ref(db, `notices/${id}`));
-        if (!snap.exists()) return;
-        const n = snap.val();
-
-        const target = n.target === "ALL" ? "전체 학원" : `학원코드: ${n.academyCode}`;
-        Modal.open(`
-          <div class="p-6">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-xl font-bold">${n.title}</div>
-                <div class="text-sm text-slate-600 mt-1">${n.updatedAtKST || n.createdAtKST || "-"} · ${target}</div>
-              </div>
-              <button class="btn" onclick="Modal.close()">닫기</button>
-            </div>
-
-            <div class="mt-5 whitespace-pre-wrap text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-2xl p-4">${n.content || ""}</div>
-          </div>
-        `);
-      },
-
-      async remove(id) {
-        if (!Session.isSuper()) return Toast.show("슈퍼관리자만 삭제 가능", "error");
-        if (!confirm("공지를 삭제할까요?")) return;
+      async remove(id){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        if (!confirm("삭제할까요?")) return;
         await set(ref(db, `notices/${id}`), null);
-        Toast.show("삭제했습니다.", "success");
-      }
-    };
-
-    window.Notices = Notices;
-
-    /********************
-     * Logs view
-     ********************/
-    const Logs = {
-      inited:false,
-      renderOnce() {
-        if (this.inited) return;
-        this.inited = true;
-
-        onValue(query(ref(db, "loginLogs"), orderByChild("at"), limitToLast(200)), snap => {
-          const rows = document.getElementById("logRows");
-          rows.innerHTML = "";
+        Toast.show("삭제 완료", "success");
+      },
+      bindList(){
+        onValue(ref(db, "notices"), (snap)=>{
+          const tbody = document.getElementById("noticeRows");
+          tbody.innerHTML = "";
           const data = snap.val() || {};
-          const list = Object.values(data).sort((a,b)=> (b.at||0)-(a.at||0));
-
-          if (list.length === 0) {
-            rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="5">기록이 없습니다.</td></tr>`;
+          const list = Object.values(data).sort((a,b)=>((b.updatedAt||b.createdAt)||0)-((a.updatedAt||a.createdAt)||0));
+          if (list.length===0){
+            tbody.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="4">공지가 없습니다.</td></tr>`;
             return;
           }
-
-          list.forEach(x => {
-            const badge = x.success
-              ? `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">성공</span>`
-              : `<span class="chip bg-rose-50 text-rose-700 border-rose-200">실패</span>`;
-
+          for (const n of list){
+            const target = n.target==="ALL" ? "전체" : `코드: ${n.academyCode}`;
             const tr = document.createElement("tr");
             tr.innerHTML = `
-              <td class="py-3 pr-4">${x.atKST || "-"}</td>
-              <td class="py-3 pr-4">${x.type || "-"}</td>
-              <td class="py-3 pr-4 font-mono text-xs">${x.username || "-"}</td>
-              <td class="py-3 pr-4 font-mono text-xs">${x.academyCode || "-"}</td>
-              <td class="py-3 pr-4">${badge} <span class="text-xs text-slate-500 ml-2">${x.note || ""}</span></td>
+              <td class="py-3 pr-4">${n.updatedAtKST||n.createdAtKST||"-"}</td>
+              <td class="py-3 pr-4 font-medium">${n.title||"-"}</td>
+              <td class="py-3 pr-4">${target}</td>
+              <td class="py-3 pr-4">
+                <button class="btn" onclick="Notices.openEdit('${n.id}')">수정</button>
+                <button class="btn ml-1" onclick="Notices.remove('${n.id}')">삭제</button>
+              </td>
             `;
-            rows.appendChild(tr);
-          });
+            tbody.appendChild(tr);
+          }
+        });
+      }
+    };
+    window.Notices = Notices;
+
+    const Dashboard = {
+      bind(){
+        onValue(ref(db,"academies"), snap=>{
+          const data = snap.val()||{};
+          document.getElementById("statAcademies").textContent = Object.keys(data).length;
+        });
+        onValue(ref(db,"notices"), snap=>{
+          const data = snap.val()||{};
+          document.getElementById("statNotices").textContent = Object.keys(data).length;
+        });
+        onValue(query(ref(db,"loginLogs"), orderByChild("at"), limitToLast(50)), snap=>{
+          const data = snap.val()||{};
+          const arr = Object.values(data).sort((a,b)=>(b.at||0)-(a.at||0));
+          const last = arr.find(x=>x.success);
+          document.getElementById("statLastLogin").textContent = last ? `${last.atKST} · ${last.site} · ${last.username}` : "-";
         });
       }
     };
 
-    /********************
-     * Boot
-     ********************/
-    document.getElementById("modalRoot").addEventListener("click", (e) => {
-      if (e.target.id === "modalRoot") Modal.close();
-    });
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        const root = document.getElementById("modalRoot");
-        if (!root.classList.contains("hidden")) Modal.close();
+    const Logs = {
+      bind(){
+        onValue(query(ref(db,"loginLogs"), orderByChild("at"), limitToLast(200)), snap=>{
+          const tbody = document.getElementById("logRows");
+          tbody.innerHTML = "";
+          const data = snap.val()||{};
+          const list = Object.values(data).sort((a,b)=>(b.at||0)-(a.at||0));
+          if (list.length===0){
+            tbody.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="5">기록이 없습니다.</td></tr>`;
+            return;
+          }
+          for (const x of list){
+            const badge = x.success
+              ? `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">성공</span>`
+              : `<span class="chip bg-rose-50 text-rose-700 border-rose-200">실패</span>`;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="py-3 pr-4">${x.atKST||"-"}</td>
+              <td class="py-3 pr-4">${x.site||"-"}</td>
+              <td class="py-3 pr-4 font-mono text-xs">${x.username||"-"}</td>
+              <td class="py-3 pr-4 font-mono text-xs">${x.academyCode||"-"}</td>
+              <td class="py-3 pr-4">${badge} <span class="text-xs text-slate-500 ml-2">${x.note||""}</span></td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
       }
-    });
+    };
 
-    setInterval(() => {
-      const el = document.getElementById("nowKST");
-      if (el) el.textContent = `KST ${Util.nowKST()}`;
-    }, 10_000);
+    // modal close
+    document.getElementById("modalRoot").addEventListener("click", (e)=>{ if (e.target.id==="modalRoot") Modal.close(); });
+    window.addEventListener("keydown", (e)=>{ if (e.key==="Escape") Modal.close(); });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        Session.user = null;
-        Session.profile = null;
-        UI.gotoLogin();
-        return;
-      }
+    // clock
+    setInterval(()=>{ document.getElementById("nowKST").textContent = `KST ${Util.nowKST()}`; }, 10000);
+    document.getElementById("nowKST").textContent = `KST ${Util.nowKST()}`;
 
-      // load role profile
-      Session.user = user;
-      try {
-        const snap = await get(ref(db, `meta/users/${user.uid}`));
-        Session.profile = snap.exists() ? snap.val() : null;
+    // boot
+    await bootstrapDefaults();
 
-        if (!Session.hasHQAccess()) {
-          Toast.show("본사 권한이 없습니다. (meta/users에 role 설정 필요)", "error");
-          await signOut(auth);
-          return;
+    // restore session
+    const saved = localStorage.getItem("hqSession");
+    if (saved){
+      try{
+        const s = JSON.parse(saved);
+        // re-validate from DB
+        const snap = await get(ref(db, `accounts/${s.username}`));
+        if (snap.exists() && ["SUPERADMIN","HQADMIN"].includes(snap.val().role)){
+          Session.user = { username: s.username, role: snap.val().role };
+          UI.gotoApp();
+        } else {
+          localStorage.removeItem("hqSession");
+          UI.gotoLogin();
         }
+      } catch { UI.gotoLogin(); }
+    } else {
+      UI.gotoLogin();
+    }
 
-        UI.gotoApp();
-      } catch (e) {
-        Toast.show("권한 정보를 읽지 못했습니다. 규칙/경로를 확인하세요.", "error");
-        await signOut(auth);
-      }
-    });
+    UI.applyRoleGates();
+
+    Dashboard.bind();
+    Academies.bindList();
+    Accounts.bindList();
+    Notices.bindList();
+    Logs.bind();
+
   </script>
 </body>
 </html>
