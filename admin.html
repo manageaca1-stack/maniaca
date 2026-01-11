@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>매니아카 본사</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .modal-backdrop { background: rgba(0,0,0,.45); }
+    .toast { animation: toastIn .2s ease-out; }
+    @keyframes toastIn { from { transform: translateY(10px); opacity: .0; } to { transform: translateY(0); opacity: 1; } }
+    .chip { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .55rem; border-radius:999px; font-size:.75rem; border:1px solid; }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+  <div id="toastHost" class="fixed z-[999] top-4 right-4 space-y-2"></div>
+
+  <!-- MODAL -->
+  <div id="modalRoot" class="hidden fixed inset-0 z-50 modal-backdrop">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div id="modalCard" class="w-full max-w-2xl rounded-3xl bg-white border border-slate-200 shadow-xl"></div>
+    </div>
+  </div>
+
+  <!-- LOGIN PAGE -->
+  <section id="page-login" class="min-h-screen">
+    <header class="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-2xl bg-slate-900 text-white grid place-items-center font-bold">M</div>
+        <div>
+          <div class="font-semibold leading-tight">매니아카 본사</div>
+          <div class="text-sm text-slate-500 leading-tight">HQ Console</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-md px-6 py-10">
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <div class="text-2xl font-bold">본사 로그인</div>
+        <div class="text-sm text-slate-600 mt-2">슈퍼관리자/본사운영자 계정으로 로그인하세요.</div>
+
+        <div class="mt-6 space-y-3">
+          <label class="block text-sm font-medium">아이디</label>
+          <input id="loginUser" class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                 placeholder="아이디" />
+          <label class="block text-sm font-medium mt-3">비밀번호</label>
+          <input id="loginPass" type="password"
+                 class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                 placeholder="비밀번호" />
+          <button class="mt-4 w-full px-4 py-3 rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
+                  onclick="Auth.login()">로그인</button>
+        </div>
+
+       
+      </div>
+    </main>
+  </section>
+
+  <!-- APP PAGE -->
+  <section id="page-app" class="hidden min-h-screen">
+    <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-slate-200">
+      <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-2xl bg-slate-900 text-white grid place-items-center font-bold">M</div>
+          <div>
+            <div class="font-semibold leading-tight">매니아카 본사</div>
+            <div class="text-xs text-slate-500 leading-tight" id="topRole">-</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="text-xs text-slate-500 hidden sm:block" id="nowKST">-</div>
+          <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100"
+                  onclick="Auth.logout()">로그아웃</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-7xl px-6 py-6 grid lg:grid-cols-[260px_1fr] gap-6">
+      <aside class="bg-white border border-slate-200 rounded-3xl p-4 h-fit sticky top-[84px]">
+        <div class="text-xs text-slate-500 px-2">MENU</div>
+        <nav class="mt-2 space-y-1">
+          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100"
+                  onclick="UI.openTab('dashboard')">대시보드</button>
+          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100"
+                  onclick="UI.openTab('academies')">학원 관리</button>
+          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100"
+                  onclick="UI.openTab('accounts')">계정/권한</button>
+          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100"
+                  onclick="UI.openTab('notices')">공지/콘텐츠 배포</button>
+          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100"
+                  onclick="UI.openTab('logs')">로그인 기록</button>
+        </nav>
+
+        <div class="mt-5 px-2 py-3 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="text-xs text-slate-500">로그인 사용자</div>
+          <div class="font-semibold" id="whoami">-</div>
+          <div class="text-xs text-slate-500 mt-1">본사 권한만 접근 가능</div>
+        </div>
+      </aside>
+
+      <main class="space-y-6">
+        <!-- DASHBOARD -->
+        <section id="tab-dashboard" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">대시보드</h2>
+              <p class="text-slate-600 text-sm mt-1">무료 사이트 버전: 전체 학원 수만 표시</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div class="bg-white border border-slate-200 rounded-3xl p-5">
+              <div class="text-sm text-slate-500">전체 학원 수</div>
+              <div class="mt-2 text-3xl font-extrabold" id="statAcademies">0</div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl p-5">
+              <div class="text-sm text-slate-500">본사 계정 수</div>
+              <div class="mt-2 text-3xl font-extrabold" id="statHQUsers">0</div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl p-5">
+              <div class="text-sm text-slate-500">최근 로그인(성공)</div>
+              <div class="mt-2 text-sm text-slate-700" id="statLastLogin">-</div>
+              <div class="mt-1 text-xs text-slate-500">KST 기준</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACADEMIES -->
+        <section id="tab-academies" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">학원 관리</h2>
+              <p class="text-slate-600 text-sm mt-1">학원 생성 시 학원 코드 + 원장 계정 + 임시 비밀번호 발급</p>
+            </div>
+            <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+                    onclick="Academies.openCreate()">학원 생성</button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">학원 목록</div>
+            <div class="mt-4 overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead class="text-left text-slate-500">
+                  <tr>
+                    <th class="py-2 pr-4">학원명</th>
+                    <th class="py-2 pr-4">학원 코드</th>
+                    <th class="py-2 pr-4">원장 ID</th>
+                    <th class="py-2 pr-4">상태</th>
+                    <th class="py-2 pr-4">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="academyRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+            <div class="mt-3 text-xs text-slate-500">
+              * 학원용 사이트 로그인 방식: <b>학원코드 + 원장ID + 비밀번호</b>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACCOUNTS -->
+        <section id="tab-accounts" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">계정/권한</h2>
+              <p class="text-slate-600 text-sm mt-1">본사 슈퍼관리자 / 본사 운영자 + 비번 초기화</p>
+            </div>
+            <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+                    onclick="HQAccounts.openCreate()">
+              본사 운영자 추가
+            </button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">본사 계정</div>
+            <div class="mt-4 overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead class="text-left text-slate-500">
+                  <tr>
+                    <th class="py-2 pr-4">아이디</th>
+                    <th class="py-2 pr-4">이름</th>
+                    <th class="py-2 pr-4">권한</th>
+                    <th class="py-2 pr-4">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="hqUserRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">학원 원장 계정(비번 초기화)</div>
+            <div class="text-sm text-slate-600 mt-1">학원코드/원장ID 기준으로 임시 비밀번호를 재발급합니다.</div>
+
+            <div class="mt-4 grid md:grid-cols-3 gap-3 text-sm">
+              <input id="rstAcademyCode" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="학원 코드" />
+              <input id="rstOwnerId" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="원장 ID" />
+              <button class="px-4 py-3 rounded-2xl bg-white border border-slate-200 hover:bg-slate-100"
+                      onclick="Academies.resetOwnerPassword()">
+                원장 비번 초기화
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- NOTICES -->
+        <section id="tab-notices" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">공지/콘텐츠 배포</h2>
+              <p class="text-slate-600 text-sm mt-1">학원용 사이트에서 그대로 표시 가능(localStorage 공유)</p>
+            </div>
+            <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+                    onclick="Notices.openCreate()">공지 등록</button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">공지 목록</div>
+            <div class="mt-4 overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead class="text-left text-slate-500">
+                  <tr>
+                    <th class="py-2 pr-4">작성일</th>
+                    <th class="py-2 pr-4">제목</th>
+                    <th class="py-2 pr-4">대상</th>
+                    <th class="py-2 pr-4">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="noticeRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- LOGS -->
+        <section id="tab-logs" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">로그인 기록</h2>
+              <p class="text-slate-600 text-sm mt-1">성공/실패 기록 저장 (KST)</p>
+            </div>
+            <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100"
+                    onclick="Logs.clear()">기록 비우기</button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">최근 기록</div>
+            <div class="mt-4 overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead class="text-left text-slate-500">
+                  <tr>
+                    <th class="py-2 pr-4">시간(KST)</th>
+                    <th class="py-2 pr-4">구분</th>
+                    <th class="py-2 pr-4">아이디</th>
+                    <th class="py-2 pr-4">학원코드</th>
+                    <th class="py-2 pr-4">결과</th>
+                  </tr>
+                </thead>
+                <tbody id="logRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </section>
+
+  <script>
+    /********************
+     * Utilities
+     ********************/
+    const Util = {
+      uid(prefix="id") { return prefix + "-" + Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); },
+      nowKST() {
+        // KST 표기 문자열
+        return new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+      },
+      randomCode(len=6) {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let out = "";
+        for (let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+        return out;
+      },
+      randomPw(len=8) {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        let out = "";
+        for (let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+        return out;
+      }
+    };
+
+    const Toast = {
+      show(msg, type="info") {
+        const host = document.getElementById("toastHost");
+        const el = document.createElement("div");
+        const color = type === "error" ? "bg-rose-600" : (type === "success" ? "bg-emerald-600" : "bg-slate-900");
+        el.className = `toast ${color} text-white px-4 py-3 rounded-2xl shadow-lg text-sm max-w-sm`;
+        el.textContent = msg;
+        host.appendChild(el);
+        setTimeout(() => el.remove(), 2200);
+      }
+    };
+
+    const Modal = {
+      open(html) {
+        document.getElementById("modalCard").innerHTML = html;
+        document.getElementById("modalRoot").classList.remove("hidden");
+      },
+      close() {
+        document.getElementById("modalRoot").classList.add("hidden");
+        document.getElementById("modalCard").innerHTML = "";
+      }
+    };
+
+    /********************
+     * Store (HQ)
+     * - 같은 도메인에서 academy site도 이 key를 읽으면 "공지/학원코드/원장계정" 공유 가능
+     ********************/
+    const Store = {
+      key: "mania_hq_v1",
+      load() {
+        const raw = localStorage.getItem(this.key);
+        if (!raw) return null;
+        try { return JSON.parse(raw); } catch { return null; }
+      },
+      save(s) { localStorage.setItem(this.key, JSON.stringify(s)); },
+      ensure() {
+        let s = this.load();
+        if (!s) {
+          s = {
+            // HQ users only (SUPERADMIN/HQADMIN)
+            hqUsers: [
+              { id:"hq-super", username:"superadmin", password:"1234", name:"슈퍼관리자", role:"SUPERADMIN" },
+              { id:"hq-op", username:"hqadmin", password:"1234", name:"본사 운영자", role:"HQADMIN" },
+            ],
+            hqSession: { userId: null },
+
+            // academies
+            academies: [
+              // { id, name, code, status:'ACTIVE'|'INACTIVE', createdAtKST, ownerUsername, ownerPasswordTemp }
+            ],
+
+            // login logs (HQ + Academy)
+            loginLogs: [
+              // { id, atKST, type:'HQ'|'ACADEMY', username, academyCode, success, note }
+            ],
+
+            // notices for academies to consume
+            notices: [
+              // { id, createdAtKST, title, content, target:'ALL'|'CODE', academyCode?, updatedAtKST? }
+            ],
+          };
+          this.save(s);
+        }
+        return s;
+      },
+      get() { return this.ensure(); },
+      set(mut) {
+        const s = this.ensure();
+        mut(s);
+        this.save(s);
+        return s;
+      }
+    };
+
+    /********************
+     * Logs
+     ********************/
+    const Logs = {
+      add({ type, username, academyCode=null, success, note="" }) {
+        Store.set(s => {
+          s.loginLogs.push({
+            id: Util.uid("log"),
+            atKST: Util.nowKST(),
+            type,
+            username,
+            academyCode,
+            success: !!success,
+            note
+          });
+        });
+      },
+      render() {
+        const s = Store.get();
+        const rows = document.getElementById("logRows");
+        rows.innerHTML = "";
+
+        const list = (s.loginLogs || []).slice().reverse().slice(0, 200);
+        if (list.length === 0) {
+          rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="5">기록이 없습니다.</td></tr>`;
+          return;
+        }
+        list.forEach(x => {
+          const badge = x.success
+            ? `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">성공</span>`
+            : `<span class="chip bg-rose-50 text-rose-700 border-rose-200">실패</span>`;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="py-3 pr-4">${x.atKST}</td>
+            <td class="py-3 pr-4">${x.type}</td>
+            <td class="py-3 pr-4 font-mono text-xs">${x.username || "-"}</td>
+            <td class="py-3 pr-4 font-mono text-xs">${x.academyCode || "-"}</td>
+            <td class="py-3 pr-4">${badge} <span class="text-xs text-slate-500 ml-2">${x.note || ""}</span></td>
+          `;
+          rows.appendChild(tr);
+        });
+      },
+      clear() {
+        if (!confirm("로그인 기록을 모두 지울까요?")) return;
+        Store.set(s => { s.loginLogs = []; });
+        Toast.show("기록을 비웠습니다.", "success");
+        this.render();
+        Dashboard.render();
+      }
+    };
+
+    /********************
+     * Auth (HQ)
+     ********************/
+    const Auth = {
+      current() {
+        const s = Store.get();
+        return s.hqUsers.find(u => u.id === s.hqSession.userId) || null;
+      },
+      isLoggedIn() { return !!Store.get().hqSession.userId; },
+      login() {
+        const username = document.getElementById("loginUser").value.trim();
+        const password = document.getElementById("loginPass").value.trim();
+        const s = Store.get();
+        const user = s.hqUsers.find(u => u.username === username && u.password === password);
+
+        if (!user) {
+          Logs.add({ type:"HQ", username, success:false, note:"아이디/비번 불일치" });
+          Toast.show("아이디/비밀번호를 확인해주세요.", "error");
+          return;
+        }
+
+        Store.set(st => { st.hqSession.userId = user.id; });
+        Logs.add({ type:"HQ", username, success:true, note:user.role });
+        Toast.show(`${user.name}님 로그인`, "success");
+        UI.gotoApp();
+      },
+      logout() {
+        Store.set(s => { s.hqSession.userId = null; });
+        Toast.show("로그아웃 되었습니다.");
+        UI.gotoLogin();
+      }
+    };
+
+    /********************
+     * UI
+     ********************/
+    const UI = {
+      gotoLogin() {
+        document.getElementById("page-login").classList.remove("hidden");
+        document.getElementById("page-app").classList.add("hidden");
+      },
+      gotoApp() {
+        document.getElementById("page-login").classList.add("hidden");
+        document.getElementById("page-app").classList.remove("hidden");
+        this.openTab("dashboard");
+        App.refreshAll();
+      },
+      openTab(tab) {
+        document.querySelectorAll(".tab").forEach(el => el.classList.add("hidden"));
+        document.getElementById(`tab-${tab}`).classList.remove("hidden");
+
+        document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("bg-slate-100"));
+        const map = {dashboard:0,academies:1,accounts:2,notices:3,logs:4};
+        const idx = map[tab];
+        if (idx !== undefined) document.querySelectorAll(".nav-btn")[idx].classList.add("bg-slate-100");
+
+        if (tab === "dashboard") Dashboard.render();
+        if (tab === "academies") Academies.render();
+        if (tab === "accounts") HQAccounts.render();
+        if (tab === "notices") Notices.render();
+        if (tab === "logs") Logs.render();
+      }
+    };
+
+    /********************
+     * Dashboard
+     ********************/
+    const Dashboard = {
+      render() {
+        const s = Store.get();
+        document.getElementById("statAcademies").textContent = (s.academies || []).length;
+        document.getElementById("statHQUsers").textContent = (s.hqUsers || []).length;
+
+        const lastSuccess = (s.loginLogs || []).slice().reverse().find(x => x.success);
+        document.getElementById("statLastLogin").textContent = lastSuccess
+          ? `${lastSuccess.atKST} · ${lastSuccess.type} · ${lastSuccess.username}`
+          : "-";
+      }
+    };
+
+    /********************
+     * Academies
+     ********************/
+    const Academies = {
+      render() {
+        const s = Store.get();
+        const rows = document.getElementById("academyRows");
+        rows.innerHTML = "";
+
+        if ((s.academies||[]).length === 0) {
+          rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="5">학원이 없습니다. “학원 생성”을 눌러주세요.</td></tr>`;
+          return;
+        }
+
+        (s.academies||[]).slice().sort((a,b)=> (b.createdAtKST||"").localeCompare(a.createdAtKST||"")).forEach(a => {
+          const statusChip = a.status === "ACTIVE"
+            ? `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">ACTIVE</span>`
+            : `<span class="chip bg-slate-50 text-slate-600 border-slate-200">INACTIVE</span>`;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="py-3 pr-4 font-medium">${a.name}</td>
+            <td class="py-3 pr-4 font-mono text-xs">${a.code}</td>
+            <td class="py-3 pr-4 font-mono text-xs">${a.ownerUsername}</td>
+            <td class="py-3 pr-4">${statusChip}</td>
+            <td class="py-3 pr-4">
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100"
+                      onclick="Academies.showLoginInfo('${a.id}')">로그인정보</button>
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 ml-1"
+                      onclick="Academies.toggleStatus('${a.id}')">상태변경</button>
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 ml-1"
+                      onclick="Academies.resetOwnerPasswordById('${a.id}')">원장비번초기화</button>
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 ml-1"
+                      onclick="Academies.remove('${a.id}')">삭제</button>
+            </td>
+          `;
+          rows.appendChild(tr);
+        });
+
+        Dashboard.render();
+      },
+
+      openCreate() {
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">학원 생성</div>
+                <div class="text-sm text-slate-600 mt-1">학원 코드가 자동 생성되고 원장 계정/임시비번이 발급됩니다.</div>
+              </div>
+              <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
+              <input id="acName" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="학원명" />
+              <input id="acOwnerId" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="원장 ID (예: owner_dae치)" />
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">취소</button>
+              <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800" onclick="Academies.create()">생성</button>
+            </div>
+          </div>
+        `);
+      },
+
+      create() {
+        const name = document.getElementById("acName").value.trim();
+        const ownerUsername = document.getElementById("acOwnerId").value.trim();
+        if (!name || !ownerUsername) return Toast.show("학원명/원장ID는 필수입니다.", "error");
+
+        const ownerPasswordTemp = Util.randomPw(8);
+
+        Store.set(s => {
+          if ((s.academies||[]).some(a => a.ownerUsername === ownerUsername)) {
+            throw new Error("이미 사용 중인 원장 ID 입니다.");
+          }
+
+          let code = "";
+          for (let i=0;i<20;i++) {
+            code = Util.randomCode(8);
+            if (!(s.academies||[]).some(a => a.code === code)) break;
+          }
+          if (!code) throw new Error("학원 코드 생성 실패");
+
+          s.academies.push({
+            id: Util.uid("ac"),
+            name,
+            code,
+            status: "ACTIVE",
+            createdAtKST: Util.nowKST(),
+            ownerUsername,
+            ownerPasswordTemp
+          });
+        });
+
+        Modal.close();
+        Toast.show("학원이 생성되었습니다.", "success");
+        this.render();
+
+        const created = Store.get().academies.slice().reverse().find(a => a.ownerUsername === ownerUsername);
+        if (created) this.showLoginInfo(created.id);
+      },
+
+      showLoginInfo(academyId) {
+        const s = Store.get();
+        const a = (s.academies||[]).find(x=>x.id===academyId);
+        if (!a) return;
+
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">학원용 로그인 정보</div>
+                <div class="text-sm text-slate-600 mt-1">${a.name}</div>
+              </div>
+              <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 space-y-3 text-sm">
+              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                <div class="text-xs text-slate-500">학원 코드</div>
+                <div class="font-mono font-semibold text-lg">${a.code}</div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                  <div class="text-xs text-slate-500">원장 ID</div>
+                  <div class="font-mono font-semibold">${a.ownerUsername}</div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                  <div class="text-xs text-slate-500">원장 임시 비밀번호</div>
+                  <div class="font-mono font-semibold">${a.ownerPasswordTemp}</div>
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-500">
+                학원용 로그인 조건: <b>학원코드 + 원장ID + 비밀번호</b>
+              </div>
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+          </div>
+        `);
+      },
+
+      toggleStatus(academyId) {
+        Store.set(s => {
+          const a = (s.academies||[]).find(x=>x.id===academyId);
+          if (!a) return;
+          a.status = (a.status === "ACTIVE") ? "INACTIVE" : "ACTIVE";
+        });
+        Toast.show("상태를 변경했습니다.", "success");
+        this.render();
+      },
+
+      resetOwnerPasswordById(academyId) {
+        const newPw = Util.randomPw(8);
+        Store.set(s => {
+          const a = (s.academies||[]).find(x=>x.id===academyId);
+          if (!a) return;
+          a.ownerPasswordTemp = newPw;
+        });
+        Toast.show("원장 비밀번호를 초기화했습니다.", "success");
+        this.render();
+        this.showLoginInfo(academyId);
+      },
+
+      resetOwnerPassword() {
+        const code = document.getElementById("rstAcademyCode").value.trim();
+        const ownerId = document.getElementById("rstOwnerId").value.trim();
+        if (!code || !ownerId) return Toast.show("학원코드/원장ID를 입력해주세요.", "error");
+
+        const newPw = Util.randomPw(8);
+        let ok = false;
+
+        Store.set(s => {
+          const a = (s.academies||[]).find(x => x.code === code && x.ownerUsername === ownerId);
+          if (!a) return;
+          a.ownerPasswordTemp = newPw;
+          ok = true;
+        });
+
+        if (!ok) return Toast.show("학원을 찾을 수 없습니다.", "error");
+        Toast.show("원장 비밀번호를 초기화했습니다.", "success");
+
+        const a = Store.get().academies.find(x => x.code === code && x.ownerUsername === ownerId);
+        if (a) this.showLoginInfo(a.id);
+      },
+
+      remove(academyId) {
+        if (!confirm("학원을 삭제할까요? (되돌릴 수 없음)")) return;
+        Store.set(s => {
+          s.academies = (s.academies||[]).filter(a => a.id !== academyId);
+          // 학원용 데이터는 학원 사이트 쪽 localStorage에 있을 수 있으니 여기선 건드리지 않음
+        });
+        Toast.show("삭제되었습니다.", "success");
+        this.render();
+      }
+    };
+
+    /********************
+     * HQ Accounts
+     ********************/
+    const HQAccounts = {
+      me() { return Auth.current(); },
+      isSuper() { return this.me()?.role === "SUPERADMIN"; },
+
+      render() {
+        const s = Store.get();
+        const rows = document.getElementById("hqUserRows");
+        rows.innerHTML = "";
+
+        (s.hqUsers||[]).forEach(u => {
+          const roleName = u.role === "SUPERADMIN" ? "슈퍼관리자" : "본사 운영자";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="py-3 pr-4 font-mono text-xs">${u.username}</td>
+            <td class="py-3 pr-4 font-medium">${u.name}</td>
+            <td class="py-3 pr-4">${roleName}</td>
+            <td class="py-3 pr-4">
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100"
+                      onclick="HQAccounts.openReset('${u.id}')">비번 초기화</button>
+              <button class="text-sm px-3 py-2 rounded-xl ${HQAccounts.isSuper() && u.role!=='SUPERADMIN' ? "bg-white border border-slate-200 hover:bg-slate-100" : "bg-slate-100 text-slate-400 cursor-not-allowed"} ml-1"
+                      ${HQAccounts.isSuper() && u.role!=='SUPERADMIN' ? `onclick="HQAccounts.remove('${u.id}')"` : "disabled"}>
+                삭제
+              </button>
+            </td>
+          `;
+          rows.appendChild(tr);
+        });
+
+        Dashboard.render();
+      },
+
+      openCreate() {
+        if (!this.isSuper()) return Toast.show("슈퍼관리자만 본사 운영자를 추가할 수 있어요.", "error");
+
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">본사 운영자 추가</div>
+                <div class="text-sm text-slate-600 mt-1">권한: HQADMIN</div>
+              </div>
+              <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
+              <input id="hqNewUser" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="아이디" />
+              <input id="hqNewPw" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="비밀번호(임시)" value="${Util.randomPw(8)}" />
+              <input id="hqNewName" class="px-4 py-3 rounded-2xl border border-slate-200 sm:col-span-2" placeholder="이름" />
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">취소</button>
+              <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800" onclick="HQAccounts.create()">추가</button>
+            </div>
+          </div>
+        `);
+      },
+
+      create() {
+        const username = document.getElementById("hqNewUser").value.trim();
+        const password = document.getElementById("hqNewPw").value.trim();
+        const name = document.getElementById("hqNewName").value.trim();
+        if (!username || !password || !name) return Toast.show("모든 항목을 입력해주세요.", "error");
+
+        try {
+          Store.set(s => {
+            if (s.hqUsers.some(u => u.username === username)) throw new Error("이미 존재하는 아이디입니다.");
+            s.hqUsers.push({ id: Util.uid("hq"), username, password, name, role: "HQADMIN" });
+          });
+        } catch(e) {
+          return Toast.show(e.message || "추가 실패", "error");
+        }
+
+        Modal.close();
+        Toast.show("본사 운영자를 추가했습니다.", "success");
+        this.render();
+      },
+
+      openReset(userId) {
+        const s = Store.get();
+        const u = s.hqUsers.find(x=>x.id===userId);
+        if (!u) return;
+
+        const isSelf = (Auth.current()?.id === userId);
+        const allowed = this.isSuper() || isSelf;
+        if (!allowed) return Toast.show("슈퍼관리자 또는 본인만 비번 초기화 가능", "error");
+
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">비밀번호 초기화</div>
+                <div class="text-sm text-slate-600 mt-1">${u.username} (${u.name})</div>
+              </div>
+              <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 text-sm">
+              <input id="resetPw" class="w-full px-4 py-3 rounded-2xl border border-slate-200" value="${Util.randomPw(8)}" />
+              <div class="text-xs text-slate-500 mt-2">임시 비밀번호를 발급하고 저장합니다.</div>
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">취소</button>
+              <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800" onclick="HQAccounts.reset('${u.id}')">초기화</button>
+            </div>
+          </div>
+        `);
+      },
+
+      reset(userId) {
+        const newPw = document.getElementById("resetPw").value.trim();
+        if (!newPw) return Toast.show("비밀번호를 입력해주세요.", "error");
+
+        Store.set(s => {
+          const u = s.hqUsers.find(x=>x.id===userId);
+          if (!u) return;
+          u.password = newPw;
+        });
+
+        Toast.show("비밀번호를 초기화했습니다.", "success");
+        Modal.close();
+      },
+
+      remove(userId) {
+        if (!this.isSuper()) return Toast.show("슈퍼관리자만 삭제 가능", "error");
+        if (!confirm("본사 운영자 계정을 삭제할까요?")) return;
+
+        Store.set(s => {
+          const u = s.hqUsers.find(x=>x.id===userId);
+          if (!u || u.role === "SUPERADMIN") return;
+          s.hqUsers = s.hqUsers.filter(x=>x.id!==userId);
+        });
+
+        Toast.show("삭제했습니다.", "success");
+        this.render();
+      }
+    };
+
+    /********************
+     * Notices
+     ********************/
+    const Notices = {
+      render() {
+        const s = Store.get();
+        const rows = document.getElementById("noticeRows");
+        rows.innerHTML = "";
+
+        const list = (s.notices||[]).slice().sort((a,b)=> (b.updatedAtKST||b.createdAtKST||"").localeCompare(a.updatedAtKST||a.createdAtKST||""));
+        if (list.length === 0) {
+          rows.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="4">공지가 없습니다.</td></tr>`;
+          return;
+        }
+
+        list.forEach(n => {
+          const target = n.target === "ALL" ? "전체 학원" : `학원코드: ${n.academyCode}`;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="py-3 pr-4">${n.updatedAtKST || n.createdAtKST}</td>
+            <td class="py-3 pr-4 font-medium">${n.title}</td>
+            <td class="py-3 pr-4">${target}</td>
+            <td class="py-3 pr-4">
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100"
+                      onclick="Notices.view('${n.id}')">보기</button>
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 ml-1"
+                      onclick="Notices.openEdit('${n.id}')">수정</button>
+              <button class="text-sm px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 ml-1"
+                      onclick="Notices.remove('${n.id}')">삭제</button>
+            </td>
+          `;
+          rows.appendChild(tr);
+        });
+      },
+
+      openCreate() {
+        Modal.open(this.formHtml({ mode:"create" }));
+      },
+
+      openEdit(id) {
+        const s = Store.get();
+        const n = (s.notices||[]).find(x=>x.id===id);
+        if (!n) return;
+        Modal.open(this.formHtml({ mode:"edit", notice:n }));
+      },
+
+      formHtml({ mode, notice }) {
+        const title = notice?.title || "";
+        const content = notice?.content || "";
+        const target = notice?.target || "ALL";
+        const acode = notice?.academyCode || "";
+
+        return `
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">${mode==="create" ? "공지 등록" : "공지 수정"}</div>
+                <div class="text-sm text-slate-600 mt-1">학원용 사이트에서 그대로 표시 가능</div>
+              </div>
+              <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 space-y-3 text-sm">
+              <input id="ntTitle" class="w-full px-4 py-3 rounded-2xl border border-slate-200" placeholder="제목" value="${title.replaceAll('"','&quot;')}" />
+              <textarea id="ntContent" class="w-full px-4 py-3 rounded-2xl border border-slate-200" rows="8" placeholder="내용">${content}</textarea>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <select id="ntTarget" class="px-4 py-3 rounded-2xl border border-slate-200" onchange="Notices.toggleTargetInput()">
+                  <option value="ALL" ${target==="ALL"?"selected":""}>전체 학원</option>
+                  <option value="CODE" ${target==="CODE"?"selected":""}>특정 학원 코드</option>
+                </select>
+                <input id="ntCode" class="px-4 py-3 rounded-2xl border border-slate-200" placeholder="학원 코드" value="${acode}" ${target==="CODE"?"":"disabled"} />
+              </div>
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">취소</button>
+              <button class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+                      onclick="Notices.${mode==='create'?'create':'saveEdit'}('${notice?.id || ""}')">${mode==="create"?"등록":"저장"}</button>
+            </div>
+          </div>
+        `;
+      },
+
+      toggleTargetInput() {
+        const t = document.getElementById("ntTarget").value;
+        const code = document.getElementById("ntCode");
+        code.disabled = (t !== "CODE");
+        if (t !== "CODE") code.value = "";
+      },
+
+      create() {
+        const title = document.getElementById("ntTitle").value.trim();
+        const content = document.getElementById("ntContent").value.trim();
+        const target = document.getElementById("ntTarget").value;
+        const academyCode = document.getElementById("ntCode").value.trim();
+
+        if (!title) return Toast.show("제목을 입력해주세요.", "error");
+        if (target === "CODE" && !academyCode) return Toast.show("학원 코드를 입력해주세요.", "error");
+
+        Store.set(s => {
+          s.notices.push({
+            id: Util.uid("nt"),
+            createdAtKST: Util.nowKST(),
+            title, content,
+            target,
+            academyCode: target==="CODE" ? academyCode : null
+          });
+        });
+
+        Toast.show("공지를 등록했습니다.", "success");
+        Modal.close();
+        this.render();
+      },
+
+      saveEdit(id) {
+        const title = document.getElementById("ntTitle").value.trim();
+        const content = document.getElementById("ntContent").value.trim();
+        const target = document.getElementById("ntTarget").value;
+        const academyCode = document.getElementById("ntCode").value.trim();
+
+        if (!title) return Toast.show("제목을 입력해주세요.", "error");
+        if (target === "CODE" && !academyCode) return Toast.show("학원 코드를 입력해주세요.", "error");
+
+        Store.set(s => {
+          const n = s.notices.find(x=>x.id===id);
+          if (!n) return;
+          n.title = title;
+          n.content = content;
+          n.target = target;
+          n.academyCode = target==="CODE" ? academyCode : null;
+          n.updatedAtKST = Util.nowKST();
+        });
+
+        Toast.show("공지를 수정했습니다.", "success");
+        Modal.close();
+        this.render();
+      },
+
+      view(id) {
+        const s = Store.get();
+        const n = (s.notices||[]).find(x=>x.id===id);
+        if (!n) return;
+
+        const target = n.target === "ALL" ? "전체 학원" : `학원코드: ${n.academyCode}`;
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">${n.title}</div>
+                <div class="text-sm text-slate-600 mt-1">${n.updatedAtKST || n.createdAtKST} · ${target}</div>
+              </div>
+              <button class="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 whitespace-pre-wrap text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-2xl p-4">${n.content || ""}</div>
+          </div>
+        `);
+      },
+
+      remove(id) {
+        if (!confirm("공지를 삭제할까요?")) return;
+        Store.set(s => { s.notices = (s.notices||[]).filter(x=>x.id!==id); });
+        Toast.show("삭제했습니다.", "success");
+        this.render();
+      }
+    };
+
+    /********************
+     * App
+     ********************/
+    const App = {
+      refreshAll() {
+        const u = Auth.current();
+        document.getElementById("whoami").textContent = u ? `${u.name} (${u.username})` : "-";
+        document.getElementById("topRole").textContent = u ? (u.role==="SUPERADMIN" ? "슈퍼관리자" : "본사 운영자") : "-";
+
+        document.getElementById("nowKST").textContent = `KST ${Util.nowKST()}`;
+
+        Dashboard.render();
+        Academies.render();
+        HQAccounts.render();
+        Notices.render();
+        Logs.render();
+      }
+    };
+
+    /********************
+     * Boot
+     ********************/
+    document.getElementById("modalRoot").addEventListener("click", (e) => {
+      if (e.target.id === "modalRoot") Modal.close();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const root = document.getElementById("modalRoot");
+        if (!root.classList.contains("hidden")) Modal.close();
+      }
+    });
+
+    // init
+    (function init() {
+      Store.ensure();
+      if (Auth.isLoggedIn()) UI.gotoApp();
+      else UI.gotoLogin();
+      setInterval(()=> {
+        const el = document.getElementById("nowKST");
+        if (el) el.textContent = `KST ${Util.nowKST()}`;
+      }, 1000 * 10);
+    })();
+  </script>
+
+  <!-- NOTE:
+    학원용 사이트에서 로그인 구현할 때:
+    - Store key를 "mania_hq_v1"로 동일하게 읽고
+    - academies에서 code/ownerUsername/ownerPasswordTemp를 검증하면 됨
+    - 로그인 성공/실패 시 loginLogs에 type:'ACADEMY'로 기록하면 HQ에서도 로그 확인 가능
+  -->
+</body>
+</html>
