@@ -84,17 +84,6 @@
             </table>
         </div>
 
-        <div id="student-detail-page" class="menu-section hidden">
-            <button class="btn" style="background:none; margin-bottom:20px;" onclick="showMenu('student-mgmt')">← 목록으로</button>
-            <h2 id="det-name-title">상세 정보</h2>
-            <div class="card" id="det-profile-card"></div>
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
-                <button class="btn btn-primary" id="go-attendance-btn">출석 통계</button>
-                <button class="btn btn-primary" id="go-counsel-btn">상담 기록</button>
-                <button class="btn btn-primary" id="go-grade-btn">성적 분석</button>
-            </div>
-        </div>
-
         <div id="menu-pay-mgmt" class="menu-section hidden">
             <h2>수납 관리</h2>
             <div class="card">
@@ -105,6 +94,16 @@
             </div>
         </div>
 
+        <div id="student-detail-page" class="menu-section hidden">
+            <button class="btn" style="background:none; margin-bottom:20px;" onclick="showMenu('student-mgmt')">← 목록으로</button>
+            <h2 id="det-name-title">상세 정보</h2>
+            <div class="card" id="det-profile-card"></div>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
+                <button class="btn btn-primary" id="go-attendance-btn">출석 통계</button>
+                <button class="btn btn-primary" id="go-counsel-btn">상담 기록</button>
+                <button class="btn btn-primary" id="go-grade-btn">성적 분석</button>
+            </div>
+        </div>
         <div id="student-attendance-page" class="menu-section hidden">
             <button class="btn" style="background:none;" onclick="showMenu('student-detail-page')">← 뒤로</button>
             <h2>월별 출석 통계</h2>
@@ -170,7 +169,8 @@
     <div class="modal-content hidden" id="discount-modal">
         <h3>수납 할인 설정</h3>
         <input type="hidden" id="discount-sid">
-        <p style="font-size:0.9rem; color:#64748b; margin-bottom:10px;">할인 사유를 선택하고 할인율을 입력하세요.</p>
+        <p id="discount-target-info" style="font-weight:700; color:var(--primary); margin-bottom:10px;"></p>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">현재 입력된 금액에서 %만큼 차감합니다.</p>
         <select id="discount-reason" style="margin-bottom:10px;">
             <option value="none">할인 사유 선택</option>
             <option value="형제할인">형제 할인</option>
@@ -179,10 +179,10 @@
             <option value="이벤트">이벤트 프로모션</option>
         </select>
         <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-            <input type="number" id="discount-percent" placeholder="할인율 입력" min="0" max="100">
+            <input type="number" id="discount-percent" placeholder="할인율 입력 (0~100)" min="0" max="100">
             <span style="font-weight:700;">%</span>
         </div>
-        <button class="btn btn-primary" style="width:100%;" id="apply-discount-btn">할인 적용 및 금액 계산</button>
+        <button class="btn btn-primary" style="width:100%;" id="apply-discount-btn">현재 금액에서 할인 적용</button>
         <button class="btn" style="width:100%; margin-top:10px; background:#f1f5f9;" onclick="closeModal()">취소</button>
     </div>
 
@@ -271,26 +271,27 @@
         students.push(s); sync(); closeModal();
     }
 
-    // --- 수납 관리 (할인율 로직 추가) ---
+    // --- 수납 관리 (사용자 입력 금액 기준 할인) ---
     function renderPay() {
         document.getElementById('pay-list-body').innerHTML = students.map((s, idx) => `
             <tr>
                 <td>${s.name}</td>
                 <td>${s.id}</td>
-                <td><input type="number" value="${s.payAmount || '0'}" onchange="window.upPay(${idx}, 'payAmount', this.value)" style="text-align:right;"></td>
+                <td><input type="number" id="pay-input-${idx}" value="${s.payAmount || '0'}" onchange="window.upPay(${idx}, 'payAmount', this.value)" style="text-align:right;"></td>
                 <td><select onchange="window.upPay(${idx}, 'payStatus', this.value)"><option value="미납" ${s.payStatus==='미납'?'selected':''}>미납</option><option value="납부완료" ${s.payStatus==='납부완료'?'selected':''}>납부완료</option></select></td>
                 <td>
                     <div style="font-size:0.75rem; color:var(--primary); margin-bottom:5px;">${s.discountReason !== 'none' ? s.discountReason + '(' + s.discountRate + '%)' : ''}</div>
-                    <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="window.openDisc('${s.id}')">할인 설정</button>
+                    <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="window.openDisc('${s.id}', ${idx})">할인 설정</button>
                 </td>
             </tr>`).join('');
     }
     window.upPay = (idx, f, v) => { students[idx][f] = v; sync(); };
-    window.openDisc = (sid) => { 
+    window.openDisc = (sid, idx) => { 
         const s = students.find(x => x.id === sid);
         document.getElementById('discount-sid').value = sid; 
+        document.getElementById('discount-target-info').innerText = `${s.name} 학생 (현재 금액: ${s.payAmount}원)`;
         document.getElementById('discount-reason').value = s.discountReason || "none";
-        document.getElementById('discount-percent').value = s.discountRate || "0";
+        document.getElementById('discount-percent').value = "0"; // 할인율은 매번 새로 입력
         openModal('discount-modal'); 
     };
 
@@ -301,11 +302,11 @@
         const s = students.find(x => x.id === sid);
         
         if(s) {
+            // [핵심] 30만이 아니라 s.payAmount(현재 입력된 금액)에서 계산
+            const currentAmount = parseInt(s.payAmount) || 0;
             s.discountReason = reason;
             s.discountRate = rate;
-            // 할인 계산: 기본 300,000원에서 할인율 적용
-            const base = 300000;
-            s.payAmount = Math.floor(base * (1 - (rate / 100)));
+            s.payAmount = Math.floor(currentAmount * (1 - (rate / 100)));
             sync(); closeModal();
         }
     };
