@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Maniaca HQ - Master Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p-color: #4338ca; --bg: #f8fafc; --radius: 20px; }
+        body { margin: 0; font-family: 'Pretendard'; background: var(--bg); display: flex; height: 100vh; }
+        .sidebar { width: 280px; background: #0f172a; color: white; padding: 40px 20px; }
+        .main { flex: 1; padding: 60px; overflow-y: auto; }
+        .card { background: white; padding: 40px; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .input { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #ddd; }
+        .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; background: var(--p-color); color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th { text-align: left; padding: 20px; color: #64748b; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 20px; border-bottom: 1px solid #f1f5f9; }
+        .status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; background: #dcfce7; color: #15803d; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1 style="letter-spacing:-2px;">MANIACA HQ</h1>
+        <p style="opacity:0.5; font-size:12px;">Master Administrator Only</p>
+    </div>
+    <div class="main">
+        <div class="card">
+            <h2>🏢 신규 가맹 학원 인프라 생성</h2>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <input type="text" id="aca-name" class="input" placeholder="학원 명칭">
+                <input type="text" id="aca-owner" class="input" placeholder="원장 성명">
+                <input type="text" id="aca-id" class="input" placeholder="접속 ID">
+                <input type="password" id="aca-pw" class="input" placeholder="초기 비밀번호">
+            </div>
+            <button class="btn" onclick="Master.create()">계정 생성 및 데이터베이스 배포</button>
+        </div>
+
+        <div class="card" style="margin-top:40px;">
+            <h2>📊 가맹 지점 활성 목록</h2>
+            <table>
+                <thead><tr><th>지점명</th><th>원장</th><th>ID</th><th>상태</th><th>제어</th></tr></thead>
+                <tbody id="aca-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
+            authDomain: "maniaca-965fa.firebaseapp.com",
+            databaseURL: "https://maniaca-965fa-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "maniaca-965fa",
+            storageBucket: "maniaca-965fa.firebasestorage.app",
+            messagingSenderId: "24110097950",
+            appId: "1:24110097950:web:c90fe8736b29a8b787300f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.Master = {
+            create() {
+                const name = document.getElementById('aca-name').value;
+                const owner = document.getElementById('aca-owner').value;
+                const id = document.getElementById('aca-id').value;
+                const pw = document.getElementById('aca-pw').value;
+                if(!id || !pw) return alert("필수 정보를 입력하세요.");
+
+                push(ref(db, 'academies'), { name, owner, id, pw, role: 'director', created: Date.now() })
+                .then(() => { alert("학원 인프라가 생성되었습니다."); location.reload(); });
+            },
+            terminate(key) {
+                if(confirm("해당 지점의 모든 권한을 회수하시겠습니까?")) remove(ref(db, `academies/${key}`));
+            }
+        };
+
+        onValue(ref(db, 'academies'), snap => {
+            const list = document.getElementById('aca-list'); list.innerHTML = "";
+            if(snap.val()) Object.entries(snap.val()).forEach(([key, a]) => {
+                list.innerHTML += `<tr><td><b>${a.name}</b></td><td>${a.owner}</td><td><code>${a.id}</code></td><td><span class="status">ACTIVE</span></td><td><button onclick="Master.terminate('${key}')" style="color:red; border:none; background:none; cursor:pointer;">인프라 파기</button></td></tr>`;
+            });
+        });
+    </script>
+</body>
+</html>
