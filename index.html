@@ -19,6 +19,7 @@
     .tbl th{color:rgb(100 116 139);font-weight:600;padding:.5rem .75rem;text-align:left;white-space:nowrap}
     .tbl td{padding:.65rem .75rem;white-space:nowrap}
     .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .subhead{font-size:.85rem;color:rgb(100 116 139)}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -26,7 +27,7 @@
 
   <div id="modalRoot" class="hidden fixed inset-0 z-50 modal-backdrop">
     <div class="min-h-screen flex items-center justify-center p-6">
-      <div id="modalCard" class="w-full max-w-4xl rounded-3xl bg-white border border-slate-200 shadow-xl"></div>
+      <div id="modalCard" class="w-full max-w-5xl rounded-3xl bg-white border border-slate-200 shadow-xl"></div>
     </div>
   </div>
 
@@ -87,7 +88,6 @@
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('payments')">수납</button>
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('classes')">수업</button>
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('teachers')">강사</button>
-          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('attendance')">출석</button>
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('notices')">공지</button>
         </nav>
 
@@ -189,29 +189,44 @@
           <div class="flex items-end justify-between gap-3 flex-wrap">
             <div>
               <h2 class="text-2xl font-bold">수업</h2>
-              <p class="text-slate-600 text-sm mt-1">차시: 과제(○/△/X), 시험(자동환산)</p>
+              <p class="text-slate-600 text-sm mt-1">수업 선택 → 아래에 차시 목록 표시</p>
             </div>
             <button class="btnP" onclick="Classes.openCreate()">수업 생성</button>
           </div>
 
+          <!-- 수업 목록 + 선택된 수업의 차시 목록(같은 카드 안에) -->
           <div class="bg-white border border-slate-200 rounded-3xl p-5">
-            <div class="font-semibold">수업 목록</div>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="font-semibold">수업 목록</div>
+              <div class="text-sm text-slate-600" id="selectedClassLabel">선택된 수업: -</div>
+            </div>
+
             <div class="mt-4 overflow-auto">
               <table class="tbl min-w-full text-sm">
                 <thead><tr><th>수업명</th><th>담당</th><th>차시</th><th>관리</th></tr></thead>
                 <tbody id="classRows" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
-          </div>
 
-          <div class="bg-white border border-slate-200 rounded-3xl p-5">
-            <div class="font-semibold">차시 목록</div>
-            <div class="text-sm text-slate-600 mt-1">수업을 선택하면 차시가 표시됩니다.</div>
-            <div class="mt-4 overflow-auto">
-              <table class="tbl min-w-full text-sm">
-                <thead><tr><th>수업</th><th>차시</th><th>날짜</th><th>과제</th><th>시험</th><th>관리</th></tr></thead>
-                <tbody id="sessionRows" class="divide-y divide-slate-100"></tbody>
-              </table>
+            <!-- 선택된 수업의 차시 목록 -->
+            <div class="mt-6 border-t border-slate-200 pt-5">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                  <div class="font-semibold">차시 목록</div>
+                  <div class="subhead mt-1">수업을 선택하면 해당 수업의 차시가 아래에 표시됩니다.</div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn" onclick="Classes.openManageStudents()">수강생 관리</button>
+                  <button class="btn" onclick="Classes.openAddSession(Classes.selectedClassId)">차시추가</button>
+                </div>
+              </div>
+
+              <div class="mt-4 overflow-auto">
+                <table class="tbl min-w-full text-sm">
+                  <thead><tr><th>차시</th><th>날짜</th><th>관리</th></tr></thead>
+                  <tbody id="sessionRows" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -232,24 +247,6 @@
               <table class="tbl min-w-full text-sm">
                 <thead><tr><th>이름</th><th>과목/메모</th><th>관리</th></tr></thead>
                 <tbody id="teacherRows" class="divide-y divide-slate-100"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ATTENDANCE -->
-        <section id="tab-attendance" class="tab hidden">
-          <div>
-            <h2 class="text-2xl font-bold">출석</h2>
-            <p class="text-slate-600 text-sm mt-1">출석/지각/조퇴/결석/보강 버튼</p>
-          </div>
-
-          <div class="bg-white border border-slate-200 rounded-3xl p-5">
-            <div class="font-semibold">오늘 출석 체크</div>
-            <div class="mt-4 overflow-auto">
-              <table class="tbl min-w-full text-sm">
-                <thead><tr><th>원생</th><th>상태</th><th>관리</th></tr></thead>
-                <tbody id="attRows" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </div>
@@ -280,9 +277,12 @@
               <h2 class="text-2xl font-bold">학생 상세</h2>
               <p class="text-slate-600 text-sm mt-1" id="sdTitle">-</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
               <button class="btn" onclick="UI.openTab('students')">목록으로</button>
-              <button class="btnP" onclick="Students.openMonthlyHomework()">월별 과제 통계</button>
+              <!-- 요청한 3개 버튼 -->
+              <button class="btn" onclick="Students.openAttendanceStats()">월별 출석 통계</button>
+              <button class="btn" onclick="Students.openCounsel()">상담</button>
+              <button class="btnP" onclick="Students.openGradeStats()">성적 통계</button>
             </div>
           </div>
 
@@ -292,12 +292,12 @@
           </div>
         </section>
 
-        <!-- MONTHLY HOMEWORK -->
-        <section id="tab-monthlyHomework" class="tab hidden">
+        <!-- STUDENT: MONTHLY ATTENDANCE STATS -->
+        <section id="tab-studentAttendanceStats" class="tab hidden">
           <div class="flex items-end justify-between gap-3 flex-wrap">
             <div>
-              <h2 class="text-2xl font-bold">월별 과제 통계</h2>
-              <p class="text-slate-600 text-sm mt-1" id="mhTitle">-</p>
+              <h2 class="text-2xl font-bold">월별 출석 통계</h2>
+              <p class="text-slate-600 text-sm mt-1" id="saTitle">-</p>
             </div>
             <button class="btn" onclick="UI.openTab('studentDetail')">학생 상세로</button>
           </div>
@@ -305,8 +305,8 @@
           <div class="bg-white border border-slate-200 rounded-3xl p-5">
             <div class="font-semibold">월 선택</div>
             <div class="mt-3 grid sm:grid-cols-3 gap-3 text-sm">
-              <input id="mhMonth" class="field" placeholder="예: 2026-01" />
-              <button class="btn" onclick="Students.renderMonthlyHomework()">조회</button>
+              <input id="saMonth" class="field" placeholder="예: 2026-01" />
+              <button class="btn" onclick="Students.renderAttendanceStats()">조회</button>
             </div>
           </div>
 
@@ -314,8 +314,96 @@
             <div class="font-semibold">결과</div>
             <div class="mt-4 overflow-auto">
               <table class="tbl min-w-full text-sm">
-                <thead><tr><th>수업</th><th>차시</th><th>날짜</th><th>과제 체크</th></tr></thead>
-                <tbody id="mhRows" class="divide-y divide-slate-100"></tbody>
+                <thead><tr><th>수업</th><th>차시</th><th>날짜</th><th>출석 상태</th></tr></thead>
+                <tbody id="saRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- STUDENT: COUNSEL -->
+        <section id="tab-studentCounsel" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">상담</h2>
+              <p class="text-slate-600 text-sm mt-1" id="scTitle">-</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn" onclick="UI.openTab('studentDetail')">학생 상세로</button>
+              <button class="btnP" onclick="Students.openCounselCreate()">상담 기록 추가</button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">상담 목록</div>
+            <div class="mt-4 overflow-auto">
+              <table class="tbl min-w-full text-sm">
+                <thead><tr><th>일시</th><th>메모</th><th>관리</th></tr></thead>
+                <tbody id="scRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- STUDENT: GRADE STATS -->
+        <section id="tab-studentGradeStats" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">성적 통계</h2>
+              <p class="text-slate-600 text-sm mt-1" id="sgTitle">-</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn" onclick="UI.openTab('studentDetail')">학생 상세로</button>
+              <button class="btnP" onclick="Students.openGradeCreate()">성적 추가</button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">성적 목록</div>
+            <div class="mt-4 overflow-auto">
+              <table class="tbl min-w-full text-sm">
+                <thead><tr><th>날짜</th><th>구분</th><th>시험명/메모</th><th>점수</th><th>관리</th></tr></thead>
+                <tbody id="sgRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SESSION DETAIL (수업관리 → 차시 상세) -->
+        <section id="tab-sessionDetail" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">차시 상세</h2>
+              <p class="text-slate-600 text-sm mt-1" id="ssTitle">-</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button class="btn" onclick="UI.openTab('classes')">수업으로</button>
+              <button class="btnP" onclick="Classes.saveSessionComment()">코멘트 저장</button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">차시 코멘트</div>
+            <div class="mt-3 text-sm">
+              <textarea id="ssComment" class="field" rows="3" placeholder="차시 코멘트를 입력하세요."></textarea>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">학생 목록 (출석 · 과제 · 시험)</div>
+            <div class="subhead mt-1">출석/과제/시험은 이 화면에서 모두 입력합니다.</div>
+
+            <div class="mt-4 overflow-auto">
+              <table class="tbl min-w-full text-sm">
+                <thead>
+                  <tr>
+                    <th>학생</th>
+                    <th>출석</th>
+                    <th>과제</th>
+                    <th>시험</th>
+                  </tr>
+                </thead>
+                <tbody id="ssStudentRows" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </div>
@@ -383,7 +471,6 @@
         document.getElementById("modalCard").innerHTML = "";
       }
     };
-    // inline onclick에서 접근 가능해야 함
     window.Modal = Modal;
 
     const State = {
@@ -397,7 +484,6 @@
       payments:{},
       classes:{},
       sessionsByClass:{},
-      attendanceToday:{},
       notices:{}
     };
 
@@ -439,7 +525,7 @@
         document.getElementById(`tab-${tab}`).classList.remove("hidden");
 
         document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.remove("bg-slate-100"));
-        const map={dashboard:0,students:1,payments:2,classes:3,teachers:4,attendance:5,notices:6};
+        const map={dashboard:0,students:1,payments:2,classes:3,teachers:4,notices:5};
         document.querySelectorAll(".nav-btn")[map[tab]]?.classList.add("bg-slate-100");
 
         if (tab==="dashboard") Dashboard.render();
@@ -447,10 +533,14 @@
         if (tab==="payments") Payments.render();
         if (tab==="classes") Classes.render();
         if (tab==="teachers") Teachers.render();
-        if (tab==="attendance") Attendance.render();
         if (tab==="notices") Notices.render();
+
         if (tab==="studentDetail") Students.renderDetail();
-        if (tab==="monthlyHomework") Students.renderMonthlyHomework();
+        if (tab==="studentAttendanceStats") Students.renderAttendanceStats();
+        if (tab==="studentCounsel") Students.renderCounsel();
+        if (tab==="studentGradeStats") Students.renderGradeStats();
+
+        if (tab==="sessionDetail") Classes.renderSessionDetail();
       }
     };
     window.UI = UI;
@@ -517,7 +607,7 @@
 
       onValue(ref(db, `academyData/${State.academyId}/students`), snap=>{
         State.students = snap.val()||{};
-        Dashboard.render(); Students.render(); Attendance.render(); Payments.render();
+        Dashboard.render(); Students.render(); Payments.render(); Classes.render();
       });
 
       onValue(ref(db, `academyData/${State.academyId}/teachers`), snap=>{
@@ -539,18 +629,12 @@
         State.notices = snap.val()||{};
         Dashboard.render(); Notices.render();
       });
-
-      const day = Util.ymdKST();
-      onValue(ref(db, `academyData/${State.academyId}/attendance/${day}`), snap=>{
-        State.attendanceToday = snap.val()||{};
-        Attendance.render();
-      });
     }
 
     async function loadSessions(classId){
+      if (!classId) return;
       const snap = await get(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions`));
       State.sessionsByClass[classId] = snap.exists()? snap.val() : {};
-      Classes.renderSessions();
     }
 
     const Dashboard = {
@@ -616,7 +700,6 @@
                 <input id="stSPhone" class="field mono" placeholder="010-0000-0000" inputmode="tel" />
               </div>
 
-              <!-- 기존 요구가 있었던 ‘학부모 사이트 비번’은 선택 항목으로 유지 -->
               <div class="sm:col-span-2">
                 <div class="text-xs text-slate-500 mb-1">학부모 사이트 비밀번호 (선택)</div>
                 <input id="stParentPw" class="field mono" placeholder="(선택) 학부모 사이트 비밀번호" />
@@ -635,8 +718,7 @@
         if (!State.academyId) return Toast.show("학원 정보가 없습니다.", "error");
 
         const name = document.getElementById("stName").value.trim();
-        const studentNoRaw = document.getElementById("stNo").value;
-        const studentNo = Util.normId(studentNoRaw);
+        const studentNo = Util.normId(document.getElementById("stNo").value);
         const school = document.getElementById("stSchool").value.trim();
         const grade = document.getElementById("stGrade").value.trim();
 
@@ -648,7 +730,6 @@
         if (!name) return Toast.show("학생명은 필수입니다.", "error");
         if (!studentNo) return Toast.show("학생 고유번호는 필수입니다.", "error");
 
-        // (키오스크 대비) 학원별 고유번호 인덱스 중복 확인
         const idxRef = ref(db, `academyStudentNoIndex/${State.academyId}/${studentNo}`);
         const idxSnap = await get(idxRef);
         if (idxSnap.exists()){
@@ -657,7 +738,6 @@
 
         const id = push(ref(db, `academyData/${State.academyId}/students`)).key;
 
-        // 학생 데이터 저장
         await set(ref(db, `academyData/${State.academyId}/students/${id}`), {
           id,
           name,
@@ -667,12 +747,11 @@
           parentPhone1,
           parentPhone2,
           studentPhone,
-          parentPw, // 선택
+          parentPw,
           createdAt: Date.now(),
           createdAtKST: Util.nowKST()
         });
 
-        // 고유번호 인덱스 저장(키오스크에서 studentNo로 studentId 조회)
         await set(idxRef, id);
 
         Toast.show("등록되었습니다.", "success");
@@ -733,25 +812,32 @@
             <div><span class="text-slate-500">부모님(1):</span> <span class="mono">${Students.fmtPhone(st.parentPhone1)}</span></div>
             <div><span class="text-slate-500">부모님(2):</span> <span class="mono">${Students.fmtPhone(st.parentPhone2)}</span></div>
             <div class="sm:col-span-2"><span class="text-slate-500">학생 전화번호:</span> <span class="mono">${Students.fmtPhone(st.studentPhone)}</span></div>
-            <div class="sm:col-span-2"><span class="text-slate-500">학부모 사이트 비번(선택):</span> <span class="mono">${st.parentPw||"-"}</span></div>
           </div>
         `;
       },
 
-      openMonthlyHomework(){
-        document.getElementById("mhMonth").value = Util.ymKST();
-        UI.openTab("monthlyHomework");
+      // ====== 요청한 3개 버튼 구현 ======
+      openAttendanceStats(){
+        document.getElementById("saMonth").value = Util.ymKST();
+        UI.openTab("studentAttendanceStats");
+      },
+      openCounsel(){
+        UI.openTab("studentCounsel");
+      },
+      openGradeStats(){
+        UI.openTab("studentGradeStats");
       },
 
-      async renderMonthlyHomework(){
+      async renderAttendanceStats(){
         const st = (State.students||{})[this.selectedStudentId];
         if (!st) return;
-        const ym = document.getElementById("mhMonth").value.trim() || Util.ymKST();
-        document.getElementById("mhTitle").textContent = `${st.name} · ${ym}`;
+        const ym = document.getElementById("saMonth").value.trim() || Util.ymKST();
+        document.getElementById("saTitle").textContent = `${st.name} · ${ym}`;
 
-        const rows = document.getElementById("mhRows");
+        const rows = document.getElementById("saRows");
         rows.innerHTML = "";
 
+        // 모든 수업/차시를 훑어서 session.attendanceByStudent 기준으로 집계
         const classes = Object.values(State.classes||{});
         let items = [];
 
@@ -764,40 +850,210 @@
           const sessions = Object.values(State.sessionsByClass[classId]||{});
           for (const s of sessions){
             if (!s.date || !s.date.startsWith(ym)) continue;
-            const v = (s.homeworkByStudent||{})[st.id];
+            const v = (s.attendanceByStudent||{})[st.id];
             if (v===undefined) continue;
-            items.push({className:c.name, sessionNo:s.no, date:s.date, value:v});
+            items.push({className:c.name, sessionNo:s.no, date:s.date, status:v});
           }
         }
 
         if (items.length===0){
-          rows.innerHTML=`<tr><td class="text-slate-500" colspan="4">해당 월 과제 체크가 없습니다.</td></tr>`;
+          rows.innerHTML=`<tr><td class="text-slate-500" colspan="4">해당 월 출석 기록이 없습니다.</td></tr>`;
           return;
         }
 
         items.sort((a,b)=>(a.date+a.sessionNo).localeCompare(b.date+b.sessionNo));
-        const label = v=> v===100?"○(100%)":(v===50?"△(50%)":"X(0%)");
-
         for (const it of items){
           const tr=document.createElement("tr");
           tr.innerHTML=`
             <td>${it.className}</td>
             <td>${it.sessionNo}</td>
             <td class="mono text-xs">${it.date}</td>
-            <td>${label(it.value)}</td>
+            <td>${it.status}</td>
           `;
           rows.appendChild(tr);
         }
+      },
+
+      async renderCounsel(){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        document.getElementById("scTitle").textContent = `${st.name}`;
+
+        const tbody=document.getElementById("scRows");
+        tbody.innerHTML="";
+
+        const snap = await get(ref(db, `academyData/${State.academyId}/studentCounsel/${st.id}`));
+        const data = snap.exists()? snap.val() : {};
+        const list = Object.values(data||{}).sort((a,b)=>(b.at||0)-(a.at||0));
+
+        if (!list.length){
+          tbody.innerHTML = `<tr><td class="text-slate-500" colspan="3">상담 기록이 없습니다.</td></tr>`;
+          return;
+        }
+
+        for (const c of list){
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+            <td class="mono text-xs">${c.atKST||"-"}</td>
+            <td class="text-slate-700 whitespace-nowrap max-w-[420px] overflow-hidden text-ellipsis">${(c.memo||"-")}</td>
+            <td><button class="btn" onclick="Students.removeCounsel('${c.id}')">삭제</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
+      },
+
+      openCounselCreate(){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">상담 기록 추가</div>
+                <div class="text-sm text-slate-600 mt-1">${st.name}</div>
+              </div>
+              <button class="btn" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 text-sm">
+              <textarea id="csMemo" class="field" rows="5" placeholder="상담 내용을 입력하세요."></textarea>
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="btn" onclick="Modal.close()">취소</button>
+              <button class="btnP" onclick="Students.createCounsel()">저장</button>
+            </div>
+          </div>
+        `);
+      },
+
+      async createCounsel(){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        const memo = (document.getElementById("csMemo").value||"").trim();
+        if (!memo) return Toast.show("내용을 입력해주세요.", "error");
+
+        const id = push(ref(db, `academyData/${State.academyId}/studentCounsel/${st.id}`)).key;
+        await set(ref(db, `academyData/${State.academyId}/studentCounsel/${st.id}/${id}`), {
+          id,
+          memo,
+          at: Date.now(),
+          atKST: Util.nowKST()
+        });
+
+        Toast.show("저장 완료", "success");
+        Modal.close();
+        this.renderCounsel();
+      },
+
+      async removeCounsel(id){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        if (!confirm("삭제할까요?")) return;
+        await set(ref(db, `academyData/${State.academyId}/studentCounsel/${st.id}/${id}`), null);
+        Toast.show("삭제 완료", "success");
+        this.renderCounsel();
+      },
+
+      async renderGradeStats(){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        document.getElementById("sgTitle").textContent = `${st.name}`;
+
+        const tbody=document.getElementById("sgRows");
+        tbody.innerHTML="";
+
+        const snap = await get(ref(db, `academyData/${State.academyId}/studentGrades/${st.id}`));
+        const data = snap.exists()? snap.val() : {};
+        const list = Object.values(data||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+        if (!list.length){
+          tbody.innerHTML = `<tr><td class="text-slate-500" colspan="5">성적 기록이 없습니다.</td></tr>`;
+          return;
+        }
+
+        for (const g of list){
+          const tr=document.createElement("tr");
+          tr.innerHTML=`
+            <td class="mono text-xs">${g.date||"-"}</td>
+            <td>${g.type||"-"}</td>
+            <td class="text-slate-700">${g.title||"-"}</td>
+            <td class="font-semibold">${(g.score ?? "-")}</td>
+            <td><button class="btn" onclick="Students.removeGrade('${g.id}')">삭제</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
+      },
+
+      openGradeCreate(){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">성적 추가</div>
+                <div class="text-sm text-slate-600 mt-1">${st.name}</div>
+              </div>
+              <button class="btn" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
+              <input id="grDate" class="field" placeholder="YYYY-MM-DD" value="${Util.ymdKST()}" />
+              <select id="grType" class="field">
+                <option value="학원시험">학원시험</option>
+                <option value="학교시험">학교시험</option>
+              </select>
+              <input id="grTitle" class="field sm:col-span-2" placeholder="시험명/메모" />
+              <input id="grScore" class="field sm:col-span-2" placeholder="점수" inputmode="numeric" />
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="btn" onclick="Modal.close()">취소</button>
+              <button class="btnP" onclick="Students.createGrade()">저장</button>
+            </div>
+          </div>
+        `);
+      },
+
+      async createGrade(){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        const date = (document.getElementById("grDate").value||"").trim();
+        const type = document.getElementById("grType").value;
+        const title = (document.getElementById("grTitle").value||"").trim();
+        const score = Number(document.getElementById("grScore").value||0);
+
+        if (!date) return Toast.show("날짜를 입력해주세요.", "error");
+        if (!title) return Toast.show("시험명/메모를 입력해주세요.", "error");
+
+        const id = push(ref(db, `academyData/${State.academyId}/studentGrades/${st.id}`)).key;
+        await set(ref(db, `academyData/${State.academyId}/studentGrades/${st.id}/${id}`), {
+          id, date, type, title, score,
+          createdAt: Date.now(),
+          createdAtKST: Util.nowKST()
+        });
+
+        Toast.show("저장 완료", "success");
+        Modal.close();
+        this.renderGradeStats();
+      },
+
+      async removeGrade(id){
+        const st = (State.students||{})[this.selectedStudentId];
+        if (!st) return;
+        if (!confirm("삭제할까요?")) return;
+        await set(ref(db, `academyData/${State.academyId}/studentGrades/${st.id}/${id}`), null);
+        Toast.show("삭제 완료", "success");
+        this.renderGradeStats();
       },
 
       async remove(id){
         if (!confirm("삭제할까요?")) return;
         const st = (State.students||{})[id];
 
-        // 학생 데이터 삭제
         await set(ref(db, `academyData/${State.academyId}/students/${id}`), null);
 
-        // 고유번호 인덱스도 함께 삭제(있을 때만)
         if (st?.studentNo){
           await set(ref(db, `academyStudentNoIndex/${State.academyId}/${st.studentNo}`), null);
         }
@@ -1047,6 +1303,7 @@
 
     const Classes = {
       selectedClassId:null,
+      selectedSessionId:null,
 
       openCreate(){
         if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
@@ -1057,7 +1314,7 @@
             <div class="flex items-start justify-between gap-3">
               <div>
                 <div class="text-xl font-bold">수업 생성</div>
-                <div class="text-sm text-slate-600 mt-1">생성 후 차시를 추가하세요.</div>
+                <div class="text-sm text-slate-600 mt-1">생성 후 수강생/차시를 추가하세요.</div>
               </div>
               <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
@@ -1080,7 +1337,11 @@
         const teacherId = document.getElementById("clTeacher").value || null;
         if (!name) return Toast.show("수업명 필수", "error");
         const id = push(ref(db, `academyData/${State.academyId}/classes`)).key;
-        await set(ref(db, `academyData/${State.academyId}/classes/${id}`), {id,name,teacherId,createdAt:Date.now(),createdAtKST:Util.nowKST()});
+        await set(ref(db, `academyData/${State.academyId}/classes/${id}`), {
+          id,name,teacherId,
+          students:{}, // 수강생 맵 (studentId: true)
+          createdAt:Date.now(),createdAtKST:Util.nowKST()
+        });
         Toast.show("생성되었습니다.", "success");
         Modal.close();
       },
@@ -1090,6 +1351,7 @@
         tbody.innerHTML="";
         const tMap = Object.fromEntries(Object.values(State.teachers||{}).map(t=>[t.id,t.name]));
         const list = Object.values(State.classes||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+
         if (list.length===0){
           tbody.innerHTML=`<tr><td class="text-slate-500" colspan="4">수업이 없습니다.</td></tr>`;
         } else {
@@ -1102,24 +1364,95 @@
               <td>${count}</td>
               <td class="space-x-1">
                 <button class="btn" onclick="Classes.select('${c.id}')">선택</button>
-                <button class="btn" onclick="Classes.openAddSession('${c.id}')">차시추가</button>
+                <button class="btn" onclick="Classes.openManageStudents('${c.id}')">수강생</button>
                 <button class="btn" onclick="Classes.remove('${c.id}')">삭제</button>
               </td>
             `;
             tbody.appendChild(tr);
           }
         }
+
+        // 선택된 수업 표시 및 차시 렌더
+        const labelEl = document.getElementById("selectedClassLabel");
+        const c = State.classes[this.selectedClassId];
+        labelEl.textContent = c ? `선택된 수업: ${c.name}` : "선택된 수업: -";
+
         this.renderSessions();
       },
 
       async select(classId){
         this.selectedClassId = classId;
         await loadSessions(classId);
+        this.render();
         Toast.show("수업 선택 완료", "success");
+      },
+
+      openManageStudents(classId=null){
+        if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
+        const cid = classId || this.selectedClassId;
+        if (!cid) return Toast.show("수업을 먼저 선택하세요.", "error");
+        const c = State.classes[cid];
+        if (!c) return;
+
+        const enrolled = c.students || {};
+        const students = Object.values(State.students||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+
+        const rows = students.map(st=>{
+          const checked = enrolled[st.id] ? "checked" : "";
+          return `
+            <label class="flex items-center justify-between gap-3 px-3 py-2 rounded-2xl border border-slate-200">
+              <div>
+                <div class="font-medium">${st.name}</div>
+                <div class="text-xs text-slate-500 mono">${st.studentNo||""} · ${st.school||""} · ${st.grade||""}</div>
+              </div>
+              <input type="checkbox" class="h-5 w-5" data-stid="${st.id}" ${checked} />
+            </label>
+          `;
+        }).join("");
+
+        Modal.open(`
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">수강생 관리</div>
+                <div class="text-sm text-slate-600 mt-1">${c.name}</div>
+              </div>
+              <button class="btn" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 grid gap-2 text-sm max-h-[60vh] overflow-auto">
+              ${rows || `<div class="text-slate-500">원생이 없습니다.</div>`}
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="btn" onclick="Modal.close()">취소</button>
+              <button class="btnP" onclick="Classes.saveEnrolledStudents('${cid}')">저장</button>
+            </div>
+          </div>
+        `);
+      },
+
+      async saveEnrolledStudents(classId){
+        if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
+        const c = State.classes[classId];
+        if (!c) return;
+
+        const boxes = Array.from(document.querySelectorAll('#modalCard input[type="checkbox"][data-stid]'));
+        const next = {};
+        for (const b of boxes){
+          const id = b.getAttribute("data-stid");
+          if (b.checked) next[id] = true;
+        }
+
+        await set(ref(db, `academyData/${State.academyId}/classes/${classId}/students`), next);
+        Toast.show("수강생 저장 완료", "success");
+        Modal.close();
       },
 
       openAddSession(classId){
         if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
+        if (!classId) return Toast.show("수업을 먼저 선택하세요.", "error");
+
         this.selectedClassId = classId;
         const current = State.sessionsByClass[classId] ? Object.keys(State.sessionsByClass[classId]).length : 0;
         const nextNo = current + 1;
@@ -1155,139 +1488,176 @@
         const id = push(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions`)).key;
         await set(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions/${id}`), {
           id,no,date,
-          homeworkByStudent:{},
-          testByStudent:{},
+          comment:"",
+          attendanceByStudent:{},     // ★ 추가: 출석
+          homeworkByStudent:{},       // 기존
+          testByStudent:{},           // 기존
           createdAt:Date.now(),createdAtKST:Util.nowKST()
         });
 
         Toast.show("차시 추가 완료", "success");
         Modal.close();
         await loadSessions(classId);
+        this.render();
       },
 
       renderSessions(){
         const tbody=document.getElementById("sessionRows");
         tbody.innerHTML="";
+
         const c = State.classes[this.selectedClassId];
         if (!c){
-          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="6">선택된 수업이 없습니다.</td></tr>`;
+          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="3">선택된 수업이 없습니다.</td></tr>`;
           return;
         }
+
         const list = Object.values(State.sessionsByClass[this.selectedClassId]||{})
-          .sort((a,b)=>((a.date||"")+a.no).localeCompare((b.date||"")+b.no));
+          .sort((a,b)=>((a.date||"")+String(a.no).padStart(4,"0")).localeCompare((b.date||"")+String(b.no).padStart(4,"0")));
+
         if (list.length===0){
-          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="6">차시가 없습니다. “차시추가”를 눌러주세요.</td></tr>`;
+          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="3">차시가 없습니다. “차시추가”를 눌러주세요.</td></tr>`;
           return;
         }
+
         for (const s of list){
           const tr=document.createElement("tr");
           tr.innerHTML=`
-            <td class="font-medium">${c.name}</td>
-            <td>${s.no}</td>
+            <td class="font-medium">${s.no}</td>
             <td class="mono text-xs">${s.date}</td>
-            <td><button class="btn" onclick="Classes.openHomework('${c.id}','${s.id}')">과제 체크</button></td>
-            <td><button class="btn" onclick="Classes.openTest('${c.id}','${s.id}')">시험 점수</button></td>
-            <td><button class="btn" onclick="Classes.removeSession('${c.id}','${s.id}')">삭제</button></td>
+            <td class="space-x-1">
+              <button class="btn" onclick="Classes.openSessionDetail('${c.id}','${s.id}')">상세</button>
+              <button class="btn" onclick="Classes.removeSession('${c.id}','${s.id}')">삭제</button>
+            </td>
           `;
           tbody.appendChild(tr);
         }
       },
 
-      openHomework(classId, sessionId){
-        const c = State.classes[classId];
-        const s = (State.sessionsByClass[classId]||{})[sessionId];
-        const students = Object.values(State.students||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-        if (!students.length) return Toast.show("원생이 없습니다.", "error");
+      async openSessionDetail(classId, sessionId){
+        this.selectedClassId = classId;
+        this.selectedSessionId = sessionId;
 
-        const rowHtml = students.map(st=>{
-          const v = (s.homeworkByStudent||{})[st.id];
-          const label = v===100?"○":(v===50?"△":(v===0?"X":"-"));
-          return `
-            <tr class="border-t border-slate-100">
-              <td class="py-2 pr-3 font-medium">${st.name}</td>
-              <td class="py-2 pr-3 text-center">${label}</td>
-              <td class="py-2 pr-3 text-right space-x-1">
-                <button class="btn" onclick="Classes.setHomework('${classId}','${sessionId}','${st.id}',100)">○</button>
-                <button class="btn" onclick="Classes.setHomework('${classId}','${sessionId}','${st.id}',50)">△</button>
-                <button class="btn" onclick="Classes.setHomework('${classId}','${sessionId}','${st.id}',0)">X</button>
-              </td>
-            </tr>
-          `;
-        }).join("");
+        if (!State.sessionsByClass[classId]){
+          await loadSessions(classId);
+        }
 
-        Modal.open(`
-          <div class="p-6">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-xl font-bold">과제 체크</div>
-                <div class="text-sm text-slate-600 mt-1">${c.name} · ${s.no}차시 · ${s.date}</div>
+        UI.openTab("sessionDetail");
+      },
+
+      // 차시 상세 화면 렌더
+      renderSessionDetail(){
+        const c = State.classes[this.selectedClassId];
+        const s = (State.sessionsByClass[this.selectedClassId]||{})[this.selectedSessionId];
+        if (!c || !s){
+          document.getElementById("ssTitle").textContent = "-";
+          document.getElementById("ssStudentRows").innerHTML = `<tr><td class="text-slate-500" colspan="4">차시 정보가 없습니다.</td></tr>`;
+          return;
+        }
+
+        document.getElementById("ssTitle").textContent = `${c.name} · ${s.no}차시 · ${s.date}`;
+        document.getElementById("ssComment").value = s.comment || "";
+
+        const enrolled = c.students || {};
+        const enrolledIds = Object.keys(enrolled).filter(k=>enrolled[k]);
+        const students = enrolledIds
+          .map(id => State.students[id])
+          .filter(Boolean)
+          .sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+
+        const tbody = document.getElementById("ssStudentRows");
+        tbody.innerHTML="";
+
+        if (!students.length){
+          tbody.innerHTML = `<tr><td class="text-slate-500" colspan="4">수강생이 없습니다. 수업에서 수강생을 먼저 추가하세요.</td></tr>`;
+          return;
+        }
+
+        const attLabel = (v)=> v || "-";
+        const hwLabel = (v)=> v===100?"○":(v===50?"△":(v===0?"X":"-"));
+        const testLabel = (t)=> t ? `${t.score}점` : "-";
+
+        for (const st of students){
+          const att = (s.attendanceByStudent||{})[st.id];
+          const hw = (s.homeworkByStudent||{})[st.id];
+          const tt = (s.testByStudent||{})[st.id];
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="font-medium">${st.name}</td>
+
+            <td class="space-x-1">
+              <div class="mb-1">${attLabel(att)}</div>
+              <div class="space-x-1">
+                <button class="btn" onclick="Classes.setAttendance('${c.id}','${s.id}','${st.id}','출석')">출석</button>
+                <button class="btn" onclick="Classes.setAttendance('${c.id}','${s.id}','${st.id}','지각')">지각</button>
+                <button class="btn" onclick="Classes.setAttendance('${c.id}','${s.id}','${st.id}','조퇴')">조퇴</button>
+                <button class="btn" onclick="Classes.setAttendance('${c.id}','${s.id}','${st.id}','결석')">결석</button>
+                <button class="btn" onclick="Classes.setAttendance('${c.id}','${s.id}','${st.id}','보강')">보강</button>
               </div>
-              <button class="btn" onclick="Modal.close()">닫기</button>
-            </div>
+            </td>
 
-            <div class="mt-3 text-sm text-slate-600">○(100%) / △(50%) / X(0%)</div>
-            <div class="mt-3 overflow-auto">
-              <table class="min-w-full text-sm">
-                <thead class="text-left text-slate-500">
-                  <tr><th class="py-2 pr-3">원생</th><th class="py-2 pr-3 text-center">현재</th><th class="py-2 pr-3 text-right">선택</th></tr>
-                </thead>
-                <tbody>${rowHtml}</tbody>
-              </table>
-            </div>
-          </div>
-        `);
+            <td class="space-x-1">
+              <div class="mb-1">${hwLabel(hw)}</div>
+              <div class="space-x-1">
+                <button class="btn" onclick="Classes.setHomework('${c.id}','${s.id}','${st.id}',100)">○</button>
+                <button class="btn" onclick="Classes.setHomework('${c.id}','${s.id}','${st.id}',50)">△</button>
+                <button class="btn" onclick="Classes.setHomework('${c.id}','${s.id}','${st.id}',0)">X</button>
+              </div>
+            </td>
+
+            <td class="space-x-1">
+              <div class="mb-1">${testLabel(tt)}</div>
+              <button class="btn" onclick="Classes.openTestInput('${c.id}','${s.id}','${st.id}')">입력</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      },
+
+      async saveSessionComment(){
+        if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
+        const c = State.classes[this.selectedClassId];
+        const s = (State.sessionsByClass[this.selectedClassId]||{})[this.selectedSessionId];
+        if (!c || !s) return;
+
+        const comment = (document.getElementById("ssComment").value||"").trim();
+        await set(ref(db, `academyData/${State.academyId}/classes/${c.id}/sessions/${s.id}/comment`), comment);
+
+        Toast.show("코멘트 저장 완료", "success");
+
+        // 메모리에도 반영
+        if (!State.sessionsByClass[c.id]) State.sessionsByClass[c.id] = {};
+        if (!State.sessionsByClass[c.id][s.id]) State.sessionsByClass[c.id][s.id] = {};
+        State.sessionsByClass[c.id][s.id].comment = comment;
+      },
+
+      async setAttendance(classId, sessionId, studentId, status){
+        if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
+
+        // 1) 차시 출석 저장
+        await set(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions/${sessionId}/attendanceByStudent/${studentId}`), status);
+
+        // 2) (키오스크/일별 출석과 호환) 날짜 기준 출석도 저장
+        const s = (State.sessionsByClass[classId]||{})[sessionId];
+        const day = s?.date || Util.ymdKST();
+        await set(ref(db, `academyData/${State.academyId}/attendance/${day}/${studentId}`), status);
+
+        Toast.show("출석 저장", "success");
+        await loadSessions(classId);
+        this.renderSessionDetail();
       },
 
       async setHomework(classId, sessionId, studentId, value){
         if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
         await set(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions/${sessionId}/homeworkByStudent/${studentId}`), value);
-        Toast.show("저장 완료", "success");
+        Toast.show("과제 저장", "success");
         await loadSessions(classId);
-        this.openHomework(classId, sessionId);
-      },
-
-      openTest(classId, sessionId){
-        const c = State.classes[classId];
-        const s = (State.sessionsByClass[classId]||{})[sessionId];
-        const students = Object.values(State.students||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-        if (!students.length) return Toast.show("원생이 없습니다.", "error");
-
-        const rowHtml = students.map(st=>{
-          const t = (s.testByStudent||{})[st.id];
-          const score = t ? `${t.score}점` : "-";
-          return `
-            <tr class="border-t border-slate-100">
-              <td class="py-2 pr-3 font-medium">${st.name}</td>
-              <td class="py-2 pr-3 text-center">${score}</td>
-              <td class="py-2 pr-3 text-right"><button class="btn" onclick="Classes.openTestInput('${classId}','${sessionId}','${st.id}')">입력</button></td>
-            </tr>
-          `;
-        }).join("");
-
-        Modal.open(`
-          <div class="p-6">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-xl font-bold">시험 점수</div>
-                <div class="text-sm text-slate-600 mt-1">${c.name} · ${s.no}차시 · ${s.date}</div>
-              </div>
-              <button class="btn" onclick="Modal.close()">닫기</button>
-            </div>
-
-            <div class="mt-3 text-sm text-slate-600">총 문항 / 맞은 문항 → 100점 환산</div>
-            <div class="mt-3 overflow-auto">
-              <table class="min-w-full text-sm">
-                <thead class="text-left text-slate-500">
-                  <tr><th class="py-2 pr-3">원생</th><th class="py-2 pr-3 text-center">현재 점수</th><th class="py-2 pr-3 text-right">관리</th></tr>
-                </thead>
-                <tbody>${rowHtml}</tbody>
-              </table>
-            </div>
-          </div>
-        `);
+        this.renderSessionDetail();
       },
 
       openTestInput(classId, sessionId, studentId){
+        if (!canManageAcademy()) return Toast.show("원장/관리자만 가능합니다.", "error");
+
         const c = State.classes[classId];
         const s = (State.sessionsByClass[classId]||{})[sessionId];
         const st = State.students[studentId];
@@ -1300,7 +1670,7 @@
                 <div class="text-xl font-bold">시험 점수 입력</div>
                 <div class="text-sm text-slate-600 mt-1">${st?.name||""} · ${c?.name||""} · ${s?.no||""}차시</div>
               </div>
-              <button class="btn" onclick="Classes.openTest('${classId}','${sessionId}')">뒤로</button>
+              <button class="btn" onclick="Modal.close()">닫기</button>
             </div>
 
             <div class="mt-5 grid sm:grid-cols-2 gap-3 text-sm">
@@ -1310,7 +1680,7 @@
             </div>
 
             <div class="mt-5 flex justify-end gap-2">
-              <button class="btn" onclick="Classes.openTest('${classId}','${sessionId}')">취소</button>
+              <button class="btn" onclick="Modal.close()">취소</button>
               <button class="btnP" onclick="Classes.saveTest('${classId}','${sessionId}','${studentId}')">저장</button>
             </div>
           </div>
@@ -1333,9 +1703,10 @@
         const score = Math.round((correct/total)*100);
 
         await set(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions/${sessionId}/testByStudent/${studentId}`), {total,correct,score});
-        Toast.show("저장 완료", "success");
+        Toast.show("시험 저장", "success");
+        Modal.close();
         await loadSessions(classId);
-        this.openTest(classId, sessionId);
+        this.renderSessionDetail();
       },
 
       async removeSession(classId, sessionId){
@@ -1344,6 +1715,7 @@
         await set(ref(db, `academyData/${State.academyId}/classes/${classId}/sessions/${sessionId}`), null);
         Toast.show("삭제 완료", "success");
         await loadSessions(classId);
+        this.render();
       },
 
       async remove(classId){
@@ -1351,43 +1723,11 @@
         if (!confirm("수업을 삭제할까요?")) return;
         await set(ref(db, `academyData/${State.academyId}/classes/${classId}`), null);
         this.selectedClassId=null;
+        this.selectedSessionId=null;
         Toast.show("삭제 완료", "success");
       }
     };
     window.Classes = Classes;
-
-    const Attendance = {
-      statuses:["출석","지각","조퇴","결석","보강"],
-      render(){
-        const tbody=document.getElementById("attRows");
-        tbody.innerHTML="";
-        const list=Object.values(State.students||{}).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-        if (!list.length){
-          tbody.innerHTML=`<tr><td class="text-slate-500" colspan="3">원생이 없습니다.</td></tr>`;
-          return;
-        }
-        const today = State.attendanceToday||{};
-        for (const st of list){
-          const status=today[st.id]||"-";
-          const chip = status==="-" ? `<span class="chip bg-slate-50 text-slate-600 border-slate-200">미선택</span>`
-            : `<span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">${status}</span>`;
-          const btns = this.statuses.map(x=>`<button class="btn" onclick="Attendance.set('${st.id}','${x}')">${x}</button>`).join(" ");
-          const tr=document.createElement("tr");
-          tr.innerHTML=`
-            <td class="font-medium">${st.name}</td>
-            <td>${chip}</td>
-            <td class="space-x-1 whitespace-nowrap">${btns}</td>
-          `;
-          tbody.appendChild(tr);
-        }
-      },
-      async set(studentId, status){
-        const day=Util.ymdKST();
-        await set(ref(db, `academyData/${State.academyId}/attendance/${day}/${studentId}`), status);
-        Toast.show("저장 완료", "success");
-      }
-    };
-    window.Attendance = Attendance;
 
     const Notices = {
       filtered(){
