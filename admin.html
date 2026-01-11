@@ -2,53 +2,143 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maniaca HQ - Master Control Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --p-color: #4338ca; --bg: #f8fafc; --radius: 20px; }
-        body { margin: 0; font-family: 'Pretendard'; background: var(--bg); display: flex; height: 100vh; }
-        .sidebar { width: 280px; background: #0f172a; color: white; padding: 40px 20px; }
-        .main { flex: 1; padding: 60px; overflow-y: auto; }
-        .card { background: white; padding: 40px; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .input { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #ddd; }
-        .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; background: var(--p-color); color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th { text-align: left; padding: 20px; color: #64748b; border-bottom: 2px solid #f1f5f9; }
-        td { padding: 20px; border-bottom: 1px solid #f1f5f9; }
-        .status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 800; background: #dcfce7; color: #15803d; }
+        /* =========================================
+           1. Core Design System
+           ========================================= */
+        :root {
+            --p-color: #4338ca;
+            --p-dark: #312e81;
+            --bg-body: #f8fafc;
+            --sidebar-bg: #0f172a;
+            --radius: 20px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
+
+        /* =========================================
+           2. Login Overlay (Security Layer)
+           ========================================= */
+        #master-auth-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+            padding: 50px; border-radius: 30px; width: 420px; text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+        .auth-card h1 { color: white; margin-bottom: 30px; letter-spacing: -2px; font-weight: 900; }
+        .auth-input {
+            width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px;
+            border: none; background: rgba(255,255,255,0.9); font-size: 16px;
+        }
+        .btn-auth {
+            width: 100%; padding: 16px; border-radius: 12px; border: none;
+            background: var(--p-color); color: white; font-weight: 800; font-size: 16px; cursor: pointer;
+        }
+
+        /* =========================================
+           3. Admin Dashboard Layout
+           ========================================= */
+        #master-app { display: none; width: 100%; height: 100%; }
+        .sidebar { width: 300px; background: var(--sidebar-bg); color: white; padding: 50px 30px; display: flex; flex-direction: column; }
+        .main-workspace { flex: 1; padding: 60px; overflow-y: auto; }
+        
+        .section-card {
+            background: white; padding: 40px; border-radius: var(--radius);
+            box-shadow: var(--shadow); margin-bottom: 40px; border: 1px solid #e2e8f0;
+        }
+        .section-card h2 { margin-bottom: 30px; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+        
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 15px; }
+        .form-input:focus { outline: none; border-color: var(--p-color); background: white; }
+
+        .btn-master { padding: 15px 30px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; background: var(--p-color); color: white; transition: 0.2s; }
+        .btn-master:hover { background: var(--p-dark); transform: translateY(-2px); }
+
+        /* Table Design */
+        .master-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; }
+        .master-table th { text-align: left; padding: 15px 25px; color: #64748b; font-size: 13px; font-weight: 800; text-transform: uppercase; }
+        .master-table td { padding: 20px 25px; background: white; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+        .master-table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 15px; border-bottom-left-radius: 15px; }
+        .master-table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
+        
+        .badge-active { background: #dcfce7; color: #15803d; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+        .btn-terminate { color: #ef4444; background: none; border: none; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h1 style="letter-spacing:-2px;">MANIACA HQ</h1>
-        <p style="opacity:0.5; font-size:12px;">Master Administrator Only</p>
-    </div>
-    <div class="main">
-        <div class="card">
-            <h2>🏢 신규 가맹 학원 인프라 생성</h2>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <input type="text" id="aca-name" class="input" placeholder="학원 명칭">
-                <input type="text" id="aca-owner" class="input" placeholder="원장 성명">
-                <input type="text" id="aca-id" class="input" placeholder="접속 ID">
-                <input type="password" id="aca-pw" class="input" placeholder="초기 비밀번호">
-            </div>
-            <button class="btn" onclick="Master.create()">계정 생성 및 데이터베이스 배포</button>
-        </div>
 
-        <div class="card" style="margin-top:40px;">
-            <h2>📊 가맹 지점 활성 목록</h2>
-            <table>
-                <thead><tr><th>지점명</th><th>원장</th><th>ID</th><th>상태</th><th>제어</th></tr></thead>
-                <tbody id="aca-list"></tbody>
-            </table>
+    <div id="master-auth-overlay">
+        <div class="auth-card">
+            <h1>HQ MASTER</h1>
+            <input type="text" id="m-id" class="auth-input" placeholder="Master ID">
+            <input type="password" id="m-pw" class="auth-input" placeholder="Security Password">
+            <button class="btn-auth" onclick="MasterControl.login()">Verify Authority</button>
+            <p style="color: rgba(255,255,255,0.4); margin-top: 20px; font-size: 12px;">Authorized Personnel Only</p>
         </div>
+    </div>
+
+    <div id="master-app" style="display: flex;">
+        <aside class="sidebar">
+            <h1 style="font-weight: 900; letter-spacing: -2px; margin-bottom: 50px;">MANIACA.HQ</h1>
+            <nav style="flex: 1;">
+                <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px; font-weight: 700; margin-bottom: 10px;">
+                    <i class="fa-solid fa-server" style="margin-right: 10px;"></i> 인프라 통합 관리
+                </div>
+            </nav>
+            <button onclick="location.reload()" style="background:none; border:1px solid rgba(255,255,255,0.3); color:white; padding:12px; border-radius:10px; cursor:pointer;">Logout</button>
+        </aside>
+
+        <main class="main-workspace">
+            <div class="section-card">
+                <h2><i class="fa-solid fa-plus-circle"></i> 신규 가맹 학원 생성</h2>
+                <div class="grid-form">
+                    <input type="text" id="aca-name" class="form-input" placeholder="가맹 학원 명칭 (예: 마니아카 대치본점)">
+                    <input type="text" id="aca-owner" class="form-input" placeholder="원장 실명">
+                    <input type="text" id="aca-id" class="form-input" placeholder="접속 ID (영문/숫자)">
+                    <input type="password" id="aca-pw" class="form-input" placeholder="초기 접속 비밀번호">
+                </div>
+                <div style="margin-top: 30px; text-align: right;">
+                    <button class="btn-master" onclick="MasterControl.createAcademy()">인프라 생성 및 계정 배포</button>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2><i class="fa-solid fa-list-check"></i> 가맹 지점 인프라 상태</h2>
+                <div style="overflow-x: auto;">
+                    <table class="master-table">
+                        <thead>
+                            <tr>
+                                <th>지점명</th>
+                                <th>원장명</th>
+                                <th>접속 ID</th>
+                                <th>시스템 상태</th>
+                                <th>인프라 제어</th>
+                            </tr>
+                        </thead>
+                        <tbody id="master-list-render">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // 선생님의 Firebase 설정 (동일하게 유지)
         const firebaseConfig = {
             apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
             authDomain: "maniaca-965fa.firebaseapp.com",
@@ -62,28 +152,81 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.Master = {
-            create() {
+        /**
+         * MASTER CONTROL CORE
+         */
+        const MasterControl = {
+            // [Security] 로그인 검증
+            login() {
+                const id = document.getElementById('m-id').value;
+                const pw = document.getElementById('m-pw').value;
+
+                // 요청하신 고정 계정 정보
+                if(id === 'admin' && pw === 'admin0001') {
+                    document.getElementById('master-auth-overlay').style.display = 'none';
+                    document.getElementById('master-app').style.display = 'flex';
+                    this.loadAcademies();
+                } else {
+                    alert("인증에 실패하였습니다. 본사 보안실에 문의하십시오.");
+                }
+            },
+
+            // [Data] 학원 생성
+            createAcademy() {
                 const name = document.getElementById('aca-name').value;
                 const owner = document.getElementById('aca-owner').value;
                 const id = document.getElementById('aca-id').value;
                 const pw = document.getElementById('aca-pw').value;
-                if(!id || !pw) return alert("필수 정보를 입력하세요.");
 
-                push(ref(db, 'academies'), { name, owner, id, pw, role: 'director', created: Date.now() })
-                .then(() => { alert("학원 인프라가 생성되었습니다."); location.reload(); });
+                if(!name || !id || !pw) return alert("필수 정보를 누락하였습니다.");
+
+                const newRef = push(ref(db, 'academies'));
+                set(newRef, {
+                    name, owner, id, pw,
+                    role: 'director',
+                    status: 'active',
+                    created_at: new Date().toISOString()
+                }).then(() => {
+                    alert(`${name} 인프라 생성이 완료되었습니다.`);
+                    ['aca-name','aca-owner','aca-id','aca-pw'].forEach(el => document.getElementById(el).value = "");
+                });
             },
+
+            // [Sync] 실시간 목록 로드
+            loadAcademies() {
+                onValue(ref(db, 'academies'), snap => {
+                    const data = snap.val();
+                    const tbody = document.getElementById('master-list-render');
+                    tbody.innerHTML = "";
+
+                    if(data) {
+                        Object.entries(data).forEach(([key, a]) => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td style="font-weight:800; color:#1e293b;">${a.name}</td>
+                                    <td>${a.owner || '-'}</td>
+                                    <td><code style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-weight:700; color:var(--p-color);">${a.id}</code></td>
+                                    <td><span class="badge-active">ACTIVE</span></td>
+                                    <td><button class="btn-terminate" onclick="MasterControl.terminate('${key}')">파기</button></td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:40px; color:#94a3b8;'>활성화된 가맹 지점이 없습니다.</td></tr>";
+                    }
+                });
+            },
+
+            // [Action] 인프라 파기
             terminate(key) {
-                if(confirm("해당 지점의 모든 권한을 회수하시겠습니까?")) remove(ref(db, `academies/${key}`));
+                if(confirm("해당 가맹 지점의 모든 데이터와 계정 권한을 즉시 파기하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+                    remove(ref(db, `academies/${key}`));
+                }
             }
         };
 
-        onValue(ref(db, 'academies'), snap => {
-            const list = document.getElementById('aca-list'); list.innerHTML = "";
-            if(snap.val()) Object.entries(snap.val()).forEach(([key, a]) => {
-                list.innerHTML += `<tr><td><b>${a.name}</b></td><td>${a.owner}</td><td><code>${a.id}</code></td><td><span class="status">ACTIVE</span></td><td><button onclick="Master.terminate('${key}')" style="color:red; border:none; background:none; cursor:pointer;">인프라 파기</button></td></tr>`;
-            });
-        });
+        window.MasterControl = MasterControl;
+
     </script>
 </body>
 </html>
