@@ -133,6 +133,7 @@
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('dashboard')">대시보드</button>
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('academies')">학원 관리</button>
           <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('accounts')">계정/권한</button>
+          <button class="nav-btn w-full text-left px-3 py-2 rounded-2xl hover:bg-slate-100" onclick="UI.openTab('notices')">공지/콘텐츠 배포</button>
         </nav>
 
         <div class="mt-5 px-2 py-3 rounded-2xl bg-slate-50 border border-slate-200">
@@ -153,6 +154,10 @@
             <div class="bg-white border border-slate-200 rounded-3xl p-5">
               <div class="text-sm text-slate-500">전체 학원 수</div>
               <div class="mt-2 text-3xl font-extrabold" id="statAcademies">0</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-3xl p-5">
+              <div class="text-sm text-slate-500">공지 개수</div>
+              <div class="mt-2 text-3xl font-extrabold" id="statNotices">0</div>
             </div>
           </div>
         </section>
@@ -222,6 +227,35 @@
             </div>
           </div>
         </section>
+
+        <!-- NOTICES -->
+        <section id="tab-notices" class="tab hidden">
+          <div class="flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-2xl font-bold">공지/콘텐츠 배포</h2>
+              <p class="text-slate-600 text-sm mt-1">전체/특정 학원 코드 대상 공지</p>
+            </div>
+            <button id="btnCreateNotice" class="btnP" onclick="Notices.openCreate()">공지 등록</button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-5">
+            <div class="font-semibold">공지 목록</div>
+            <div class="mt-4 overflow-auto">
+              <table class="min-w-full text-sm">
+                <thead class="text-left text-slate-500">
+                  <tr>
+                    <th class="py-2 pr-4">작성일</th>
+                    <th class="py-2 pr-4">제목</th>
+                    <th class="py-2 pr-4">대상</th>
+                    <th class="py-2 pr-4">관리</th>
+                  </tr>
+                </thead>
+                <tbody id="noticeRows" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   </section>
@@ -331,6 +365,7 @@
         // SUPERADMIN만 생성 가능
         gate("btnCreateAcademy", isSuper);
         gate("btnCreateAcc", isSuper);
+        gate("btnCreateNotice", isSuper);
 
         const roleName = isSuper ? "슈퍼관리자" : "본사 운영자";
         document.getElementById("topRole").textContent = roleName;
@@ -688,6 +723,148 @@
     };
     window.Accounts = Accounts;
 
+    const Notices = {
+      openCreate(){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        Modal.open(this.formHtml({mode:"create"}));
+      },
+      async openEdit(id){
+        if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+        const snap = await get(ref(db, `notices/${id}`));
+        if (!snap.exists()) return;
+        Modal.open(this.formHtml({mode:"edit", id, notice:snap.val()}));
+      },
+      formHtml({mode, id="", notice=null}){
+        const title = (notice?.title||"").replaceAll('"',"&quot;");
+        const content = notice?.content || "";
+        const target = notice?.target || "ALL";
+        const academyCode = notice?.academyCode || "";
+        return `
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-xl font-bold">${mode==="create"?"공지 등록":"공지 수정"}</div>
+                <div class="text-sm text-slate-600 mt-1">전체 또는 특정 학원코드 대상</div>
+              </div>
+              <button class="btn" onclick="Modal.close()">닫기</button>
+            </div>
+
+            <div class="mt-5 space-y-3 text-sm">
+              <input id="ntTitle" class="field" placeholder="제목" value="${title}" />
+              <textarea id="ntContent" class="field" rows="8" placeholder="내용">${content}</textarea>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <select id="ntTarget" class="field" onchange="Notices.toggleCode()">
+                  <option value="ALL" ${target==="ALL"?"selected":""}>전체 학원</option>
+                  <option value="CODE" ${target==="CODE"?"selected":""}>특정 학원코드</option>
+                </select>
+                <input id="ntCode" class="field" placeholder="학원 코드" value="${academyCode}" ${target==="CODE"?"":"disabled"} />
+              </div>
+            </div>
+
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="btn" onclick="Modal.close()">취소</button>
+              <button class="btnP" onclick="Notices.${mode==="create"?"create":"save"}('${id}')">${mode==="create"?"등록":"저장"}</button>
+            </div>
+          </div>
+        `;
+      },
+      toggleCode(){
+        const t = document.getElementById("ntTarget").value;
+        const code = document.getElementById("ntCode");
+        code.disabled = (t!=="CODE");
+        if (t!=="CODE") code.value="";
+      },
+      async create(){
+        try{
+          const title = document.getElementById("ntTitle").value.trim();
+          const content = document.getElementById("ntContent").value.trim();
+          const target = document.getElementById("ntTarget").value;
+          const academyCode = document.getElementById("ntCode").value.trim();
+          if (!title) return Toast.show("제목 필수", "error");
+          if (target==="CODE" && !academyCode) return Toast.show("학원 코드 입력", "error");
+
+          const id = push(ref(db, "notices")).key;
+          await set(ref(db, `notices/${id}`), {
+            id, title, content, target,
+            academyCode: target==="CODE"?academyCode:null,
+            createdAt: Date.now(),
+            createdAtKST: Util.nowKST()
+          });
+
+          Toast.show("등록 완료", "success");
+          Modal.close();
+        } catch(e){
+          Toast.show(`공지 등록 에러: ${e?.message || e}`, "error");
+          console.error(e);
+        }
+      },
+      async save(id){
+        try{
+          const title = document.getElementById("ntTitle").value.trim();
+          const content = document.getElementById("ntContent").value.trim();
+          const target = document.getElementById("ntTarget").value;
+          const academyCode = document.getElementById("ntCode").value.trim();
+          if (!title) return Toast.show("제목 필수", "error");
+          if (target==="CODE" && !academyCode) return Toast.show("학원 코드 입력", "error");
+
+          await update(ref(db, `notices/${id}`), {
+            title, content, target,
+            academyCode: target==="CODE"?academyCode:null,
+            updatedAt: Date.now(),
+            updatedAtKST: Util.nowKST()
+          });
+
+          Toast.show("수정 완료", "success");
+          Modal.close();
+        } catch(e){
+          Toast.show(`공지 수정 에러: ${e?.message || e}`, "error");
+          console.error(e);
+        }
+      },
+      async remove(id){
+        try{
+          if (!Session.isSuper()) return Toast.show("슈퍼만 가능", "error");
+          if (!confirm("삭제할까요?")) return;
+          await set(ref(db, `notices/${id}`), null);
+          Toast.show("삭제 완료", "success");
+        } catch(e){
+          Toast.show(`공지 삭제 에러: ${e?.message || e}`, "error");
+          console.error(e);
+        }
+      },
+      bindList(){
+        onValue(ref(db, "notices"), (snap)=>{
+          const tbody = document.getElementById("noticeRows");
+          tbody.innerHTML = "";
+          const data = snap.val() || {};
+          const list = Object.values(data).sort((a,b)=>((b.updatedAt||b.createdAt)||0)-((a.updatedAt||a.createdAt)||0));
+
+          document.getElementById("statNotices").textContent = String(list.length);
+
+          if (list.length===0){
+            tbody.innerHTML = `<tr><td class="py-3 text-slate-500" colspan="4">공지가 없습니다.</td></tr>`;
+            return;
+          }
+
+          for (const n of list){
+            const target = n.target==="ALL" ? "전체" : `코드: ${n.academyCode}`;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="py-3 pr-4">${n.updatedAtKST||n.createdAtKST||"-"}</td>
+              <td class="py-3 pr-4 font-medium">${n.title||"-"}</td>
+              <td class="py-3 pr-4">${target}</td>
+              <td class="py-3 pr-4">
+                <button class="btn" onclick="Notices.openEdit('${n.id}')">수정</button>
+                <button class="btn ml-1" onclick="Notices.remove('${n.id}')">삭제</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
+      }
+    };
+    window.Notices = Notices;
+
     // 모달 닫기
     document.getElementById("modalRoot").addEventListener("click", (e)=>{ if (e.target.id==="modalRoot") Modal.close(); });
     window.addEventListener("keydown", (e)=>{ if (e.key==="Escape") Modal.close(); });
@@ -725,6 +902,7 @@
     // 리스트 바인딩
     Academies.bindList();
     Accounts.bindList();
+    Notices.bindList();
 
   </script>
 </body>
