@@ -3,115 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>매니아카 - 학부모 전용</title>
+    <title>매니아카 - 학부모용</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
     <style>
-        :root {
-            --primary: #4f46e5; --bg: #f1f5f9;
-            --white: #ffffff; --text: #1e293b;
-            --muted: #64748b; --accent: #10b981;
-        }
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background: #f1f5f9; padding-bottom: 80px; }
         .hidden { display: none !important; }
-        
-        /* 로그인 화면 */
-        #login-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; background: var(--white); }
-        .login-header { text-align: center; margin-bottom: 40px; }
-        .login-header h1 { font-size: 2.5rem; color: var(--primary); margin: 0; font-weight: 900; }
-        .login-header p { color: var(--muted); margin-top: 10px; }
-        
-        input { width: 100%; padding: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; box-sizing: border-box; }
-        .btn-login { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
-
-        /* 메인 대시보드 */
-        header { background: var(--primary); color: white; padding: 25px 20px; border-radius: 0 0 30px 30px; position: sticky; top: 0; z-index: 100; }
-        header h2 { margin: 0; font-size: 1.4rem; }
-        header p { margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem; }
-
-        .container { padding: 20px; padding-bottom: 100px; }
-        .section-title { font-size: 1.1rem; font-weight: 700; margin: 25px 0 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .card { background: var(--white); padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        
-        /* 출석부 스타일 */
-        .att-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .att-item:last-child { border: none; }
-        .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; }
-        .badge.present { background: #ecfdf5; color: #10b981; }
-        .badge.absent { background: #fef2f2; color: #ef4444; }
-
-        /* 성적 그래프 스타일 */
-        .grade-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .bar-bg { flex-grow: 1; height: 10px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--primary); border-radius: 10px; transition: width 0.5s; }
-
-        /* 하단 탭 바 */
-        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #e2e8f0; box-shadow: 0 -5px 15px rgba(0,0,0,0.03); }
-        .tab-item { text-align: center; color: var(--muted); font-size: 0.75rem; cursor: pointer; flex: 1; }
-        .tab-item.active { color: var(--primary); font-weight: 700; }
-        .tab-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        header { background: #4f46e5; color: white; padding: 30px 20px; border-radius: 0 0 30px 30px; text-align: center; }
+        .card { background: white; margin: 15px; padding: 20px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        input { width: 100%; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; font-size: 1rem; }
+        .btn { width: 100%; padding: 15px; background: #4f46e5; color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+        .tabs { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 10px 0; }
+        .tab { flex: 1; text-align: center; font-size: 0.8rem; color: #64748b; cursor: pointer; }
+        .tab.active { color: #4f46e5; font-weight: 700; }
+        .list-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
     </style>
 </head>
 <body>
-
-<div id="login-page">
-    <div class="login-header">
-        <h1>MANIACA</h1>
-        <p>학부모 전용 안심 서비스</p>
-    </div>
-    <input type="text" id="parent-sid" placeholder="자녀 고유번호 (4자리)">
-    <input type="password" id="parent-pw" placeholder="학부모 전용 비밀번호">
-    <button class="btn-login" id="login-btn">로그인</button>
-    <p style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin-top: 20px;">비밀번호는 학원에 문의해주세요.</p>
-</div>
-
-<div id="main-app" class="hidden">
-    <header>
-        <h2 id="student-name-display">김철수 학생</h2>
-        <p id="student-info-display">대치본원 | 중등부 2학년</p>
-    </header>
-
-    <div class="container">
-        <div id="view-attendance" class="view-section">
-            <div class="section-title">최근 출석 현황</div>
-            <div class="card" id="parent-att-list">
-                </div>
-        </div>
-
-        <div id="view-grades" class="view-section hidden">
-            <div class="section-title">성적 분석 리포트</div>
-            <div class="card">
-                <h4 style="margin:0 0 15px;">학원 시험 평균: <span id="p-grade-avg" style="color:var(--primary);">0점</span></h4>
-                <div id="parent-grade-chart">
-                    </div>
-            </div>
-            <div class="card" id="p-grade-list">
-                </div>
-        </div>
-
-        <div id="view-payments" class="view-section hidden">
-            <div class="section-title">수납 및 결제 내역</div>
-            <div class="card">
-                <div class="att-item">
-                    <span>2026년 1월 교육비</span>
-                    <span class="badge present">완납</span>
-                </div>
-                <div style="text-align: right; margin-top: 10px; font-weight: 700;">300,000원</div>
-            </div>
-        </div>
+    <div id="login-view" style="padding: 100px 30px 30px;">
+        <h1 style="color:#4f46e5; text-align:center;">MANIACA</h1>
+        <p style="text-align:center; color:#64748b; margin-bottom: 30px;">학부모 안심 서비스 로그인</p>
+        <input type="text" id="sid" placeholder="자녀 고유번호 (4자리)">
+        <input type="password" id="pw" placeholder="학부모 전용 비밀번호">
+        <button class="btn" id="login-btn">로그인 정보 확인</button>
+        <p id="loading-msg" style="text-align:center; color: #4f46e5; margin-top:15px; display:none;">데이터를 확인 중입니다...</p>
     </div>
 
-    <div class="tab-bar">
-        <div class="tab-item active" onclick="switchView('attendance')"><span class="tab-icon">📅</span>출결현황</div>
-        <div class="tab-item" onclick="switchView('grades')"><span class="tab-icon">📊</span>성적표</div>
-        <div class="tab-item" onclick="switchView('payments')"><span class="tab-icon">💳</span>수납내역</div>
-        <div class="tab-item" onclick="location.reload()"><span class="tab-icon">👤</span>로그아웃</div>
+    <div id="app-view" class="hidden">
+        <header><h2 id="p-name">-</h2><p id="p-info">-</p></header>
+        <div id="v-att" class="v-sec"><div class="card"><h3>최근 출결 현황</h3><div id="p-att-list"></div></div></div>
+        <div id="v-grade" class="v-sec hidden"><div class="card"><h3>학원 성적 평균: <span id="p-avg" style="color:#4f46e5;">0점</span></h3><div id="p-grade-list"></div></div></div>
+        <div class="tabs">
+            <div class="tab active" onclick="sw('att')">출결</div><div class="tab" onclick="sw('grade')">성적</div><div class="tab" onclick="location.reload()">로그아웃</div>
+        </div>
     </div>
-</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
@@ -126,87 +54,88 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let currentStudent = null;
-    let allData = null;
+    document.getElementById('login-btn').onclick = async () => {
+        const inputId = document.getElementById('sid').value.trim();
+        const inputPw = document.getElementById('pw').value.trim();
+        const loading = document.getElementById('loading-msg');
 
-    // 1. 로그인 로직
-    document.getElementById('login-btn').onclick = () => {
-        const sid = document.getElementById('parent-sid').value;
-        const pw = document.getElementById('parent-pw').value;
+        if(!inputId || !inputPw) return alert("자녀 고유번호와 비밀번호를 모두 입력하세요.");
 
-        if(!sid || !pw) return alert("정보를 입력하세요.");
+        loading.style.display = "block";
 
-        onValue(ref(db, 'maniaca'), (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-            allData = data;
+        try {
+            // get(ref())를 사용하여 로그인 시점에 서버 데이터를 딱 한 번만 가져옵니다.
+            const snapshot = await get(ref(db, 'maniaca'));
+            loading.style.display = "none";
 
-            const student = data.students.find(s => s.id === sid);
-            // 학부모 비번은 임시로 '1234'로 설정 (나중에 원생 등록 시 추가 가능)
-            if(student && pw === "1234") { 
-                currentStudent = student;
-                loadStudentData();
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const students = data.students || [];
+                
+                // 고유번호(id)와 부모비밀번호(parentPw)가 모두 일치하는 학생 찾기
+                const student = students.find(s => s.id === inputId && s.parentPw === inputPw);
+
+                if (student) {
+                    // 로그인 성공 시 화면 전환
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('app-view').classList.remove('hidden');
+                    
+                    document.getElementById('p-name').innerText = student.name + " 학생";
+                    document.getElementById('p-info').innerText = `${student.school} / ${student.grade}`;
+                    
+                    // 출결 렌더링
+                    let attHtml = "";
+                    if (data.classes) {
+                        data.classes.forEach(c => {
+                            if (c.sessions) {
+                                c.sessions.forEach(sess => {
+                                    const record = sess.records.find(r => r.id === student.id);
+                                    if (record) {
+                                        attHtml += `
+                                            <div class="list-item">
+                                                <span>${sess.name} (${c.name})</span>
+                                                <b style="color:${record.att === '출석' ? '#10b981' : '#ef4444'}">${record.att}</b>
+                                            </div>`;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    document.getElementById('p-att-list').innerHTML = attHtml || "출결 기록이 없습니다.";
+                    
+                    // 성적 렌더링
+                    const grades = student.grades?.academy || [];
+                    if (grades.length > 0) {
+                        const avg = (grades.reduce((sum, g) => sum + g.score, 0) / grades.length).toFixed(1);
+                        document.getElementById('p-avg').innerText = avg + "점";
+                        document.getElementById('p-grade-list').innerHTML = grades.map(g => `
+                            <div class="list-item">
+                                <span>${g.name}</span>
+                                <span>${g.score}점</span>
+                            </div>`).join('');
+                    } else {
+                        document.getElementById('p-grade-list').innerHTML = "성적 기록이 없습니다.";
+                    }
+
+                } else {
+                    alert("정보가 일치하지 않습니다. 고유번호와 비밀번호를 확인해주세요.");
+                }
             } else {
-                alert("번호 또는 비밀번호가 틀렸습니다.");
+                alert("서버에 등록된 데이터가 없습니다.");
             }
-        }, { onlyOnce: true });
+        } catch (error) {
+            console.error(error);
+            loading.style.display = "none";
+            alert("서버 연결 중 오류가 발생했습니다.");
+        }
     };
 
-    // 2. 데이터 로드 및 렌더링
-    function loadStudentData() {
-        document.getElementById('student-name-display').innerText = `${currentStudent.name} 학생`;
-        document.getElementById('student-info-display').innerText = `${currentStudent.school} | ${currentStudent.grade}`;
-
-        // 출석 데이터
-        const attList = document.getElementById('parent-att-list');
-        attList.innerHTML = "";
-        allData.classes.forEach(c => {
-            if(c.sessions) {
-                c.sessions.forEach(sess => {
-                    const rec = sess.records.find(r => r.id === currentStudent.id);
-                    if(rec) {
-                        attList.innerHTML += `
-                            <div class="att-item">
-                                <div>
-                                    <div style="font-weight:700;">${c.name}</div>
-                                    <div style="font-size:0.8rem; color:var(--muted);">${sess.name}</div>
-                                </div>
-                                <span class="badge ${rec.att === '출석' ? 'present' : 'absent'}">${rec.att}</span>
-                            </div>
-                        `;
-                    }
-                });
-            }
-        });
-
-        // 성적 데이터
-        if(currentStudent.grades && currentStudent.grades.academy) {
-            const grades = currentStudent.grades.academy;
-            const avg = (grades.reduce((a,b)=>a+b.score,0)/grades.length).toFixed(1);
-            document.getElementById('p-grade-avg').innerText = avg + "점";
-            
-            document.getElementById('parent-grade-chart').innerHTML = grades.slice(-3).map(g => `
-                <div style="margin-bottom:15px;">
-                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:5px;">
-                        <span>${g.name}</span><span>${g.score}점</span>
-                    </div>
-                    <div class="bar-bg"><div class="bar-fill" style="width:${g.score}%"></div></div>
-                </div>
-            `).join('');
-        }
-    }
-
-    // 3. 뷰 전환 함수
-    window.switchView = (view) => {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('view-' + view).classList.remove('hidden');
-        
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    window.sw = (v) => {
+        document.querySelectorAll('.v-sec').forEach(s => s.classList.add('hidden')); 
+        document.getElementById('v-' + v).classList.remove('hidden');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); 
         event.currentTarget.classList.add('active');
     };
 </script>
-
 </body>
 </html>
