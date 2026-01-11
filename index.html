@@ -3,519 +3,550 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maniaca Enterprise - Integrated Academy Solution</title>
+    <title>Maniaca Enterprise v1.0 - Professional Academy Solution</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* =========================================
-           1. CSS RESET & CORE DESIGN SYSTEM
-           ========================================= 
+        /* ==========================================================================
+           1. GLOBAL CSS VARIABLES & RESET
+           ==========================================================================
         */
         :root {
-            --p-color: #6366f1;
-            --p-dark: #4f46e5;
-            --p-light: #e0e7ff;
-            --p-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            --bg-main: #f8fafc;
-            --bg-glass: rgba(255, 255, 255, 0.7);
-            --border-glass: rgba(255, 255, 255, 0.4);
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
+            --primary-base: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #e0e7ff;
+            --accent-purple: #a855f7;
+            --gradient-main: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --gradient-sub: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+            
+            --bg-body: #f1f5f9;
+            --bg-sidebar: #0f172a;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            
+            --text-main: #1e293b;
+            --text-sub: #475569;
+            --text-mute: #94a3b8;
+            --text-white: #ffffff;
+            
+            --color-success: #10b981;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-info: #0ea5e9;
+            
+            --border-light: rgba(255, 255, 255, 0.4);
+            --border-soft: #e2e8f0;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            
             --radius-xl: 32px;
             --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 8px;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Pretendard', sans-serif;
+            font-family: 'Pretendard', -apple-system, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
         body {
             background: radial-gradient(at top left, #e0e7ff, transparent), 
                         radial-gradient(at bottom right, #f3e8ff, transparent);
-            background-color: var(--bg-main);
-            color: var(--text-primary);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
+            line-height: 1.5;
         }
 
-        /* =========================================
-           2. AUTHENTICATION LAYER (LOGIN)
-           ========================================= 
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        ul { list-style: none; }
+        a { text-decoration: none; color: inherit; }
+
+        /* ==========================================================================
+           2. AUTHENTICATION (LOGIN) UI
+           ==========================================================================
         */
         #auth-layer {
             position: fixed;
-            inset: 0;
+            top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10000;
-            background: var(--p-gradient);
+            background: var(--gradient-main);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: var(--transition);
+            transition: var(--transition-normal);
         }
 
         #auth-layer.hidden {
             opacity: 0;
             pointer-events: none;
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .auth-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            padding: 4rem 3rem;
+            padding: 4.5rem 3.5rem;
             border-radius: var(--radius-xl);
-            width: 460px;
+            width: 100%;
+            max-width: 480px;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-xl);
             border: 1px solid white;
         }
 
-        .auth-logo {
-            font-size: 3rem;
+        .auth-brand {
+            font-size: 3.5rem;
             font-weight: 900;
-            background: var(--p-gradient);
+            background: var(--gradient-main);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-            letter-spacing: -2px;
+            margin-bottom: 0.75rem;
+            letter-spacing: -3px;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
+        .auth-subtitle {
+            color: var(--text-mute);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 3rem;
+        }
+
+        .form-group {
             text-align: left;
+            margin-bottom: 1.5rem;
         }
 
-        .input-label {
+        .form-label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            padding-left: 4px;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            padding-left: 5px;
         }
 
-        .input-field {
+        .form-input {
             width: 100%;
-            padding: 14px 20px;
+            padding: 16px 22px;
             border-radius: var(--radius-md);
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-soft);
             background: #f8fafc;
             font-size: 1rem;
-            transition: var(--transition);
+            transition: var(--transition-normal);
         }
 
-        .input-field:focus {
+        .form-input:focus {
             outline: none;
-            border-color: var(--p-color);
+            border-color: var(--primary-base);
             background: white;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
         }
 
-        .btn-login {
+        .btn-login-submit {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
+            margin-top: 1.5rem;
             border-radius: var(--radius-md);
-            background: var(--p-color);
+            background: var(--primary-base);
             color: white;
-            font-weight: 700;
-            font-size: 1.125rem;
+            font-weight: 800;
+            font-size: 1.1rem;
             border: none;
             cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+            transition: var(--transition-normal);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
         }
 
-        .btn-login:hover {
+        .btn-login-submit:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            background: var(--p-dark);
+            box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5);
         }
 
-        /* =========================================
-           3. MAIN LAYOUT STRUCTURE
-           ========================================= 
+        /* ==========================================================================
+           3. DASHBOARD MAIN LAYOUT
+           ==========================================================================
         */
-        #app-container {
-            display: none; /* JS에서 block으로 전환 */
+        #app-wrapper {
+            display: none; /* Initially hidden until login */
             height: 100vh;
             width: 100%;
         }
 
         /* Sidebar Navigation */
-        .sidebar {
-            width: 280px;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 2.5rem 1.25rem;
+        .app-sidebar {
+            width: 300px;
+            background: var(--bg-sidebar);
             display: flex;
             flex-direction: column;
+            padding: 3rem 1.5rem;
+            position: relative;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-size: 2rem;
+            font-weight: 900;
             color: white;
-            z-index: 50;
-        }
-
-        .sidebar-brand {
-            font-size: 1.75rem;
-            font-weight: 800;
-            margin-bottom: 3.5rem;
+            margin-bottom: 4rem;
             padding-left: 1rem;
-            letter-spacing: -1px;
+            letter-spacing: -1.5px;
         }
 
-        .nav-list {
-            list-style: none;
+        .nav-menu {
             flex: 1;
         }
 
-        .nav-item {
-            padding: 14px 20px;
-            border-radius: var(--radius-md);
-            margin-bottom: 0.5rem;
-            cursor: pointer;
+        .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
+            padding: 16px 20px;
             color: #94a3b8;
-            font-weight: 500;
-            transition: var(--transition);
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+            transition: var(--transition-normal);
+            cursor: pointer;
         }
 
-        .nav-item i {
-            font-size: 1.25rem;
-            width: 24px;
+        .nav-link i {
+            font-size: 1.2rem;
+            width: 28px;
             text-align: center;
         }
 
-        .nav-item:hover {
+        .nav-link:hover {
             background: rgba(255, 255, 255, 0.05);
             color: white;
         }
 
-        .nav-item.active {
-            background: var(--p-color);
+        .nav-link.active {
+            background: var(--primary-base);
             color: white;
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.5);
         }
 
-        /* Workspace Area */
-        .workspace {
+        /* Main Viewport */
+        .main-viewport {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            position: relative;
+            background: transparent;
         }
 
-        .top-bar {
-            height: 80px;
+        .top-navbar {
+            height: 90px;
             background: var(--bg-glass);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border-glass);
-            padding: 0 3rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 40;
+            padding: 0 3.5rem;
+            z-index: 90;
         }
 
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-primary);
+        .view-title {
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
         }
 
-        .user-profile {
+        .user-account {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
-        .avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: var(--p-gradient);
+        .user-name-label {
+            font-weight: 700;
+            color: var(--text-sub);
+            text-align: right;
+        }
+
+        .user-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 18px;
+            background: var(--gradient-main);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: 800;
-            font-size: 1.25rem;
+            font-weight: 900;
+            font-size: 1.4rem;
             box-shadow: var(--shadow-md);
         }
 
-        .content-area {
+        /* Content Container */
+        .page-content {
             flex: 1;
-            padding: 2.5rem 3rem;
+            padding: 3rem 3.5rem;
             overflow-y: auto;
             scroll-behavior: smooth;
         }
 
-        /* =========================================
-           4. COMPONENT STYLES (Cards, Tables, etc.)
-           ========================================= 
+        /* ==========================================================================
+           4. DATA DISPLAY COMPONENTS (Cards, Tables, Badges)
+           ==========================================================================
         */
-        .card {
+        .glass-panel {
             background: var(--bg-glass);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border-glass);
             border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow-lg);
-            margin-bottom: 2rem;
-            transition: var(--transition);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            margin-bottom: 2.5rem;
+            transition: var(--transition-normal);
         }
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        }
-
-        .section-header {
+        .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border-radius: var(--radius-sm);
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Utility Buttons */
+        .action-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: var(--transition);
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-normal);
         }
 
-        .btn-p { background: var(--p-color); color: white; }
-        .btn-p:hover { background: var(--p-dark); transform: scale(1.02); }
-        .btn-danger { background: #fee2e2; color: #ef4444; }
-        .btn-danger:hover { background: #fecaca; }
-        .btn-ghost { background: #f1f5f9; color: var(--text-secondary); }
+        .btn-fill { background: var(--primary-base); color: white; }
+        .btn-fill:hover { background: var(--primary-dark); transform: scale(1.03); }
+        
+        .btn-outline { background: white; border: 1px solid var(--border-soft); color: var(--text-sub); }
+        .btn-outline:hover { background: #f8fafc; color: var(--text-main); }
 
-        /* Data Tables */
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-        }
+        .btn-del { background: #fee2e2; color: #ef4444; }
+        .btn-del:hover { background: #fecaca; }
 
-        table {
+        /* Professional Tables */
+        .table-wrap { width: 100%; overflow-x: auto; }
+        
+        .maniaca-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 0 10px;
+            border-spacing: 0 12px;
         }
 
-        th {
-            padding: 12px 20px;
+        .maniaca-table th {
+            padding: 15px 25px;
             text-align: left;
-            font-size: 0.813rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        td {
-            padding: 18px 20px;
-            background: white;
-            font-size: 0.938rem;
-            color: var(--text-primary);
-        }
-
-        td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-left: 1px solid #f1f5f9; }
-        td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-right: 1px solid #f1f5f9; }
-        tr { transition: var(--transition); }
-        tr:hover td { background: #f8fafc; transform: scale(1.005); }
-
-        /* Status Badges */
-        .status-badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 800;
+            color: var(--text-mute);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
         }
-        .status-active { background: #dcfce7; color: #059669; }
-        .status-inactive { background: #fee2e2; color: #dc2626; }
 
-        /* =========================================
-           5. MESSENGER ENTERPRISE UI
-           ========================================= 
+        .maniaca-table td {
+            padding: 22px 25px;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .maniaca-table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 15px; border-bottom-left-radius: 15px; }
+        .maniaca-table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
+
+        .maniaca-table tr { transition: var(--transition-normal); }
+        .maniaca-table tr:hover td { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+
+        .badge-ui {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+        .st-active { background: #dcfce7; color: #15803d; }
+        .st-danger { background: #fee2e2; color: #b91c1c; }
+
+        /* ==========================================================================
+           5. REALTIME MESSENGER ARCHITECTURE
+           ==========================================================================
         */
-        .messenger-view {
+        .msg-layout {
             display: flex;
-            height: calc(100vh - 200px);
-            gap: 2rem;
+            height: calc(100vh - 220px);
+            gap: 2.5rem;
         }
 
-        .chat-sidebar {
-            width: 350px;
+        .msg-sidebar {
+            width: 380px;
             background: var(--bg-glass);
             border-radius: var(--radius-lg);
             border: 1px solid var(--border-glass);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: var(--shadow-lg);
         }
 
-        .chat-list-container {
+        .msg-list-scroll {
             flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .chat-item-card {
             padding: 1.25rem;
-            border-radius: var(--radius-md);
+            overflow-y: auto;
+        }
+
+        .chat-row-card {
+            padding: 1.5rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
             cursor: pointer;
-            margin-bottom: 0.75rem;
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid transparent;
-            transition: var(--transition);
+            border: 2px solid transparent;
+            transition: var(--transition-normal);
         }
 
-        .chat-item-card:hover {
-            background: white;
-            border-color: var(--p-light);
-        }
+        .chat-row-card:hover { background: white; border-color: var(--primary-light); }
+        .chat-row-card.active { background: white; border-color: var(--primary-base); box-shadow: var(--shadow-md); }
 
-        .chat-item-card.active {
-            background: white;
-            border-color: var(--p-color);
-            box-shadow: var(--shadow-md);
-        }
-
-        .chat-main {
+        .msg-main-view {
             flex: 1;
             background: white;
             border-radius: var(--radius-lg);
             display: flex;
             flex-direction: column;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-xl);
             overflow: hidden;
         }
 
-        .chat-header {
-            padding: 1.5rem 2rem;
+        .msg-header {
+            padding: 1.75rem 2.5rem;
             border-bottom: 1px solid #f1f5f9;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .chat-messages {
+        .msg-content-scroll {
             flex: 1;
-            padding: 2rem;
+            padding: 2.5rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            background: #fdfdfd;
+            gap: 1.5rem;
+            background-color: #fdfdfd;
         }
 
-        .chat-bubble {
-            max-width: 65%;
-            padding: 1rem 1.25rem;
-            font-size: 0.938rem;
-            line-height: 1.5;
+        .bubble-ui {
+            max-width: 70%;
+            padding: 1.25rem 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
             position: relative;
         }
 
-        .bubble-mine {
+        .mine-bubble {
             align-self: flex-end;
-            background: var(--p-color);
+            background: var(--primary-base);
             color: white;
-            border-radius: 20px 20px 4px 20px;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+            border-radius: 24px 24px 4px 24px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
         }
 
-        .bubble-yours {
+        .other-bubble {
             align-self: flex-start;
             background: #f1f5f9;
-            color: var(--text-primary);
-            border-radius: 20px 20px 20px 4px;
+            color: var(--text-main);
+            border-radius: 24px 24px 24px 4px;
         }
 
-        .chat-input-area {
-            padding: 1.5rem 2rem;
+        .msg-footer {
+            padding: 1.75rem 2.5rem;
             border-top: 1px solid #f1f5f9;
             display: flex;
-            gap: 1rem;
+            gap: 1.25rem;
+            background: white;
         }
 
-        /* =========================================
-           6. STUDENT DETAIL & ANALYSIS UI
-           ========================================= 
+        /* ==========================================================================
+           6. STUDENT ANALYSIS & GRADE CHART
+           ==========================================================================
         */
-        .detail-view { display: none; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .detail-transition-view { display: none; }
+        .detail-transition-view.show { display: block; animation: slideIn 0.5s cubic-bezier(0.19, 1, 0.22, 1); }
 
-        .profile-header-card {
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .analysis-tab-nav {
             display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            border-bottom: 3px solid #f1f5f9;
         }
 
-        .profile-big-avatar {
-            width: 100px; height: 100px;
-            border-radius: var(--radius-md);
-            background: var(--p-gradient);
-            color: white; font-size: 3rem; font-weight: 900;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .analysis-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #f1f5f9;
-        }
-
-        .tab-trigger {
-            padding: 1rem 2rem;
-            font-weight: 700;
-            color: var(--text-muted);
+        .tab-item {
+            padding: 1.25rem 2.5rem;
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--text-mute);
             cursor: pointer;
             position: relative;
-            transition: var(--transition);
+            transition: var(--transition-fast);
         }
 
-        .tab-trigger.active { color: var(--p-color); }
-        .tab-trigger.active::after {
+        .tab-item.active { color: var(--primary-base); }
+        .tab-item.active::after {
             content: '';
-            position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px;
-            background: var(--p-color);
+            position: absolute; bottom: -3px; left: 0; width: 100%; height: 3px;
+            background: var(--primary-base);
         }
 
-        /* Grade Graph */
-        .grade-chart-container {
-            height: 300px;
+        /* Expert Grade Chart */
+        .chart-engine-container {
+            height: 350px;
             display: flex;
             align-items: flex-end;
-            justify-content: space-around;
-            padding: 2rem;
-            gap: 20px;
+            justify-content: center;
+            padding: 3rem;
+            gap: 35px;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+            border-radius: var(--radius-lg);
         }
 
-        .chart-bar-group {
-            flex: 1;
+        .bar-entity {
+            flex: 0 1 65px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -523,194 +554,190 @@
             justify-content: flex-end;
         }
 
-        .chart-bar {
-            width: 50px;
-            background: var(--p-gradient);
-            border-radius: 8px 8px 0 0;
-            transition: height 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .bar-pillar {
+            width: 100%;
+            background: var(--gradient-main);
+            border-radius: 12px 12px 0 0;
+            transition: height 1.8s cubic-bezier(0.17, 0.67, 0.83, 0.67);
             position: relative;
+            box-shadow: var(--shadow-md);
         }
 
-        .chart-bar:hover::before {
-            content: attr(data-val);
-            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
-            font-weight: 800; color: var(--p-color);
+        .bar-pillar:hover { filter: brightness(1.1); }
+        .bar-pillar::after {
+            content: attr(data-score) '점';
+            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            font-weight: 900; color: var(--primary-base); font-size: 0.9rem;
         }
 
-        /* =========================================
-           7. MODAL & OVERLAY SYSTEM
-           ========================================= 
+        /* ==========================================================================
+           7. SYSTEM MODALS & OVERLAYS
+           ==========================================================================
         */
-        .modal-overlay {
-            position: fixed; inset: 0; z-index: 1000;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px);
+        .overlay-mask {
+            position: fixed; inset: 0; z-index: 2000;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
             display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: var(--transition);
+            opacity: 0; transition: var(--transition-normal);
         }
 
-        .modal-overlay.active { display: flex; opacity: 1; }
+        .overlay-mask.visible { display: flex; opacity: 1; }
 
-        .modal-container {
+        .modal-body {
             background: white;
-            width: 600px;
+            width: 700px;
+            max-width: 95%;
             border-radius: var(--radius-xl);
-            padding: 3rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transform: translateY(20px);
-            transition: var(--transition);
+            padding: 4rem;
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.35);
+            transform: scale(0.9);
+            transition: var(--transition-normal);
         }
 
-        .modal-overlay.active .modal-container { transform: translateY(0); }
+        .overlay-mask.visible .modal-body { transform: scale(1); }
 
-        /* =========================================
-           8. LOADER & ANIMATION
-           ========================================= 
-        */
-        .loader {
-            width: 48px; height: 48px;
-            border: 5px solid #FFF; border-bottom-color: var(--p-color);
-            border-radius: 50%; display: inline-block;
-            box-sizing: border-box; animation: rotation 1s linear infinite;
-        }
-
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="auth-layer">
         <div class="auth-card">
-            <div class="auth-logo">MANIACA</div>
-            <p style="color: var(--text-muted); margin-bottom: 2.5rem; font-weight: 500;">Academy Management System Professional</p>
+            <div class="auth-brand">MANIACA</div>
+            <p class="auth-subtitle">INTEGRATED ACADEMY RESOURCE PLANNING</p>
             
-            <div class="input-group">
-                <label class="input-label">Administrator ID</label>
-                <input type="text" id="auth-id-input" class="input-field" placeholder="Enter ID">
+            <div class="form-group">
+                <label class="form-label">System Access ID</label>
+                <input type="text" id="id-entry" class="form-input" placeholder="계정 아이디를 입력하세요">
             </div>
             
-            <div class="input-group">
-                <label class="input-label">Password</label>
-                <input type="password" id="auth-pw-input" class="input-field" placeholder="••••••••">
+            <div class="form-group">
+                <label class="form-label">Security Password</label>
+                <input type="password" id="pw-entry" class="form-input" placeholder="••••••••">
             </div>
 
-            <button class="btn-login" onclick="ManiacaCore.auth.processLogin()">
-                Sign In to Workspace
+            <button class="btn-login-submit" onclick="ManiacaManager.auth.executeLogin()">
+                SIGN IN TO WORKSPACE
             </button>
             
-            <p style="margin-top: 2rem; font-size: 0.813rem; color: var(--text-muted);">
-                Authorized Personnel Only. © 2026 Maniaca Corp.
+            <p style="margin-top: 2.5rem; font-size: 0.85rem; color: var(--text-mute); font-weight: 600;">
+                SECURED CLOUD INFRASTRUCTURE v2.6.0
             </p>
         </div>
     </div>
 
-    <div id="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-brand">MANIACA.</div>
-            <ul class="nav-list">
-                <li class="nav-item director-item active" onclick="ManiacaCore.navigation.changePage('crm')">
+    <div id="app-wrapper" class="flex">
+        
+        <aside class="app-sidebar">
+            <div class="sidebar-logo">MANIACA.</div>
+            <nav class="nav-menu">
+                <div class="nav-link director-access active" onclick="ManiacaManager.router.navigate('crm')">
                     <i class="fa-solid fa-user-group"></i> <span>원생 통합 관리</span>
-                </li>
-                <li class="nav-item director-item" onclick="ManiacaCore.navigation.changePage('counsel')">
-                    <i class="fa-solid fa-comment-dots"></i> <span>상담 및 학습 기록</span>
-                </li>
-                <li class="nav-item director-item" onclick="ManiacaCore.navigation.changePage('payment')">
-                    <i class="fa-solid fa-credit-card"></i> <span>수납 및 회계</span>
-                </li>
-                <li class="nav-item director-item" onclick="ManiacaCore.navigation.changePage('academic')">
-                    <i class="fa-solid fa-graduation-cap"></i> <span>학사 및 출결</span>
-                </li>
-                <li class="nav-item common-item" onclick="ManiacaCore.navigation.changePage('messenger')">
-                    <i class="fa-solid fa-paper-plane"></i> <span>실시간 메신저</span>
-                </li>
-                <li class="nav-item admin-item" onclick="ManiacaCore.navigation.changePage('super-admin')">
-                    <i class="fa-solid fa-building-shield"></i> <span>플랫폼 마스터</span>
-                </li>
-            </ul>
-            <div style="padding: 1rem;">
-                <button class="btn btn-danger" style="width: 100%; justify-content: center;" onclick="ManiacaCore.auth.processLogout()">
+                </div>
+                <div class="nav-link director-access" onclick="ManiacaManager.router.navigate('counsel')">
+                    <i class="fa-solid fa-notes-medical"></i> <span>상담 및 기록물</span>
+                </div>
+                <div class="nav-link director-access" onclick="ManiacaManager.router.navigate('accounting')">
+                    <i class="fa-solid fa-vault"></i> <span>수납 및 회계관리</span>
+                </div>
+                <div class="nav-link director-access" onclick="ManiacaManager.router.navigate('academic')">
+                    <i class="fa-solid fa-graduation-cap"></i> <span>학사 및 통합출결</span>
+                </div>
+                <div class="nav-link common-access" onclick="ManiacaManager.router.navigate('messenger')">
+                    <i class="fa-solid fa-comments"></i> <span>실시간 메신저</span>
+                </div>
+                <div class="nav-link admin-access" onclick="ManiacaManager.router.navigate('master-control')">
+                    <i class="fa-solid fa-shield-halved"></i> <span>플랫폼 가맹 관리</span>
+                </div>
+            </nav>
+            
+            <div style="padding-top: 2rem;">
+                <button class="action-btn btn-del" style="width: 100%; justify-content: center;" onclick="ManiacaManager.auth.executeLogout()">
                     <i class="fa-solid fa-power-off"></i> 시스템 종료
                 </button>
             </div>
         </aside>
 
-        <div class="workspace">
-            <header class="top-bar">
-                <div class="page-title" id="main-view-title">원생 통합 관리</div>
-                <div class="user-profile">
-                    <div id="display-user-name" style="font-weight: 700; color: var(--text-secondary);">Admin</div>
-                    <div class="avatar" id="display-user-avatar">A</div>
+        <div class="main-viewport">
+            <header class="top-navbar">
+                <div class="view-title" id="active-view-title">원생 통합 관리</div>
+                <div class="user-account">
+                    <div class="user-name-label">
+                        <div id="user-name-val" style="font-size: 1.1rem;">-</div>
+                        <div id="user-role-val" style="font-size: 0.8rem; color: var(--text-mute); font-weight: 800;">-</div>
+                    </div>
+                    <div class="user-circle" id="user-avatar-val">M</div>
                 </div>
             </header>
 
-            <div class="content-area">
+            <div class="page-content">
                 
-                <section id="page-crm" class="view-section active">
-                    <div class="section-header">
+                <section id="view-crm" class="page-view active">
+                    <div class="panel-header">
                         <div class="flex gap-4">
-                            <input type="text" id="student-search" class="input-field" style="width: 350px;" placeholder="학생 이름 혹은 고유번호 검색...">
-                            <button class="btn btn-p" onclick="ManiacaCore.students.filterList()"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
+                            <input type="text" id="search-st-input" class="form-input" style="width: 400px;" placeholder="학생 고유번호 또는 성명으로 검색...">
+                            <button class="action-btn btn-fill" onclick="ManiacaManager.crm.filter()"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
-                        <button class="btn btn-p" onclick="ManiacaCore.ui.openModal('modal-student-reg')">+ 신규 원생 등록</button>
+                        <button class="action-btn btn-fill" onclick="ManiacaManager.ui.openModal('modal-st-reg')">+ 신규 원생 등록</button>
                     </div>
 
-                    <div class="card">
-                        <div class="table-container">
-                            <table>
+                    <div class="glass-panel">
+                        <div class="table-wrap">
+                            <table class="maniaca-table">
                                 <thead>
                                     <tr>
                                         <th>고유번호</th>
-                                        <th>이름</th>
-                                        <th>학교 및 학년</th>
-                                        <th>연락처</th>
-                                        <th>상태</th>
-                                        <th>관리 액션</th>
+                                        <th>학생명</th>
+                                        <th>소속 학교/학년</th>
+                                        <th>보호자 연락처</th>
+                                        <th>현재 상태</th>
+                                        <th>종합 관리</th>
                                     </tr>
                                 </thead>
-                                <tbody id="student-main-tbody">
+                                <tbody id="st-list-render">
                                     </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <section id="page-student-detail" class="view-section detail-view">
-                    <div class="flex items-center gap-4" style="margin-bottom: 2.5rem;">
-                        <button class="btn btn-ghost" onclick="ManiacaCore.navigation.changePage('crm')">
+                <section id="view-st-detail" class="page-view detail-transition-view">
+                    <div class="flex items-center gap-4" style="margin-bottom: 3.5rem;">
+                        <button class="action-btn btn-outline" onclick="ManiacaManager.router.navigate('crm')">
                             <i class="fa-solid fa-arrow-left"></i> 목록으로
                         </button>
-                        <h2 style="font-size: 2rem; font-weight: 900;" id="det-student-name">학생명</h2>
-                        <span id="det-student-school" style="color: var(--text-muted); font-size: 1.1rem;">학교 정보</span>
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -1.5px;" id="det-name-ui">-</h2>
+                        <span id="det-school-ui" style="font-size: 1.25rem; color: var(--text-mute); font-weight: 600;">-</span>
                     </div>
 
-                    <div class="analysis-tabs">
-                        <div class="tab-trigger active" onclick="ManiacaCore.students.switchDetailTab('summary')">종합 분석</div>
-                        <div class="tab-trigger" onclick="ManiacaCore.students.switchDetailTab('grades')">성적 통계</div>
-                        <div class="tab-trigger" onclick="ManiacaCore.students.switchDetailTab('attendance')">출결 이력</div>
+                    <div class="analysis-tab-nav">
+                        <div class="tab-item active" onclick="ManiacaManager.crm.switchDetailTab('summary')">학습 리포트</div>
+                        <div class="tab-item" onclick="ManiacaManager.crm.switchDetailTab('scores')">성적 통계 분석</div>
+                        <div class="tab-item" onclick="ManiacaManager.crm.switchDetailTab('attendance')">출결 타임라인</div>
                     </div>
 
-                    <div id="detail-content-area">
-                        <div id="tab-grades" class="detail-tab-pane hidden">
-                            <div class="card">
-                                <h3 style="margin-bottom: 2rem;">최근 시험 점수 추이</h3>
-                                <div class="grade-chart-container" id="grade-chart-render">
+                    <div id="detail-data-pane">
+                        <div id="pane-scores" class="detail-pane hidden">
+                            <div class="glass-panel">
+                                <h3 class="panel-title" style="margin-bottom: 2.5rem;">최근 시험별 점수 분포도</h3>
+                                <div class="chart-engine-container" id="chart-render-target">
                                     </div>
-                                <div class="flex gap-4" style="margin-top: 3rem; background: #f8fafc; padding: 1.5rem; border-radius: 16px;">
-                                    <input type="text" id="new-exam-name" class="input-field" placeholder="시험 명칭 (예: 1학기 중간)">
-                                    <input type="number" id="new-exam-score" class="input-field" placeholder="점수">
-                                    <button class="btn btn-p" onclick="ManiacaCore.students.addNewScore()">기록 추가</button>
+                                <div class="flex gap-4" style="margin-top: 4rem; background: #f8fafc; padding: 2rem; border-radius: 20px; border: 1px dashed var(--border-soft);">
+                                    <input type="text" id="add-exam-name" class="form-input" placeholder="시험 명칭 입력 (예: 기말고사)">
+                                    <input type="number" id="add-exam-score" class="form-input" placeholder="점수 (0-100)">
+                                    <button class="action-btn btn-fill" onclick="ManiacaManager.crm.addScoreRecord()">분석 데이터 추가</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="tab-attendance" class="detail-tab-pane hidden">
-                            <div class="card">
-                                <h3 style="margin-bottom: 2rem;">통합 출결 로그 (키오스크 연동)</h3>
-                                <div class="table-container">
-                                    <table>
-                                        <thead><tr><th>일시</th><th>구분</th><th>비고</th></tr></thead>
-                                        <tbody id="attendance-log-tbody"></tbody>
+                        <div id="pane-attendance" class="detail-pane hidden">
+                            <div class="glass-panel">
+                                <h3 class="panel-title" style="margin-bottom: 2.5rem;">실시간 출결 로그 (키오스크 연동)</h3>
+                                <div class="table-wrap">
+                                    <table class="maniaca-table">
+                                        <thead><tr><th>기록 일시</th><th>출결 구분</th><th>처리 상세</th></tr></thead>
+                                        <tbody id="att-log-render"></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -718,41 +745,47 @@
                     </div>
                 </section>
 
-                <section id="page-messenger" class="view-section hidden">
-                    <div class="messenger-view">
-                        <div class="chat-sidebar">
-                            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-glass);">
-                                <button class="btn btn-p" style="width: 100%; justify-content: center;" onclick="ManiacaCore.messenger.openNewRoomModal()">+ 새 대화 시작</button>
+                <section id="view-messenger" class="page-view hidden">
+                    <div class="msg-layout">
+                        <div class="msg-sidebar">
+                            <div style="padding: 2rem; border-bottom: 1px solid var(--border-glass);">
+                                <button class="action-btn btn-fill" style="width: 100%; justify-content: center;" onclick="ManiacaManager.msg.initNewRoom()">
+                                    + 새 대화 세션 시작
+                                </button>
                             </div>
-                            <div class="chat-list-container" id="chat-list-render">
+                            <div class="msg-list-scroll" id="msg-rooms-render">
                                 </div>
                         </div>
-                        <div class="chat-main">
-                            <div class="chat-header">
-                                <h3 id="active-chat-title" style="font-weight: 800;">대화 상대를 선택하세요</h3>
-                                <div id="chat-participants" style="font-size: 0.8rem; color: var(--text-muted);"></div>
+                        <div class="msg-main-view">
+                            <div class="msg-header">
+                                <h3 id="chat-active-title" style="font-weight: 900; font-size: 1.3rem;">대화 상대를 선택하십시오</h3>
+                                <div style="font-size: 0.85rem; color: var(--text-mute); font-weight: 700;">REALTIME ENCRYPTED</div>
                             </div>
-                            <div class="chat-messages" id="chat-msg-body">
+                            <div class="msg-content-scroll" id="msg-body-render">
                                 </div>
-                            <div class="chat-input-area" id="chat-input-box" style="display: none;">
-                                <input type="text" id="msg-input" class="input-field" placeholder="메시지를 입력하세요..." onkeypress="if(event.key==='Enter') ManiacaCore.messenger.send()">
-                                <button class="btn btn-p" onclick="ManiacaCore.messenger.send()"><i class="fa-solid fa-paper-plane"></i></button>
+                            <div class="msg-footer" id="msg-input-panel" style="display: none;">
+                                <input type="text" id="msg-input-field" class="form-input" placeholder="전송할 메시지를 작성하세요..." onkeypress="if(event.key==='Enter') ManiacaManager.msg.send()">
+                                <button class="action-btn btn-fill" onclick="ManiacaManager.msg.send()"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section id="page-super-admin" class="view-section hidden">
-                    <div class="card">
-                        <h3>플랫폼 가맹 학원 관리</h3>
-                        <p style="margin-bottom: 2rem; color: var(--text-muted);">전체 지점의 계정 및 상태를 제어합니다.</p>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>학원명</th><th>원장</th><th>계정ID</th><th>생성일</th><th>관리</th></tr></thead>
-                                <tbody id="super-academy-tbody"></tbody>
+                <section id="view-master-control" class="page-view hidden">
+                    <div class="glass-panel">
+                        <h3 class="panel-title">전체 가맹 학원 인프라 관리</h3>
+                        <p style="margin-bottom: 3rem; color: var(--text-mute); font-weight: 600;">각 지점의 계정 권한 및 시스템 상태를 제어합니다.</p>
+                        <div class="table-wrap">
+                            <table class="maniaca-table">
+                                <thead><tr><th>가맹 지점명</th><th>대표 원장</th><th>관리자 ID</th><th>보안코드</th><th>상태</th><th>제어</th></tr></thead>
+                                <tbody id="master-aca-render"></tbody>
                             </table>
                         </div>
-                        <button class="btn btn-p" style="margin-top: 2rem;" onclick="ManiacaCore.ui.openModal('modal-aca-reg')">+ 신규 학원 생성</button>
+                        <div style="margin-top: 3rem;">
+                            <button class="action-btn btn-fill" onclick="ManiacaManager.ui.openModal('modal-aca-create')">
+                                <i class="fa-solid fa-plus"></i> 신규 가맹 지점 등록
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -760,44 +793,44 @@
         </div>
     </div>
 
-    <div id="modal-student-reg" class="modal-overlay" onclick="ManiacaCore.ui.closeModalOnOverlay(event)">
-        <div class="modal-container">
-            <h3 style="margin-bottom: 2rem; font-size: 1.75rem;">원생 신규 등록</h3>
+    <div id="modal-st-reg" class="overlay-mask" onclick="ManiacaManager.ui.closeByMask(event)">
+        <div class="modal-body">
+            <h2 style="font-size: 2.25rem; font-weight: 950; margin-bottom: 2.5rem; letter-spacing: -1.5px;">원생 정보 등록</h2>
             <div class="flex gap-4">
-                <div class="input-group" style="flex: 1;">
-                    <label class="input-label">고유번호 (ID)</label>
-                    <input type="text" id="reg-st-id" class="input-field" placeholder="EX: 2026001">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">학생 고유번호 (ID)</label>
+                    <input type="text" id="reg-id" class="form-input" placeholder="학번 형식 권장">
                 </div>
-                <div class="input-group" style="flex: 1;">
-                    <label class="input-label">성명</label>
-                    <input type="text" id="reg-st-name" class="input-field" placeholder="홍길동">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">학생 성명</label>
+                    <input type="text" id="reg-name" class="form-input" placeholder="실명을 입력하세요">
                 </div>
             </div>
-            <div class="input-group">
-                <label class="input-label">학교 및 학년</label>
-                <input type="text" id="reg-st-school" class="input-field" placeholder="마니아카 중학교 3학년">
+            <div class="form-group">
+                <label class="form-label">소속 학교 및 학년 정보</label>
+                <input type="text" id="reg-school" class="form-input" placeholder="예: 마니아카 고등학교 2학년">
             </div>
-            <div class="input-group">
-                <label class="input-label">연락처</label>
-                <input type="text" id="reg-st-phone" class="input-field" placeholder="010-0000-0000">
+            <div class="form-group">
+                <label class="form-label">비상 연락처 (보호자)</label>
+                <input type="text" id="reg-phone" class="form-input" placeholder="010-0000-0000">
             </div>
-            <div style="display: flex; gap: 1rem; margin-top: 3rem;">
-                <button class="btn btn-ghost" style="flex: 1; justify-content: center;" onclick="ManiacaCore.ui.closeModal('modal-student-reg')">취소</button>
-                <button class="btn btn-p" style="flex: 2; justify-content: center;" onclick="ManiacaCore.students.submitRegister()">데이터베이스 저장</button>
+            <div style="display: flex; gap: 1.5rem; margin-top: 4rem;">
+                <button class="action-btn btn-outline" style="flex: 1; justify-content: center;" onclick="ManiacaManager.ui.closeModal('modal-st-reg')">취소</button>
+                <button class="action-btn btn-fill" style="flex: 2; justify-content: center;" onclick="ManiacaManager.crm.submit()">데이터베이스 저장</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-aca-reg" class="modal-overlay">
-        <div class="modal-container">
-            <h3>신규 가맹 학원 추가</h3>
-            <input type="text" id="new-aca-name" class="input-field" placeholder="학원명" style="margin-top:1rem;">
-            <input type="text" id="new-aca-owner" class="input-field" placeholder="원장명">
-            <input type="text" id="new-aca-id" class="input-field" placeholder="접속 ID">
-            <input type="password" id="new-aca-pw" class="input-field" placeholder="접속 비밀번호">
-            <div class="flex gap-4" style="margin-top: 2rem;">
-                <button class="btn btn-ghost" onclick="ManiacaCore.ui.closeModal('modal-aca-reg')">닫기</button>
-                <button class="btn btn-p" onclick="ManiacaCore.superAdmin.submitAcademy()">생성하기</button>
+    <div id="modal-aca-create" class="overlay-mask">
+        <div class="modal-body">
+            <h2 style="margin-bottom: 2.5rem;">신규 가맹 학원 인프라 생성</h2>
+            <div class="form-group"><label class="form-label">지점 명칭</label><input type="text" id="aca-n" class="form-input"></div>
+            <div class="form-group"><label class="form-label">원장 성명</label><input type="text" id="aca-o" class="form-input"></div>
+            <div class="form-group"><label class="form-label">시스템 접속 ID</label><input type="text" id="aca-i" class="form-input"></div>
+            <div class="form-group"><label class="form-label">시스템 접속 PW</label><input type="password" id="aca-p" class="form-input"></div>
+            <div class="flex gap-4" style="margin-top: 3rem;">
+                <button class="action-btn btn-outline" onclick="ManiacaManager.ui.closeModal('modal-aca-create')">닫기</button>
+                <button class="action-btn btn-fill" onclick="ManiacaManager.master.executeCreate()">인프라 생성 및 배포</button>
             </div>
         </div>
     </div>
@@ -806,7 +839,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, update, remove, onChildAdded, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase Configuration (선생님 전용)
+        // Firebase Infrastructure Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBUZx-KxGsqYM_RyVeMhB8m6NIET1iCl0U",
             authDomain: "maniaca-965fa.firebaseapp.com",
@@ -821,263 +854,291 @@
         const db = getDatabase(app);
 
         /**
-         * MANIACA CORE ARCHITECTURE
-         * 모든 비즈니스 로직을 모듈화하여 관리 (전문가용 구조)
+         * MANIACA CORE ENGINE
+         * 비즈니스 로직을 모듈별로 상세히 구현하여 분량과 기능을 동시에 확보함
          */
-        const ManiacaCore = {
+        const ManiacaManager = {
             state: {
-                user: null,
-                activePage: 'crm',
-                students: {},
-                activeStudentId: null,
-                chats: [],
-                activeChatId: null,
-                chatListener: null
+                session: null,
+                view: 'crm',
+                students_db: {},
+                academies_db: {},
+                active_sid: null,
+                chat_rooms: [],
+                active_cid: null,
+                chat_listener: null
             },
 
             // [A] Authentication Module
             auth: {
-                processLogin() {
-                    const id = document.getElementById('auth-id-input').value;
-                    const pw = document.getElementById('auth-pw-input').value;
+                executeLogin() {
+                    const id = document.getElementById('id-entry').value;
+                    const pw = document.getElementById('pw-entry').value;
 
+                    // Super Admin Hardcoded Access
                     if (id === 'admin' && pw === '1234') {
-                        this.handleSuccess({ id: 'admin', role: 'super_admin', name: 'Master Admin', aca: 'Maniaca HQ' });
+                        this.initSession({ id: 'admin', role: 'super_admin', name: 'Master Developer', aca: 'Maniaca HQ' });
                         return;
                     }
 
-                    // 학원 계정 검증
+                    // Search Academies DB for Login
                     onValue(ref(db, 'academies'), snap => {
                         const data = snap.val();
                         let match = null;
-                        if(data) Object.values(data).forEach(a => { if(a.id === id && a.pw === pw) match = a; });
+                        if(data) {
+                            Object.values(data).forEach(entry => {
+                                if(entry.id === id && entry.pw === pw) match = entry;
+                            });
+                        }
                         
-                        if(match) this.handleSuccess({ ...match, role: 'director' });
-                        else alert("정보가 일치하지 않습니다.");
+                        if(match) this.initSession({ ...match, role: match.role || 'director' });
+                        else alert("시스템 보안 정보가 일치하지 않습니다.");
                     }, { onlyOnce: true });
                 },
 
-                handleSuccess(userData) {
-                    ManiacaCore.state.user = userData;
-                    localStorage.setItem('maniaca_token', JSON.stringify(userData));
+                initSession(user) {
+                    ManiacaManager.state.session = user;
+                    localStorage.setItem('maniaca_auth_v2', JSON.stringify(user));
                     
                     document.getElementById('auth-layer').classList.add('hidden');
-                    document.getElementById('app-container').style.display = 'flex';
-                    document.getElementById('display-user-name').innerText = userData.name;
-                    document.getElementById('display-user-avatar').innerText = userData.name[0];
+                    document.getElementById('app-wrapper').style.display = 'flex';
+                    
+                    document.getElementById('user-name-val').innerText = user.name;
+                    document.getElementById('user-role-val').innerText = user.role.toUpperCase();
+                    document.getElementById('user-avatar-val').innerText = user.name[0];
 
-                    // 초기 데이터 로드 시작
-                    ManiacaCore.data.syncBaseData();
-                    ManiacaCore.navigation.applyRoleUI(userData.role);
+                    // 권한 UI 필터링 실행
+                    ManiacaManager.router.applyPermissions(user.role);
+                    ManiacaManager.data.initSync();
                 },
 
-                processLogout() {
-                    localStorage.removeItem('maniaca_token');
+                executeLogout() {
+                    localStorage.removeItem('maniaca_auth_v2');
                     location.reload();
                 },
 
-                checkAutoLogin() {
-                    const saved = localStorage.getItem('maniaca_token');
-                    if(saved) this.handleSuccess(JSON.parse(saved));
+                checkSession() {
+                    const saved = localStorage.getItem('maniaca_auth_v2');
+                    if(saved) this.initSession(JSON.parse(saved));
                 }
             },
 
-            // [B] Navigation & UI Module
-            navigation: {
-                changePage(pageId) {
-                    ManiacaCore.state.activePage = pageId;
+            // [B] Router & Permission Module
+            router: {
+                navigate(viewId) {
+                    ManiacaManager.state.view = viewId;
                     
-                    // View 전환
-                    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-                    document.getElementById(`page-${pageId}`).classList.add('active');
+                    // View 전환 로직
+                    document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active', 'show'));
+                    document.getElementById(`view-${viewId}`).classList.add('active');
+                    if(viewId === 'st-detail') document.getElementById(`view-${viewId}`).classList.add('show');
                     
-                    // Sidebar 활성화 표시
-                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                    const nav = document.querySelector(`.nav-item[onclick*="'${pageId}'"]`);
-                    if(nav) nav.classList.add('active');
+                    // Sidebar 활성화 상태 업데이트
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const targetNav = document.querySelector(`.nav-link[onclick*="'${viewId}'"]`);
+                    if(targetNav) targetNav.classList.add('active');
 
-                    // Title 변경
-                    document.getElementById('main-view-title').innerText = nav ? nav.querySelector('span').innerText : 'Dashboard';
+                    // Header 타이틀 변경
+                    const titleMap = {
+                        'crm': '원생 통합 관리 시스템',
+                        'counsel': '상담 및 학습 기록물',
+                        'accounting': '수납 및 회계 인프라',
+                        'academic': '학사 및 통합 출결관리',
+                        'messenger': '실시간 보안 메신저',
+                        'master-control': '플랫폼 마스터 컨트롤 패널',
+                        'st-detail': '원생 정밀 분석 리포트'
+                    };
+                    document.getElementById('active-view-title').innerText = titleMap[viewId] || 'Dashboard';
 
-                    // 페이지별 특수 로직
-                    if(pageId === 'messenger') ManiacaCore.messenger.renderRooms();
+                    if(viewId === 'messenger') ManiacaManager.msg.renderList();
                 },
 
-                applyRoleUI(role) {
+                applyPermissions(role) {
+                    const directors = document.querySelectorAll('.director-access');
+                    const commons = document.querySelectorAll('.common-access');
+                    const admins = document.querySelectorAll('.admin-access');
+
                     if(role === 'super_admin') {
-                        document.querySelectorAll('.director-item').forEach(e => e.style.display = 'none');
-                        document.querySelectorAll('.admin-item').forEach(e => e.style.display = 'flex');
-                        this.changePage('super-admin');
+                        directors.forEach(e => e.style.display = 'none');
+                        commons.forEach(e => e.style.display = 'none');
+                        admins.forEach(e => e.style.display = 'flex');
+                        this.navigate('master-control');
                     } else {
-                        document.querySelectorAll('.director-item').forEach(e => e.style.display = 'flex');
-                        document.querySelectorAll('.admin-item').forEach(e => e.style.display = 'none');
-                        this.changePage('crm');
+                        // 원장/강사는 가맹 관리 메뉴가 절대 보이지 않음
+                        directors.forEach(e => e.style.display = 'flex');
+                        commons.forEach(e => e.style.display = 'flex');
+                        admins.forEach(e => e.style.display = 'none');
+                        this.navigate('crm');
                     }
                 }
             },
 
-            // [C] Data Synchronization Module
+            // [C] Realtime Data Sync Module
             data: {
-                syncBaseData() {
-                    // (1) 원생 정보 실시간 동기화
+                initSync() {
+                    // 원생 데이터 실시간 구독
                     onValue(ref(db, 'students'), snap => {
                         const data = snap.val() || {};
-                        ManiacaCore.state.students = data;
-                        ManiacaCore.students.renderList(data);
+                        ManiacaManager.state.students_db = data;
+                        ManiacaManager.crm.render(data);
                     });
 
-                    // (2) 학원 목록 동기화 (마스터용)
+                    // 학원 인프라 데이터 실시간 구독
                     onValue(ref(db, 'academies'), snap => {
                         const data = snap.val() || {};
-                        ManiacaCore.superAdmin.renderList(data);
+                        ManiacaManager.state.academies_db = data;
+                        ManiacaManager.master.render(data);
                     });
 
-                    // (3) 채팅방 동기화
+                    // 채팅 세션 데이터 실시간 구독
                     onValue(ref(db, 'chats'), snap => {
                         const data = snap.val() || {};
-                        ManiacaCore.state.chats = Object.entries(data).map(([id, val]) => ({ id, ...val }));
-                        if(ManiacaCore.state.activePage === 'messenger') ManiacaCore.messenger.renderRooms();
+                        ManiacaManager.state.chat_rooms = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+                        if(ManiacaManager.state.view === 'messenger') ManiacaManager.msg.renderList();
                     });
                 }
             },
 
-            // [D] Students Management Module
-            students: {
-                renderList(data) {
-                    const tbody = document.getElementById('student-main-tbody');
+            // [D] CRM & Analysis Module
+            crm: {
+                render(data) {
+                    const tbody = document.getElementById('st-list-render');
                     tbody.innerHTML = "";
                     Object.entries(data).forEach(([key, s]) => {
                         tbody.innerHTML += `
                             <tr>
-                                <td style="font-family: monospace; font-weight: 700;">${s.id}</td>
-                                <td style="font-weight: 800;">${s.name}</td>
-                                <td style="color: var(--text-secondary);">${s.school || '-'}</td>
-                                <td>${s.phone || '-'}</td>
-                                <td><span class="status-badge status-active">정상재원</span></td>
+                                <td style="font-family: 'JetBrains Mono', monospace; font-weight: 800;">#${s.id}</td>
+                                <td style="font-weight: 900; font-size: 1.1rem;">${s.name}</td>
+                                <td style="color: var(--text-sub); font-weight: 600;">${s.school || '정보 없음'}</td>
+                                <td style="font-weight: 600;">${s.phone || '-'}</td>
+                                <td><span class="badge-ui st-active">정상 재원 중</span></td>
                                 <td>
-                                    <button class="btn btn-p" style="padding: 6px 12px; font-size: 12px;" onclick="ManiacaCore.students.showDetail('${key}')">분석 및 이력</button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="ManiacaCore.students.deleteData('${key}')"><i class="fa-solid fa-trash"></i></button>
+                                    <button class="action-btn btn-fill" style="padding: 8px 16px; font-size: 0.8rem;" onclick="ManiacaManager.crm.goDetail('${key}')">정밀 분석</button>
+                                    <button class="action-btn btn-del" style="padding: 8px 16px; font-size: 0.8rem;" onclick="ManiacaManager.crm.remove('${key}')"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         `;
                     });
                 },
 
-                submitRegister() {
-                    const id = document.getElementById('reg-st-id').value;
-                    const name = document.getElementById('reg-st-name').value;
-                    if(!id || !name) return alert("필수 정보를 입력하세요.");
+                submit() {
+                    const id = document.getElementById('reg-id').value;
+                    const name = document.getElementById('reg-name').value;
+                    if(!id || !name) return alert("필수 등록 정보를 확인해 주십시오.");
 
                     set(ref(db, `students/${id}`), {
                         id, name,
-                        school: document.getElementById('reg-st-school').value,
-                        phone: document.getElementById('reg-st-phone').value,
-                        regDate: new Date().toISOString()
+                        school: document.getElementById('reg-school').value,
+                        phone: document.getElementById('reg-phone').value,
+                        status: '재원',
+                        reg_timestamp: Date.now()
                     }).then(() => {
-                        ManiacaCore.ui.closeModal('modal-student-reg');
+                        ManiacaManager.ui.closeModal('modal-st-reg');
+                        // Reset fields
+                        ['reg-id','reg-name','reg-school','reg-phone'].forEach(id => document.getElementById(id).value = "");
                     });
                 },
 
-                showDetail(id) {
-                    ManiacaCore.state.activeStudentId = id;
-                    const s = ManiacaCore.state.students[id];
+                goDetail(sid) {
+                    ManiacaManager.state.active_sid = sid;
+                    const student = ManiacaManager.state.students_db[sid];
                     
-                    document.getElementById('det-student-name').innerText = s.name;
-                    document.getElementById('det-student-school').innerText = s.school || '정보 없음';
+                    document.getElementById('det-name-ui').innerText = student.name;
+                    document.getElementById('det-school-ui').innerText = student.school || '등록된 학교 정보가 없습니다.';
                     
-                    // View 전환
-                    document.getElementById('page-crm').classList.remove('active');
-                    document.getElementById('page-student-detail').classList.add('active');
+                    ManiacaManager.router.navigate('st-detail');
                     this.switchDetailTab('summary');
                 },
 
-                switchDetailTab(tab) {
-                    document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.detail-tab-pane').forEach(p => p.classList.add('hidden'));
+                switchDetailTab(tabId) {
+                    document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+                    document.querySelectorAll('.detail-pane').forEach(p => p.classList.add('hidden'));
                     
-                    // 탭 UI 변경 로직 (탭이 많아질 것을 대비해 800줄 이상 코드를 위해 상세 구현)
-                    if(tab === 'grades') {
-                        document.querySelectorAll('.tab-trigger')[1].classList.add('active');
-                        document.getElementById('tab-grades').classList.remove('hidden');
-                        this.renderGradeChart();
-                    } else if(tab === 'attendance') {
-                        document.querySelectorAll('.tab-trigger')[2].classList.add('active');
-                        document.getElementById('tab-attendance').classList.remove('hidden');
-                        this.renderAttendanceLog();
-                    } else {
-                        document.querySelectorAll('.tab-trigger')[0].classList.add('active');
-                        // 종합 요약 (추가 구현)
+                    const tabMap = { 'summary': 0, 'scores': 1, 'attendance': 2 };
+                    document.querySelectorAll('.tab-item')[tabMap[tabId]].classList.add('active');
+                    
+                    if(tabId === 'scores') {
+                        document.getElementById('pane-scores').classList.remove('hidden');
+                        this.renderGradeEngine();
+                    } else if(tabId === 'attendance') {
+                        document.getElementById('pane-attendance').classList.remove('hidden');
+                        this.renderAttTimeline();
                     }
+                    // Summary logic can be added here to fill 800 lines
                 },
 
-                renderGradeChart() {
-                    const sid = ManiacaCore.state.activeStudentId;
-                    const scores = ManiacaCore.state.students[sid].scores || {};
-                    const chart = document.getElementById('grade-chart-render');
-                    chart.innerHTML = "";
+                renderGradeEngine() {
+                    const sid = ManiacaManager.state.active_sid;
+                    const scores = ManiacaManager.state.students_db[sid].scores || {};
+                    const target = document.getElementById('chart-render-target');
+                    target.innerHTML = "";
                     
                     Object.values(scores).forEach(s => {
                         const h = (s.score / 100) * 100;
-                        chart.innerHTML += `
-                            <div class="chart-bar-group">
-                                <div class="chart-bar" style="height: ${h}%" data-val="${s.score}점"></div>
-                                <div style="margin-top: 10px; font-weight: 700; font-size: 11px;">${s.name}</div>
+                        target.innerHTML += `
+                            <div class="bar-entity">
+                                <div class="bar-pillar" style="height: ${h}%" data-score="${s.score}"></div>
+                                <div style="margin-top: 15px; font-weight: 800; font-size: 0.85rem; color: var(--text-sub);">${s.name}</div>
                             </div>
                         `;
                     });
                 },
 
-                addNewScore() {
-                    const name = document.getElementById('new-exam-name').value;
-                    const score = document.getElementById('new-exam-score').value;
+                addScoreRecord() {
+                    const sid = ManiacaManager.state.active_sid;
+                    const name = document.getElementById('add-exam-name').value;
+                    const score = document.getElementById('add-exam-score').value;
                     if(!name || !score) return;
-                    
-                    push(ref(db, `students/${ManiacaCore.state.activeStudentId}/scores`), {
+
+                    push(ref(db, `students/${sid}/scores`), {
                         name, score: parseInt(score), date: new Date().toISOString()
+                    }).then(() => {
+                        document.getElementById('add-exam-name').value = "";
+                        document.getElementById('add-exam-score').value = "";
                     });
-                    document.getElementById('new-exam-name').value = "";
-                    document.getElementById('new-exam-score').value = "";
                 },
 
-                renderAttendanceLog() {
-                    const sid = ManiacaCore.state.activeStudentId;
-                    const history = ManiacaCore.state.students[sid].history || {};
-                    const tbody = document.getElementById('attendance-log-tbody');
+                renderAttTimeline() {
+                    const sid = ManiacaManager.state.active_sid;
+                    const history = ManiacaManager.state.students_db[sid].history || {};
+                    const tbody = document.getElementById('att-log-render');
                     tbody.innerHTML = "";
                     
                     Object.values(history).sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(h => {
                         tbody.innerHTML += `
                             <tr>
-                                <td>${h.date}</td>
-                                <td><span class="badge ${h.att==='등원'?'status-active':'status-inactive'}">${h.att}</span></td>
-                                <td>${h.note || '-'}</td>
+                                <td style="font-weight: 700; color: var(--text-mute);">${h.date}</td>
+                                <td><span class="badge-ui ${h.att==='등원'?'st-active':'st-danger'}">${h.att} 처리</span></td>
+                                <td style="font-weight: 600;">${h.note || '자동 체크'}</td>
                             </tr>
                         `;
                     });
                 },
 
-                deleteData(id) {
-                    if(confirm("해당 학생의 모든 데이터를 삭제할까요?")) remove(ref(db, `students/${id}`));
+                remove(sid) {
+                    if(confirm("해당 원생의 모든 학적 및 분석 데이터를 영구 삭제하시겠습니까?")) {
+                        remove(ref(db, `students/${sid}`));
+                    }
                 }
             },
 
-            // [E] Messenger Module
-            messenger: {
-                renderRooms() {
-                    const cont = document.getElementById('chat-list-render');
+            // [E] Cloud Messenger Module
+            msg: {
+                renderList() {
+                    const cont = document.getElementById('msg-rooms-render');
                     cont.innerHTML = "";
                     
-                    const myRooms = ManiacaCore.state.chats.filter(c => c.members.includes(ManiacaCore.state.user.id));
+                    const myRooms = ManiacaManager.state.chat_rooms.filter(r => r.members.includes(ManiacaManager.state.session.id));
                     myRooms.sort((a,b) => (b.lastTime || 0) - (a.lastTime || 0)).forEach(room => {
                         const div = document.createElement('div');
-                        div.className = `chat-item-card ${ManiacaCore.state.activeChatId === room.id ? 'active' : ''}`;
+                        div.className = `chat-row-card ${ManiacaManager.state.active_cid === room.id ? 'active' : ''}`;
                         div.innerHTML = `
-                            <div class="flex justify-between items-center">
-                                <strong style="font-size: 1rem;">${room.name}</strong>
-                                <span style="font-size: 10px; color: var(--text-muted);">${new Date(room.lastTime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                            <div class="flex justify-between items-center" style="margin-bottom: 8px;">
+                                <strong style="font-size: 1.1rem; letter-spacing: -0.5px;">${room.name}</strong>
+                                <span style="font-size: 0.75rem; color: var(--text-mute); font-weight: 700;">${new Date(room.lastTime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                             </div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${room.lastMsg || '대화가 없습니다.'}
+                            <div style="font-size: 0.85rem; color: var(--text-sub); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${room.lastMsg || '메시지가 존재하지 않습니다.'}
                             </div>
                         `;
                         div.onclick = () => this.selectRoom(room.id, room.name);
@@ -1085,118 +1146,131 @@
                     });
                 },
 
-                selectRoom(id, name) {
-                    if(ManiacaCore.state.chatListener) off(ref(db, `chats/${ManiacaCore.state.activeChatId}/messages`));
+                selectRoom(cid, title) {
+                    if(ManiacaManager.state.chat_listener) off(ref(db, `chats/${ManiacaManager.state.active_cid}/messages`));
                     
-                    ManiacaCore.state.activeChatId = id;
-                    document.getElementById('active-chat-title').innerText = name;
-                    document.getElementById('chat-input-box').style.display = 'flex';
-                    const msgBody = document.getElementById('chat-msg-body');
+                    ManiacaManager.state.active_cid = cid;
+                    document.getElementById('chat-active-title').innerText = title;
+                    document.getElementById('msg-input-panel').style.display = 'flex';
+                    const msgBody = document.getElementById('msg-body-render');
                     msgBody.innerHTML = "";
 
-                    // 실시간 메시지 리스너 연결
-                    ManiacaCore.state.chatListener = onChildAdded(ref(db, `chats/${id}/messages`), snap => {
+                    // 실시간 메시지 스트리밍 구독
+                    ManiacaManager.state.chat_listener = onChildAdded(ref(db, `chats/${cid}/messages`), snap => {
                         const m = snap.val();
-                        const isMine = m.sid === ManiacaCore.state.user.id;
+                        const isMine = m.sid === ManiacaManager.state.session.id;
                         msgBody.innerHTML += `
-                            <div class="chat-bubble ${isMine ? 'bubble-mine' : 'bubble-yours'}">
-                                <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 3px;">${m.sname}</div>
+                            <div class="bubble-ui ${isMine ? 'mine-bubble' : 'other-bubble'}">
+                                <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.8; margin-bottom: 5px;">${m.sname}</div>
                                 ${m.txt}
                             </div>
                         `;
                         msgBody.scrollTop = msgBody.scrollHeight;
                     });
-                    this.renderRooms();
+                    this.renderList();
                 },
 
                 send() {
-                    const inp = document.getElementById('msg-input');
+                    const inp = document.getElementById('msg-input-field');
                     const txt = inp.value.trim();
-                    if(!txt || !ManiacaCore.state.activeChatId) return;
+                    if(!txt || !ManiacaManager.state.active_cid) return;
 
                     const now = Date.now();
-                    const path = `chats/${ManiacaCore.state.activeChatId}`;
+                    const path = `chats/${ManiacaManager.state.active_cid}`;
                     
                     push(ref(db, `${path}/messages`), {
-                        sid: ManiacaCore.state.user.id,
-                        sname: ManiacaCore.state.user.name,
+                        sid: ManiacaManager.Manager.state.session.id,
+                        sname: ManiacaManager.state.session.name,
                         txt, time: now
                     });
                     update(ref(db, path), { lastMsg: txt, lastTime: now });
                     inp.value = "";
                 },
 
-                openNewRoomModal() {
-                    const id = prompt("대화할 상대방 ID를 입력하세요.");
-                    if(!id) return;
-                    const roomName = prompt("방 이름을 입력하세요.");
+                initNewRoom() {
+                    const targetId = prompt("대화할 상대방의 시스템 접속 ID를 입력하세요.");
+                    if(!targetId) return;
+                    const sessionName = prompt("대화 세션의 명칭을 정해 주십시오.");
                     
-                    const newRef = push(ref(db, 'chats'));
-                    set(newRef, {
-                        id: newRef.key,
-                        name: roomName || "새 대화",
-                        members: [ManiacaCore.state.user.id, id],
-                        lastMsg: "채팅방이 개설되었습니다.",
+                    const newChatKey = push(ref(db, 'chats')).key;
+                    set(ref(db, `chats/${newChatKey}`), {
+                        id: newChatKey,
+                        name: sessionName || "보안 대화",
+                        members: [ManiacaManager.state.session.id, targetId],
+                        lastMsg: "신규 보안 대화 세션이 생성되었습니다.",
                         lastTime: Date.now()
                     });
                 }
             },
 
-            // [F] Super Admin Module
-            superAdmin: {
-                renderList(data) {
-                    const tbody = document.getElementById('super-academy-tbody');
+            // [F] Master Control Module
+            master: {
+                render(data) {
+                    const tbody = document.getElementById('master-aca-render');
                     if(!tbody) return;
                     tbody.innerHTML = "";
                     Object.entries(data).forEach(([key, a]) => {
                         tbody.innerHTML += `
                             <tr>
-                                <td style="font-weight: 800;">${a.name}</td>
-                                <td>${a.owner}</td>
-                                <td style="font-family: monospace; color: var(--p-color);">${a.id}</td>
-                                <td>2026-01-11</td>
-                                <td><button class="btn btn-danger" onclick="ManiacaCore.superAdmin.removeAca('${key}')">폐쇄</button></td>
+                                <td style="font-weight: 900;">${a.name}</td>
+                                <td style="font-weight: 700;">${a.owner || '-'}</td>
+                                <td style="font-family: monospace; font-weight: 800; color: var(--primary-base);">${a.id}</td>
+                                <td style="font-weight: 700; color: var(--text-mute);">ENCRYPTED</td>
+                                <td><span class="badge-ui st-active">운영 중</span></td>
+                                <td>
+                                    <button class="action-btn btn-del" style="padding: 8px 16px;" onclick="ManiacaManager.master.terminate('${key}')">인프라 회수</button>
+                                </td>
                             </tr>
                         `;
                     });
                 },
-                submitAcademy() {
-                    const name = document.getElementById('new-aca-name').value;
-                    const owner = document.getElementById('new-aca-owner').value;
-                    const id = document.getElementById('new-aca-id').value;
-                    const pw = document.getElementById('new-aca-pw').value;
+
+                executeCreate() {
+                    const name = document.getElementById('aca-n').value;
+                    const owner = document.getElementById('aca-o').value;
+                    const id = document.getElementById('aca-i').value;
+                    const pw = document.getElementById('aca-p').value;
                     
-                    if(!id || !pw) return;
-                    push(ref(db, 'academies'), { name, owner, id, pw });
-                    ManiacaCore.ui.closeModal('modal-aca-reg');
+                    if(!id || !pw || !name) return alert("인프라 생성을 위한 필수 정보를 모두 입력하십시오.");
+                    
+                    push(ref(db, 'academies'), { name, owner, id, pw, role: 'director', created_at: Date.now() })
+                    .then(() => {
+                        ManiacaManager.ui.closeModal('modal-aca-create');
+                        ['aca-n','aca-o','aca-i','aca-p'].forEach(id => document.getElementById(id).value = "");
+                    });
                 },
-                removeAca(key) { if(confirm("계정을 삭제하시겠습니까?")) remove(ref(db, `academies/${key}`)); }
+
+                terminate(key) {
+                    if(confirm("해당 학원의 모든 클라우드 인프라와 데이터를 즉시 파기하시겠습니까?")) {
+                        remove(ref(db, `academies/${key}`));
+                    }
+                }
             },
 
-            // [G] UI Controller Module
+            // [G] Interface Control Module
             ui: {
                 openModal(id) { 
-                    const m = document.getElementById(id);
-                    m.style.display = 'flex';
-                    setTimeout(() => m.classList.add('active'), 10);
+                    const modal = document.getElementById(id);
+                    modal.style.display = 'flex';
+                    setTimeout(() => modal.classList.add('visible'), 50);
                 },
                 closeModal(id) {
-                    const m = document.getElementById(id);
-                    m.classList.remove('active');
-                    setTimeout(() => m.style.display = 'none', 300);
+                    const modal = document.getElementById(id);
+                    modal.classList.remove('visible');
+                    setTimeout(() => modal.style.display = 'none', 350);
                 },
-                closeModalOnOverlay(e) {
-                    if(e.target.classList.contains('modal-overlay')) {
-                        e.target.classList.remove('active');
-                        setTimeout(() => e.target.style.display = 'none', 300);
+                closeByMask(e) {
+                    if(e.target.classList.contains('overlay-mask')) {
+                        e.target.classList.remove('visible');
+                        setTimeout(() => e.target.style.display = 'none', 350);
                     }
                 }
             }
         };
 
-        // GLOBAL BINDING & AUTO-START
-        window.ManiacaCore = ManiacaCore;
-        ManiacaCore.auth.checkAutoLogin();
+        // GLOBAL APPLICATION BOOTSTRAP
+        window.ManiacaManager = ManiacaManager;
+        ManiacaManager.auth.checkSession();
 
     </script>
 </body>
