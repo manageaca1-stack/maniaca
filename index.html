@@ -181,7 +181,6 @@
 
     <div class="modal-content hidden" id="add-student-modal">
         <h3>수업에 학생 추가</h3>
-        <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">추가 버튼을 누르면 해당 학생이 수업에 배정됩니다.</p>
         <div id="selection-list" style="margin:15px 0; max-height:300px; overflow-y:auto; border:1px solid #eee; border-radius:10px; padding:10px;"></div>
         <button class="btn btn-red" style="width:100%" onclick="closeModal()">닫기</button>
     </div>
@@ -211,7 +210,7 @@
 
     <div class="modal-content hidden" id="session-reg-modal"><h3>새 차시 추가</h3><input type="text" id="sess-name-in" placeholder="차시 제목"><button class="btn btn-primary" style="width:100%; margin-top:10px;" id="save-sess-btn">저장</button></div>
     <div class="modal-content hidden" id="class-reg-modal"><h3>수업 개설</h3><input type="text" id="c-name-in" placeholder="수업명"><input type="text" id="c-teacher-in" placeholder="강사명"><button class="btn btn-primary" style="width:100%; margin-top:10px;" id="save-class-btn">개설</button></div>
-    <div class="modal-content hidden" id="counsel-edit-modal"><h3>상담 수정</h3><input type="hidden" id="edit-c-idx"><textarea id="edit-c-content" style="height:150px;"></textarea><button class="btn btn-primary" style="width:100%; margin-top:10px;" id="update-counsel-btn">수정 완료</button></div>
+    <div class="modal-content hidden" id="counsel-edit-modal"><h3>상담 수정</h3><input type="hidden" id="edit-c-idx"><textarea id="edit-c-content" style="height:150px;"></textarea><button class="btn btn-primary" id="update-counsel-btn">수정 완료</button></div>
 </div>
 
 <script type="module">
@@ -271,7 +270,7 @@
     };
     window.closeModal = () => { document.getElementById('modal-overlay').style.display = 'none'; };
 
-    // --- 수업 학생 추가 로직 (수정 핵심) ---
+    // --- 수강생 추가 및 차시 명단 동기화 핵심 로직 ---
     function renderSelection() {
         const c = classes.find(x => x.name === currentClassName);
         const listArea = document.getElementById('selection-list');
@@ -279,7 +278,7 @@
             const isAdded = (c.students || []).includes(s.id);
             return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f8fafc;">
                 <span>${s.name} (${s.id})</span>
-                ${isAdded ? '<span style="color:#94a3b8; font-size:0.8rem;">이미 추가됨</span>' : `<button class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;" onclick="window.addStToClass('${s.id}')">추가</button>`}
+                ${isAdded ? '<span style="color:#94a3b8; font-size:0.8rem;">배정완료</span>' : `<button class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;" onclick="window.addStToClass('${s.id}')">추가</button>`}
             </div>`;
         }).join('');
     }
@@ -287,10 +286,25 @@
     window.addStToClass = (sid) => {
         const c = classes.find(x => x.name === currentClassName);
         if(!c.students) c.students = [];
+        
         if(!c.students.includes(sid)) {
+            // 1. 수업 수강생 목록에 추가
             c.students.push(sid);
+            
+            // 2. [핵심] 이미 생성된 모든 차시 명단에도 추가 (동기화)
+            if(c.sessions) {
+                const s = students.find(st => st.id === sid);
+                c.sessions.forEach(sess => {
+                    // 명단에 중복 체크 후 추가
+                    const exists = sess.records.find(r => r.id === sid);
+                    if(!exists) {
+                        sess.records.push({ id: sid, name: s.name, att: "미출석", hw: "○", score: "" });
+                    }
+                });
+            }
+            
             sync();
-            renderSelection(); // 모달 내 리스트 갱신
+            renderSelection(); 
         }
     };
 
@@ -304,12 +318,20 @@
     }
 
     window.remStFromClass = (sid) => {
+        if(!confirm("이 수업과 모든 차시 명단에서 제외하시겠습니까?")) return;
         const c = classes.find(x => x.name === currentClassName);
+        // 1. 수업 수강생 목록에서 제거
         c.students = c.students.filter(id => id !== sid);
+        // 2. 모든 차시 명단에서도 제거
+        if(c.sessions) {
+            c.sessions.forEach(sess => {
+                sess.records = sess.records.filter(r => r.id !== sid);
+            });
+        }
         sync();
     };
 
-    // --- 수납/할인 로직 (유지) ---
+    // --- 수납/할인 로직 (기존 유지) ---
     function renderPay() {
         document.getElementById('pay-list-body').innerHTML = students.map((s, idx) => `<tr><td>${s.name}</td><td>${s.id}</td><td><input type="number" value="${s.payAmount || '0'}" onchange="window.upPay(${idx}, 'payAmount', this.value)" style="text-align:right;"></td><td><select onchange="window.upPay(${idx}, 'payStatus', this.value)"><option value="미납" ${s.payStatus==='미납'?'selected':''}>미납</option><option value="납부완료" ${s.payStatus==='납부완료'?'selected':''}>납부완료</option></select></td><td><button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="window.openDisc('${s.id}')">할인</button></td></tr>`).join('');
     }
