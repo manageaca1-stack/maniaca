@@ -16,6 +16,8 @@
     .key:active{transform:scale(.985)}
     .panel{border:1px solid rgb(226 232 240);border-radius:1.75rem;background:#fff}
     .toast{position:fixed;top:1rem;right:1rem;z-index:9999}
+    .field{width:100%;padding:.85rem 1rem;border-radius:1rem;border:1px solid rgb(226 232 240)}
+    .field:focus{outline:none;box-shadow:0 0 0 2px rgba(148,163,184,.45)}
   </style>
 </head>
 
@@ -28,7 +30,7 @@
         <div class="h-12 w-12 rounded-2xl bg-slate-900 text-white grid place-items-center font-extrabold text-xl">M</div>
         <div>
           <div class="text-xl font-extrabold leading-tight">매니아카 키오스크</div>
-          <div class="text-slate-500 text-sm leading-tight">학생 고유번호로 출석</div>
+          <div class="text-slate-500 text-sm leading-tight">학생 번호 → 오늘 차시 자동 출석</div>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -43,7 +45,7 @@
         <div>
           <div id="statusTitle" class="text-3xl sm:text-4xl font-extrabold">-</div>
           <div id="statusSub" class="mt-2 text-slate-600 text-lg">-</div>
-          <div id="statusMeta" class="mt-4 text-slate-500 text-sm mono">-</div>
+          <div id="statusMeta" class="mt-4 text-slate-500 text-sm mono whitespace-pre-wrap">-</div>
         </div>
         <div id="statusBadge" class="text-2xl font-extrabold px-4 py-2 rounded-2xl border">-</div>
       </div>
@@ -60,7 +62,7 @@
         <div class="flex items-center justify-between gap-3">
           <div>
             <div class="text-2xl font-extrabold">학생 고유번호 입력</div>
-            <div class="text-slate-600 mt-1">예: 24001</div>
+            <div class="text-slate-600 mt-1">입력하면 해당 학생 수업의 “오늘 차시”를 자동으로 찾아 체크합니다.</div>
           </div>
           <div class="text-right">
             <div class="text-xs text-slate-500">학원 코드</div>
@@ -87,12 +89,12 @@
         <div class="mt-5 flex gap-2">
           <button class="btn flex-1" onclick="Kiosk.backspace()">←</button>
           <button class="btn flex-1" onclick="Kiosk.clear()">지우기</button>
-          <button id="submitBtn" class="btnP flex-[2]" onclick="Kiosk.submit()">출석하기</button>
+          <button id="submitBtn" class="btnP flex-[2]" onclick="Kiosk.submit()">체크하기</button>
         </div>
 
         <div class="mt-3 text-xs text-slate-500">
-          • “출석하기”를 누르면 <span class="mono">academyData/&lt;academyId&gt;/attendance/&lt;오늘&gt;/&lt;studentId&gt;</span>에 저장됩니다.<br/>
-          • 이미 오늘 출석이 있으면 중복 저장하지 않고 안내만 합니다.
+          • 차시 저장: <span class="mono">.../classes/&lt;classId&gt;/sessions/&lt;sessionId&gt;/attendanceByStudent/&lt;studentId&gt;</span><br/>
+          • 호환 저장: <span class="mono">.../attendance/&lt;오늘&gt;/&lt;studentId&gt;</span> 도 같이 기록합니다.
         </div>
       </div>
 
@@ -115,7 +117,7 @@
         </div>
 
         <div class="mt-5 text-xs text-slate-500">
-          • 키보드로 숫자 입력도 가능 (Backspace/Enter 지원)
+          • 키보드 숫자 입력 가능 (Backspace/Enter 지원)
         </div>
       </div>
     </section>
@@ -141,20 +143,12 @@
             <div class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl p-4">
               <div>
                 <div class="font-bold">음성 안내</div>
-                <div class="text-xs text-slate-500 mt-1">출석 성공/중복/실패 안내</div>
+                <div class="text-xs text-slate-500 mt-1">출석 성공/실패 안내</div>
               </div>
               <label class="inline-flex items-center gap-2">
                 <input id="setVoice" type="checkbox" class="h-5 w-5" />
                 <span class="text-sm font-bold">ON</span>
               </label>
-            </div>
-
-            <div class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl p-4">
-              <div>
-                <div class="font-bold">음성 중복 방지(강제)</div>
-                <div class="text-xs text-slate-500 mt-1">말하는 중에는 새 음성 재생을 덮어씀</div>
-              </div>
-              <span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">항상 적용</span>
             </div>
 
             <div class="mt-2 flex justify-end gap-2">
@@ -164,7 +158,7 @@
           </div>
 
           <div class="mt-4 text-xs text-slate-500">
-            • 학원코드는 <span class="mono">academyCodeIndex</span>를 통해 academyId로 매핑됩니다.
+            • 학원코드는 <span class="mono">academyCodeIndex</span>로 academyId를 찾습니다.
           </div>
         </div>
       </div>
@@ -175,7 +169,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getDatabase, ref, set, push, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-    // ✅ Firebase (학원용과 동일)
     const firebaseConfig = {
       apiKey: "AIzaSyCMpX7R7IwOIaUSjWUpzqDQf7MlqZ7nhls",
       authDomain: "maniaca-db-5632f.firebaseapp.com",
@@ -216,23 +209,16 @@
       }
     };
 
-    // ✅ 음성 안내(중복 방지)
+    // ✅ 음성 안내(중복 방지: 항상 cancel)
     const Voice = {
       enabled: true,
-      speaking: false,
       say(text){
         try{
           if (!this.enabled) return;
           if (!("speechSynthesis" in window)) return;
-
-          // 중복 방지 핵심: 기존 발화 즉시 취소
           window.speechSynthesis.cancel();
-
           const u = new SpeechSynthesisUtterance(text);
           u.lang = "ko-KR";
-          this.speaking = true;
-          u.onend = () => { this.speaking = false; };
-          u.onerror = () => { this.speaking = false; };
           window.speechSynthesis.speak(u);
         } catch {}
       }
@@ -252,7 +238,6 @@
       busy: false
     };
 
-    // UI helpers
     function setOnlineChip(){
       const chip = document.getElementById("netChip");
       const on = navigator.onLine;
@@ -312,8 +297,12 @@
       return snap.exists() ? snap.val() : null;
     }
 
-    async function writeAttendance(academyId, ymd, studentId, status){
+    async function writeDailyAttendance(academyId, ymd, studentId, status){
       await set(ref(db, `academyData/${academyId}/attendance/${ymd}/${studentId}`), status);
+    }
+
+    async function writeSessionAttendance(academyId, classId, sessionId, studentId, status){
+      await set(ref(db, `academyData/${academyId}/classes/${classId}/sessions/${sessionId}/attendanceByStudent/${studentId}`), status);
     }
 
     async function logKiosk(academyId, payload){
@@ -324,6 +313,72 @@
         atKST: Util.nowKST(),
         ...payload
       });
+    }
+
+    // ✅ 학생이 속한 수업 찾기 (여러 스키마 자동 지원)
+    async function getEnrolledClassIds(academyId, studentId){
+      // 1) student 문서에 classIds / classes
+      const stSnap = await get(ref(db, `academyData/${academyId}/students/${studentId}`));
+      if (stSnap.exists()){
+        const st = stSnap.val() || {};
+        const byStudent = st.classIds || st.classes || st.enrolledClasses;
+        if (byStudent && typeof byStudent === "object"){
+          // object map {classId:true} or array
+          if (Array.isArray(byStudent)) return byStudent.filter(Boolean);
+          return Object.keys(byStudent).filter(k => byStudent[k]);
+        }
+      }
+
+      // 2) enrollment index (studentId -> classIds)
+      const idxPaths = [
+        `academyData/${academyId}/classEnrollments/${studentId}`,
+        `academyData/${academyId}/enrollments/${studentId}`,
+        `academyData/${academyId}/studentClasses/${studentId}`
+      ];
+      for (const p of idxPaths){
+        const snap = await get(ref(db, p));
+        if (snap.exists()){
+          const v = snap.val();
+          if (Array.isArray(v)) return v.filter(Boolean);
+          if (v && typeof v === "object") return Object.keys(v).filter(k => v[k]);
+        }
+      }
+
+      // 3) classes 전체 스캔해서 class.students 안에 studentId 있는지 탐색
+      const classesSnap = await get(ref(db, `academyData/${academyId}/classes`));
+      if (!classesSnap.exists()) return [];
+      const classes = classesSnap.val() || {};
+      const result = [];
+      for (const [classId, c] of Object.entries(classes)){
+        if (!c || typeof c !== "object") continue;
+        const buckets = [c.students, c.studentIds, c.enrolledStudents, c.members, c.roster];
+        let hit = false;
+
+        for (const b of buckets){
+          if (!b) continue;
+          if (Array.isArray(b)){
+            if (b.includes(studentId)) { hit = true; break; }
+          } else if (typeof b === "object"){
+            if (b[studentId]) { hit = true; break; }
+          }
+        }
+
+        if (hit) result.push(classId);
+      }
+      return result;
+    }
+
+    // ✅ 각 수업에서 오늘 날짜 차시 찾기
+    async function findTodaySessionIds(academyId, classId, ymd){
+      const snap = await get(ref(db, `academyData/${academyId}/classes/${classId}/sessions`));
+      if (!snap.exists()) return [];
+      const sessions = snap.val() || {};
+      const hits = [];
+      for (const [sessionId, s] of Object.entries(sessions)){
+        if (!s) continue;
+        if ((s.date || "") === ymd) hits.push(sessionId);
+      }
+      return hits;
     }
 
     const Kiosk = {
@@ -344,7 +399,6 @@
 
         this.refreshAcademyLabel();
 
-        // 키보드 입력
         window.addEventListener("keydown", (e)=>{
           if (document.getElementById("modalRoot").classList.contains("hidden") === false) return;
           if (e.key >= "0" && e.key <= "9") this.tap(e.key);
@@ -352,7 +406,6 @@
           if (e.key === "Enter") this.submit();
         });
 
-        // 학원코드 없으면 설정 열기
         if (!State.academyCode){
           this.openSettings();
         } else {
@@ -365,10 +418,9 @@
       async ensureAcademyId(){
         const code = (State.academyCode||"").trim();
         if (!code) return;
-
         const academyId = await resolveAcademyIdByCode(code);
         if (!academyId){
-          Toast.show("학원 코드가 없습니다. 설정을 확인하세요.", "error");
+          Toast.show("학원 코드가 없습니다. 설정 확인", "error");
           Voice.say("학원 코드를 확인해주세요.");
           return;
         }
@@ -410,7 +462,6 @@
         renderNo();
         showInputScreen();
         if (fast) {
-          // 빠르게 다음: 음성 취소
           try{ window.speechSynthesis.cancel(); } catch {}
         }
       },
@@ -455,7 +506,7 @@
       async submit(){
         if (State.busy) return;
         if (!navigator.onLine){
-          Toast.show("오프라인입니다. 인터넷 연결 후 다시 시도하세요.", "error");
+          Toast.show("오프라인입니다. 인터넷 연결 후 시도", "error");
           Voice.say("오프라인입니다. 인터넷 연결 후 다시 시도하세요.");
           return;
         }
@@ -468,7 +519,7 @@
         }
 
         if (!State.academyCode){
-          Toast.show("학원 코드가 필요합니다. 설정을 확인하세요.", "error");
+          Toast.show("학원 코드가 필요합니다.", "error");
           Voice.say("학원 코드를 설정해주세요.");
           this.openSettings();
           return;
@@ -478,7 +529,6 @@
         document.getElementById("submitBtn").disabled = true;
 
         try{
-          // academyId 확보
           if (!State.academyId){
             await this.ensureAcademyId();
           }
@@ -490,14 +540,14 @@
 
           const ymd = Util.ymdKST();
 
-          // studentId 찾기 (academyStudentNoIndex 사용)
+          // 학생 찾기
           const studentId = await getStudentIdByNo(State.academyId, studentNo);
           if (!studentId){
             await logKiosk(State.academyId, { result:"NO_STUDENT", studentNo, status: State.status, date: ymd });
             showStatusScreen({
               title: "등록되지 않은 번호",
               sub: "학원에 등록된 학생 고유번호가 아닙니다.",
-              meta: `번호: ${studentNo} · ${ymd} · ${Util.nowKST()}`,
+              meta: `번호: ${studentNo}\n날짜: ${ymd}\n시간: ${Util.nowKST()}`,
               badge: "실패",
               tone: "error"
             });
@@ -510,42 +560,90 @@
           const st = await getStudent(State.academyId, studentId);
           const name = st?.name || "학생";
 
-          // 중복 체크
-          const existing = await getTodayAttendance(State.academyId, ymd, studentId);
-          if (existing){
-            await logKiosk(State.academyId, { result:"DUPLICATE", studentId, studentNo, name, existing, status: State.status, date: ymd });
+          // ✅ 하루 출석(호환) 중복 체크
+          const existingDaily = await getTodayAttendance(State.academyId, ymd, studentId);
+
+          // ✅ 수업 찾기
+          const classIds = await getEnrolledClassIds(State.academyId, studentId);
+
+          if (!classIds.length){
+            // 그래도 하루 출석은 기록(원하면 여기서 막아도 됨)
+            await writeDailyAttendance(State.academyId, ymd, studentId, State.status);
+
+            await logKiosk(State.academyId, { result:"NO_CLASSES", studentId, studentNo, name, status: State.status, date: ymd });
             showStatusScreen({
               title: `${name}`,
-              sub: "이미 오늘 출석 처리되어 있습니다.",
-              meta: `상태: ${existing} · 번호: ${studentNo} · ${ymd} · ${Util.nowKST()}`,
-              badge: "중복",
+              sub: "학생이 등록된 수업을 찾지 못했습니다.",
+              meta: `번호: ${studentNo}\n날짜: ${ymd}\n※ 수업-수강생 연결 데이터가 필요합니다.`,
+              badge: "주의",
               tone: "warn"
             });
-            Toast.show("이미 출석 처리됨", "warn");
-            Voice.say(`${name} 학생, 이미 출석 처리되었습니다.`);
-            setTimeout(()=>this.reset(true), 2200);
+            Toast.show("수업 연결 없음(차시 반영 불가)", "warn");
+            Voice.say("수업 정보가 없어 차시에 반영할 수 없습니다.");
+            setTimeout(()=>this.reset(true), 2600);
             return;
           }
 
-          // 저장
-          await writeAttendance(State.academyId, ymd, studentId, State.status);
-          await logKiosk(State.academyId, { result:"OK", studentId, studentNo, name, status: State.status, date: ymd });
+          // ✅ 각 수업에서 오늘 차시 찾아 반영
+          let totalSessions = 0;
+          let updated = 0;
+          const touched = [];
+
+          for (const classId of classIds){
+            const todaySessionIds = await findTodaySessionIds(State.academyId, classId, ymd);
+            for (const sessionId of todaySessionIds){
+              totalSessions++;
+              // 무조건 상태 저장(출석→지각 변경 같은 것도 가능)
+              await writeSessionAttendance(State.academyId, classId, sessionId, studentId, State.status);
+              updated++;
+              touched.push({classId, sessionId});
+            }
+          }
+
+          // 하루 출석도 같이 저장
+          await writeDailyAttendance(State.academyId, ymd, studentId, State.status);
+
+          const metaLines = [
+            `번호: ${studentNo}`,
+            `날짜: ${ymd}`,
+            `수업 수: ${classIds.length}`,
+            `오늘 차시 매칭: ${totalSessions}`,
+            `저장 완료: ${updated}`,
+            existingDaily ? `하루출석: 기존(${existingDaily}) → 현재(${State.status})` : `하루출석: 신규(${State.status})`
+          ].join("\n");
+
+          if (totalSessions === 0){
+            await logKiosk(State.academyId, { result:"NO_TODAY_SESSIONS", studentId, studentNo, name, status: State.status, date: ymd, classIds });
+            showStatusScreen({
+              title: `${name}`,
+              sub: "오늘 날짜 차시가 없습니다. (수업은 있음)",
+              meta: metaLines,
+              badge: "주의",
+              tone: "warn"
+            });
+            Toast.show("오늘 차시 없음", "warn");
+            Voice.say(`${name} 학생, 오늘 차시가 없습니다.`);
+            setTimeout(()=>this.reset(true), 2400);
+            return;
+          }
+
+          await logKiosk(State.academyId, { result:"OK", studentId, studentNo, name, status: State.status, date: ymd, classIds, touched });
 
           showStatusScreen({
             title: `${name}`,
-            sub: `${State.status} 처리 완료`,
-            meta: `번호: ${studentNo} · ${ymd} · ${Util.nowKST()}`,
+            sub: `${State.status} 처리 완료 (차시 ${totalSessions}개 반영)`,
+            meta: metaLines,
             badge: "완료",
             tone: "success"
           });
-          Toast.show("출석 완료", "success");
+          Toast.show("처리 완료", "success");
           Voice.say(`${name} 학생, ${State.status} 처리되었습니다.`);
 
           setTimeout(()=>this.reset(true), 2200);
 
         } catch (err){
           console.error(err);
-          Toast.show("오류가 발생했습니다. 다시 시도하세요.", "error");
+          Toast.show("오류가 발생했습니다.", "error");
           Voice.say("오류가 발생했습니다. 다시 시도하세요.");
           showStatusScreen({
             title: "오류",
@@ -554,7 +652,7 @@
             badge: "실패",
             tone: "error"
           });
-          setTimeout(()=>this.reset(true), 2400);
+          setTimeout(()=>this.reset(true), 2600);
         } finally {
           State.busy = false;
           document.getElementById("submitBtn").disabled = false;
@@ -564,7 +662,6 @@
 
     window.Kiosk = Kiosk;
 
-    // modal click outside close
     document.getElementById("modalRoot").addEventListener("click", (e)=>{
       if (e.target.id === "modalRoot") Kiosk.closeSettings();
     });
