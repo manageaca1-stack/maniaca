@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>매니아카 · 키오스크</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .btn{padding:1rem 1rem;border-radius:1.25rem;border:1px solid rgb(226 232 240);background:#fff;font-weight:700}
+    .btn:hover{background:rgb(241 245 249)}
+    .btnP{padding:1rem 1rem;border-radius:1.25rem;background:rgb(15 23 42);color:#fff;font-weight:800}
+    .btnP:hover{background:rgb(30 41 59)}
+    .chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .7rem;border-radius:999px;font-size:.85rem;border:1px solid}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .key{padding:1.2rem 0;border-radius:1.25rem;border:1px solid rgb(226 232 240);background:#fff;font-size:1.6rem;font-weight:900}
+    .key:active{transform:scale(.985)}
+    .panel{border:1px solid rgb(226 232 240);border-radius:1.75rem;background:#fff}
+    .toast{position:fixed;top:1rem;right:1rem;z-index:9999}
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+  <div id="toast" class="toast hidden px-4 py-3 rounded-2xl text-white text-sm shadow-lg"></div>
+
+  <main class="max-w-4xl mx-auto p-6">
+    <header class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="h-12 w-12 rounded-2xl bg-slate-900 text-white grid place-items-center font-extrabold text-xl">M</div>
+        <div>
+          <div class="text-xl font-extrabold leading-tight">매니아카 키오스크</div>
+          <div class="text-slate-500 text-sm leading-tight">학생 고유번호로 출석</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="netChip" class="chip bg-slate-50 text-slate-700 border-slate-200">오프라인</span>
+        <button class="btn" onclick="Kiosk.openSettings()">설정</button>
+      </div>
+    </header>
+
+    <!-- STATUS SCREEN -->
+    <section id="statusScreen" class="mt-6 panel p-6 hidden">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div id="statusTitle" class="text-3xl sm:text-4xl font-extrabold">-</div>
+          <div id="statusSub" class="mt-2 text-slate-600 text-lg">-</div>
+          <div id="statusMeta" class="mt-4 text-slate-500 text-sm mono">-</div>
+        </div>
+        <div id="statusBadge" class="text-2xl font-extrabold px-4 py-2 rounded-2xl border">-</div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        <button class="btn" onclick="Kiosk.reset()">다시 입력</button>
+        <button class="btnP" onclick="Kiosk.reset(true)">빠르게 다음</button>
+      </div>
+    </section>
+
+    <!-- INPUT SCREEN -->
+    <section id="inputScreen" class="mt-6 grid lg:grid-cols-[1fr_320px] gap-4">
+      <div class="panel p-6">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-2xl font-extrabold">학생 고유번호 입력</div>
+            <div class="text-slate-600 mt-1">예: 24001</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-slate-500">학원 코드</div>
+            <div id="academyCodeLabel" class="font-extrabold mono text-lg">-</div>
+          </div>
+        </div>
+
+        <div class="mt-5 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+          <div class="text-xs text-slate-500">입력값</div>
+          <div id="noDisplay" class="mono text-4xl sm:text-5xl font-extrabold tracking-wider mt-2">____</div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2 items-center">
+          <span class="chip bg-slate-50 text-slate-700 border-slate-200">오늘: <span id="todayLabel" class="mono"></span></span>
+          <span class="chip bg-slate-50 text-slate-700 border-slate-200">상태: <span id="attStatusLabel" class="font-bold">출석</span></span>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button class="btn" onclick="Kiosk.setStatus('출석')">출석</button>
+          <button class="btn" onclick="Kiosk.setStatus('지각')">지각</button>
+          <button class="btn" onclick="Kiosk.setStatus('보강')">보강</button>
+        </div>
+
+        <div class="mt-5 flex gap-2">
+          <button class="btn flex-1" onclick="Kiosk.backspace()">←</button>
+          <button class="btn flex-1" onclick="Kiosk.clear()">지우기</button>
+          <button id="submitBtn" class="btnP flex-[2]" onclick="Kiosk.submit()">출석하기</button>
+        </div>
+
+        <div class="mt-3 text-xs text-slate-500">
+          • “출석하기”를 누르면 <span class="mono">academyData/&lt;academyId&gt;/attendance/&lt;오늘&gt;/&lt;studentId&gt;</span>에 저장됩니다.<br/>
+          • 이미 오늘 출석이 있으면 중복 저장하지 않고 안내만 합니다.
+        </div>
+      </div>
+
+      <!-- KEYPAD -->
+      <div class="panel p-6">
+        <div class="text-sm text-slate-500 font-bold">키패드</div>
+        <div class="mt-3 grid grid-cols-3 gap-3">
+          <button class="key" onclick="Kiosk.tap('1')">1</button>
+          <button class="key" onclick="Kiosk.tap('2')">2</button>
+          <button class="key" onclick="Kiosk.tap('3')">3</button>
+          <button class="key" onclick="Kiosk.tap('4')">4</button>
+          <button class="key" onclick="Kiosk.tap('5')">5</button>
+          <button class="key" onclick="Kiosk.tap('6')">6</button>
+          <button class="key" onclick="Kiosk.tap('7')">7</button>
+          <button class="key" onclick="Kiosk.tap('8')">8</button>
+          <button class="key" onclick="Kiosk.tap('9')">9</button>
+          <button class="key" onclick="Kiosk.tap('0')">0</button>
+          <button class="key" onclick="Kiosk.backspace()">←</button>
+          <button class="key" onclick="Kiosk.clear()">C</button>
+        </div>
+
+        <div class="mt-5 text-xs text-slate-500">
+          • 키보드로 숫자 입력도 가능 (Backspace/Enter 지원)
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS MODAL -->
+    <div id="modalRoot" class="hidden fixed inset-0 bg-black/40 z-50">
+      <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-xl p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-xl font-extrabold">키오스크 설정</div>
+              <div class="text-sm text-slate-600 mt-1">학원 코드 / 음성 안내</div>
+            </div>
+            <button class="btn" onclick="Kiosk.closeSettings()">닫기</button>
+          </div>
+
+          <div class="mt-5 grid gap-3 text-sm">
+            <div>
+              <div class="text-xs text-slate-500 mb-1">학원 코드</div>
+              <input id="setAcademyCode" class="w-full px-4 py-3 rounded-2xl border border-slate-200 mono" placeholder="예: ABC" />
+            </div>
+
+            <div class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl p-4">
+              <div>
+                <div class="font-bold">음성 안내</div>
+                <div class="text-xs text-slate-500 mt-1">출석 성공/중복/실패 안내</div>
+              </div>
+              <label class="inline-flex items-center gap-2">
+                <input id="setVoice" type="checkbox" class="h-5 w-5" />
+                <span class="text-sm font-bold">ON</span>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl p-4">
+              <div>
+                <div class="font-bold">음성 중복 방지(강제)</div>
+                <div class="text-xs text-slate-500 mt-1">말하는 중에는 새 음성 재생을 덮어씀</div>
+              </div>
+              <span class="chip bg-emerald-50 text-emerald-700 border-emerald-200">항상 적용</span>
+            </div>
+
+            <div class="mt-2 flex justify-end gap-2">
+              <button class="btn" onclick="Kiosk.resetStorage()">초기화</button>
+              <button class="btnP" onclick="Kiosk.saveSettings()">저장</button>
+            </div>
+          </div>
+
+          <div class="mt-4 text-xs text-slate-500">
+            • 학원코드는 <span class="mono">academyCodeIndex</span>를 통해 academyId로 매핑됩니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getDatabase, ref, set, push, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+    // ✅ Firebase (학원용과 동일)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMpX7R7IwOIaUSjWUpzqDQf7MlqZ7nhls",
+      authDomain: "maniaca-db-5632f.firebaseapp.com",
+      databaseURL: "https://maniaca-db-5632f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "maniaca-db-5632f",
+      storageBucket: "maniaca-db-5632f.firebasestorage.app",
+      messagingSenderId: "1006110442956",
+      appId: "1:1006110442956:web:ae0a3279f635cbb0550969",
+      measurementId: "G-970NMH0TH3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const Util = {
+      nowKST(){ return new Date().toLocaleString("ko-KR", { timeZone:"Asia/Seoul" }); },
+      ymdKST(){
+        const dt = new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Seoul"}));
+        const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,"0"), d=String(dt.getDate()).padStart(2,"0");
+        return `${y}-${m}-${d}`;
+      },
+      onlyDigits(s){ return String(s||"").replace(/[^\d]/g,""); }
+    };
+
+    const Toast = {
+      show(msg, type="info"){
+        const el = document.getElementById("toast");
+        el.classList.remove("hidden");
+        el.textContent = msg;
+        el.className = "toast px-4 py-3 rounded-2xl text-white text-sm shadow-lg " + (
+          type==="error" ? "bg-rose-600" :
+          type==="success" ? "bg-emerald-600" :
+          type==="warn" ? "bg-amber-600" :
+          "bg-slate-900"
+        );
+        clearTimeout(this._t);
+        this._t = setTimeout(()=>el.classList.add("hidden"), 2000);
+      }
+    };
+
+    // ✅ 음성 안내(중복 방지)
+    const Voice = {
+      enabled: true,
+      speaking: false,
+      say(text){
+        try{
+          if (!this.enabled) return;
+          if (!("speechSynthesis" in window)) return;
+
+          // 중복 방지 핵심: 기존 발화 즉시 취소
+          window.speechSynthesis.cancel();
+
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "ko-KR";
+          this.speaking = true;
+          u.onend = () => { this.speaking = false; };
+          u.onerror = () => { this.speaking = false; };
+          window.speechSynthesis.speak(u);
+        } catch {}
+      }
+    };
+
+    const Store = {
+      get(k, d=null){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; } catch { return d; } },
+      set(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+    };
+
+    const State = {
+      academyCode: "",
+      academyId: "",
+      voiceOn: true,
+      inputNo: "",
+      status: "출석",
+      busy: false
+    };
+
+    // UI helpers
+    function setOnlineChip(){
+      const chip = document.getElementById("netChip");
+      const on = navigator.onLine;
+      chip.textContent = on ? "온라인" : "오프라인";
+      chip.className = "chip " + (on
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : "bg-slate-50 text-slate-700 border-slate-200");
+    }
+
+    function renderNo(){
+      const v = State.inputNo;
+      document.getElementById("noDisplay").textContent = v ? v : "____";
+    }
+
+    function showStatusScreen({title, sub, meta, badge, tone}){
+      document.getElementById("inputScreen").classList.add("hidden");
+      const ss = document.getElementById("statusScreen");
+      ss.classList.remove("hidden");
+
+      document.getElementById("statusTitle").textContent = title;
+      document.getElementById("statusSub").textContent = sub;
+      document.getElementById("statusMeta").textContent = meta || "";
+
+      const b = document.getElementById("statusBadge");
+      b.textContent = badge;
+      b.className = "text-2xl font-extrabold px-4 py-2 rounded-2xl border " + (
+        tone==="success" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+        tone==="warn" ? "bg-amber-50 text-amber-700 border-amber-200" :
+        "bg-rose-50 text-rose-700 border-rose-200"
+      );
+    }
+
+    function showInputScreen(){
+      document.getElementById("statusScreen").classList.add("hidden");
+      document.getElementById("inputScreen").classList.remove("hidden");
+    }
+
+    async function resolveAcademyIdByCode(code){
+      const idxSnap = await get(ref(db, `academyCodeIndex/${code}`));
+      if (!idxSnap.exists()) return null;
+      return idxSnap.val();
+    }
+
+    async function getStudentIdByNo(academyId, studentNo){
+      const snap = await get(ref(db, `academyStudentNoIndex/${academyId}/${studentNo}`));
+      if (!snap.exists()) return null;
+      return snap.val();
+    }
+
+    async function getStudent(academyId, studentId){
+      const snap = await get(ref(db, `academyData/${academyId}/students/${studentId}`));
+      return snap.exists() ? snap.val() : null;
+    }
+
+    async function getTodayAttendance(academyId, ymd, studentId){
+      const snap = await get(ref(db, `academyData/${academyId}/attendance/${ymd}/${studentId}`));
+      return snap.exists() ? snap.val() : null;
+    }
+
+    async function writeAttendance(academyId, ymd, studentId, status){
+      await set(ref(db, `academyData/${academyId}/attendance/${ymd}/${studentId}`), status);
+    }
+
+    async function logKiosk(academyId, payload){
+      const id = push(ref(db, `kioskLogs/${academyId}`)).key;
+      await set(ref(db, `kioskLogs/${academyId}/${id}`), {
+        id,
+        at: Date.now(),
+        atKST: Util.nowKST(),
+        ...payload
+      });
+    }
+
+    const Kiosk = {
+      init(){
+        setOnlineChip();
+        window.addEventListener("online", setOnlineChip);
+        window.addEventListener("offline", setOnlineChip);
+
+        document.getElementById("todayLabel").textContent = Util.ymdKST();
+        document.getElementById("attStatusLabel").textContent = State.status;
+
+        const saved = Store.get("kioskSettings", null);
+        if (saved){
+          State.academyCode = saved.academyCode || "";
+          State.voiceOn = saved.voiceOn !== false;
+        }
+        Voice.enabled = State.voiceOn;
+
+        this.refreshAcademyLabel();
+
+        // 키보드 입력
+        window.addEventListener("keydown", (e)=>{
+          if (document.getElementById("modalRoot").classList.contains("hidden") === false) return;
+          if (e.key >= "0" && e.key <= "9") this.tap(e.key);
+          if (e.key === "Backspace") this.backspace();
+          if (e.key === "Enter") this.submit();
+        });
+
+        // 학원코드 없으면 설정 열기
+        if (!State.academyCode){
+          this.openSettings();
+        } else {
+          this.ensureAcademyId();
+        }
+
+        renderNo();
+      },
+
+      async ensureAcademyId(){
+        const code = (State.academyCode||"").trim();
+        if (!code) return;
+
+        const academyId = await resolveAcademyIdByCode(code);
+        if (!academyId){
+          Toast.show("학원 코드가 없습니다. 설정을 확인하세요.", "error");
+          Voice.say("학원 코드를 확인해주세요.");
+          return;
+        }
+        State.academyId = academyId;
+      },
+
+      refreshAcademyLabel(){
+        document.getElementById("academyCodeLabel").textContent = State.academyCode || "-";
+      },
+
+      setStatus(s){
+        State.status = s;
+        document.getElementById("attStatusLabel").textContent = s;
+        Toast.show(`상태: ${s}`, "info");
+      },
+
+      tap(n){
+        if (State.busy) return;
+        if (State.inputNo.length >= 10) return;
+        State.inputNo += String(n);
+        renderNo();
+      },
+
+      backspace(){
+        if (State.busy) return;
+        State.inputNo = State.inputNo.slice(0, -1);
+        renderNo();
+      },
+
+      clear(){
+        if (State.busy) return;
+        State.inputNo = "";
+        renderNo();
+      },
+
+      reset(fast=false){
+        State.busy = false;
+        State.inputNo = "";
+        renderNo();
+        showInputScreen();
+        if (fast) {
+          // 빠르게 다음: 음성 취소
+          try{ window.speechSynthesis.cancel(); } catch {}
+        }
+      },
+
+      openSettings(){
+        const m = document.getElementById("modalRoot");
+        m.classList.remove("hidden");
+        document.getElementById("setAcademyCode").value = State.academyCode || "";
+        document.getElementById("setVoice").checked = !!State.voiceOn;
+      },
+
+      closeSettings(){
+        document.getElementById("modalRoot").classList.add("hidden");
+      },
+
+      async saveSettings(){
+        State.academyCode = (document.getElementById("setAcademyCode").value||"").trim();
+        State.voiceOn = !!document.getElementById("setVoice").checked;
+        Voice.enabled = State.voiceOn;
+
+        Store.set("kioskSettings", { academyCode: State.academyCode, voiceOn: State.voiceOn });
+        this.refreshAcademyLabel();
+        this.closeSettings();
+
+        await this.ensureAcademyId();
+        Toast.show("저장 완료", "success");
+        Voice.say("설정이 저장되었습니다.");
+      },
+
+      resetStorage(){
+        if (!confirm("키오스크 설정을 초기화할까요?")) return;
+        localStorage.removeItem("kioskSettings");
+        State.academyCode = "";
+        State.academyId = "";
+        State.voiceOn = true;
+        Voice.enabled = true;
+        this.refreshAcademyLabel();
+        Toast.show("초기화 완료", "success");
+        this.openSettings();
+      },
+
+      async submit(){
+        if (State.busy) return;
+        if (!navigator.onLine){
+          Toast.show("오프라인입니다. 인터넷 연결 후 다시 시도하세요.", "error");
+          Voice.say("오프라인입니다. 인터넷 연결 후 다시 시도하세요.");
+          return;
+        }
+
+        const studentNo = Util.onlyDigits(State.inputNo);
+        if (!studentNo){
+          Toast.show("학생 고유번호를 입력하세요.", "error");
+          Voice.say("학생 고유번호를 입력해주세요.");
+          return;
+        }
+
+        if (!State.academyCode){
+          Toast.show("학원 코드가 필요합니다. 설정을 확인하세요.", "error");
+          Voice.say("학원 코드를 설정해주세요.");
+          this.openSettings();
+          return;
+        }
+
+        State.busy = true;
+        document.getElementById("submitBtn").disabled = true;
+
+        try{
+          // academyId 확보
+          if (!State.academyId){
+            await this.ensureAcademyId();
+          }
+          if (!State.academyId){
+            State.busy = false;
+            document.getElementById("submitBtn").disabled = false;
+            return;
+          }
+
+          const ymd = Util.ymdKST();
+
+          // studentId 찾기 (academyStudentNoIndex 사용)
+          const studentId = await getStudentIdByNo(State.academyId, studentNo);
+          if (!studentId){
+            await logKiosk(State.academyId, { result:"NO_STUDENT", studentNo, status: State.status, date: ymd });
+            showStatusScreen({
+              title: "등록되지 않은 번호",
+              sub: "학원에 등록된 학생 고유번호가 아닙니다.",
+              meta: `번호: ${studentNo} · ${ymd} · ${Util.nowKST()}`,
+              badge: "실패",
+              tone: "error"
+            });
+            Toast.show("등록되지 않은 번호", "error");
+            Voice.say("등록되지 않은 번호입니다.");
+            setTimeout(()=>this.reset(true), 2200);
+            return;
+          }
+
+          const st = await getStudent(State.academyId, studentId);
+          const name = st?.name || "학생";
+
+          // 중복 체크
+          const existing = await getTodayAttendance(State.academyId, ymd, studentId);
+          if (existing){
+            await logKiosk(State.academyId, { result:"DUPLICATE", studentId, studentNo, name, existing, status: State.status, date: ymd });
+            showStatusScreen({
+              title: `${name}`,
+              sub: "이미 오늘 출석 처리되어 있습니다.",
+              meta: `상태: ${existing} · 번호: ${studentNo} · ${ymd} · ${Util.nowKST()}`,
+              badge: "중복",
+              tone: "warn"
+            });
+            Toast.show("이미 출석 처리됨", "warn");
+            Voice.say(`${name} 학생, 이미 출석 처리되었습니다.`);
+            setTimeout(()=>this.reset(true), 2200);
+            return;
+          }
+
+          // 저장
+          await writeAttendance(State.academyId, ymd, studentId, State.status);
+          await logKiosk(State.academyId, { result:"OK", studentId, studentNo, name, status: State.status, date: ymd });
+
+          showStatusScreen({
+            title: `${name}`,
+            sub: `${State.status} 처리 완료`,
+            meta: `번호: ${studentNo} · ${ymd} · ${Util.nowKST()}`,
+            badge: "완료",
+            tone: "success"
+          });
+          Toast.show("출석 완료", "success");
+          Voice.say(`${name} 학생, ${State.status} 처리되었습니다.`);
+
+          setTimeout(()=>this.reset(true), 2200);
+
+        } catch (err){
+          console.error(err);
+          Toast.show("오류가 발생했습니다. 다시 시도하세요.", "error");
+          Voice.say("오류가 발생했습니다. 다시 시도하세요.");
+          showStatusScreen({
+            title: "오류",
+            sub: "저장에 실패했습니다.",
+            meta: `${Util.nowKST()}`,
+            badge: "실패",
+            tone: "error"
+          });
+          setTimeout(()=>this.reset(true), 2400);
+        } finally {
+          State.busy = false;
+          document.getElementById("submitBtn").disabled = false;
+        }
+      }
+    };
+
+    window.Kiosk = Kiosk;
+
+    // modal click outside close
+    document.getElementById("modalRoot").addEventListener("click", (e)=>{
+      if (e.target.id === "modalRoot") Kiosk.closeSettings();
+    });
+
+    Kiosk.init();
+  </script>
+</body>
+</html>
